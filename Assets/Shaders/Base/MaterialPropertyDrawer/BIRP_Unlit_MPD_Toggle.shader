@@ -34,17 +34,17 @@ Shader "LearnShader/MaterialPropertyDrawer/BIRP_Unlit_MPD_Toggle"
             #pragma fragment frag
             #pragma multi_compile_fog // make fog work
 
-            // Toogle: use "#pragma shader_feature" to declare a keyword for our toggle condition and use it in frag()
+            // Toogle: use "#pragma shader_feature" to declare a keyword for our toggle condition and be able to use it in frag()
             // -> name must be the same as the property but in capital letters because shader variants are constants
             // -> we also add a suffix _ON to the condition is fullfilled when the property is enabled in the inspector
             //      -> when we need to invert the condition and use _OFF,  we need to use attribute [ToggleOff]
             // Note: "#pragma shader feature" cannot compile multiple variants of a shader for an application this means it's not possible to change the value
             //      of the toogle in a build at execution time. To do that we need to use  "#pragma multi_compile".
-            # pragma shader_feature _ENABLETEXTURE_ON
+            #pragma shader_feature _ENABLETEXTURE_ON
             // Example: [ToggleOff] / _OFF
-            # pragma shader_feature _TOGGLEOFFEXAMPLE_OFF
+            #pragma shader_feature _TOGGLEOFFEXAMPLE_OFF
             // Example: custom shader keyword (we use the keyword to get the value instead of the property name in capital and _ON is not needed)
-            # pragma shader_feature TOGGLE_CUSTOM_KEYWORD
+            #pragma shader_feature TOGGLE_CUSTOM_KEYWORD
 
             // Example: #pragma multi_compile to make toggle editable in build at execution time
             // -> __ before the keyword is used to define the keyword as a toggle state and both on and off variant of the shader will be compiled  
