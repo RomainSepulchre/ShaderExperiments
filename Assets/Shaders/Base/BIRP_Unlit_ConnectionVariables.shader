@@ -1,4 +1,5 @@
 // Shader with custom property to show how connection variables works
+// See https://docs.unity3d.com/6000.2/Documentation/Manual/SL-Properties.html
 
 Shader "LearnShader/BIRP_Unlit_ConnectionVariables"
 {

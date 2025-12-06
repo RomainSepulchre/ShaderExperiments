@@ -1,4 +1,5 @@
-// Commented unlit shader with basic concept of shaders 
+// Commented unlit shader with basic concept of shaders
+// See https://docs.unity3d.com/6000.2/Documentation/Manual/SL-Properties.html
 
 Shader "LearnShader/BIRP_Unlit_Bases" // Inspector path: path of the shader in Unity inspector interface 
 {
