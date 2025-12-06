@@ -6,7 +6,7 @@
 // See https://docs.unity3d.com/6000.2/Documentation/ScriptReference/MaterialPropertyDrawer.html
 // See https://docs.unity3d.com/6000.2/Documentation/Manual/SL-PragmaDirectives.html
 
-Shader "LearnShader/MaterialPropertyDrawer/BIRP_Unlit_MDP_Toggle"
+Shader "LearnShader/MaterialPropertyDrawer/BIRP_Unlit_MPD_Toggle"
 {
     Properties
     {
@@ -39,12 +39,18 @@ Shader "LearnShader/MaterialPropertyDrawer/BIRP_Unlit_MDP_Toggle"
             // -> we also add a suffix _ON to the condition is fullfilled when the property is enabled in the inspector
             //      -> when we need to invert the condition and use _OFF,  we need to use attribute [ToggleOff]
             // Note: "#pragma shader feature" cannot compile multiple variants of a shader for an application this means it's not possible to change the value
-            //      of the toogle in a build at execution time. To do that we need to usea keyword enum drawer with "#pragma multi_compile".
+            //      of the toogle in a build at execution time. To do that we need to use  "#pragma multi_compile".
             # pragma shader_feature _ENABLETEXTURE_ON
             // Example: [ToggleOff] / _OFF
             # pragma shader_feature _TOGGLEOFFEXAMPLE_OFF
             // Example: custom shader keyword (we use the keyword to get the value instead of the property name in capital and _ON is not needed)
             # pragma shader_feature TOGGLE_CUSTOM_KEYWORD
+
+            // Example: #pragma multi_compile to make toggle editable in build at execution time
+            // -> __ before the keyword is used to define the keyword as a toggle state and both on and off variant of the shader will be compiled  
+            // # pragma multi_compile __ _ENABLETEXTURE_ON
+            // # pragma multi_compile __ _TOGGLEOFFEXAMPLE_OFF
+            // # pragma multi_compile __ TOGGLE_CUSTOM_KEYWORD
 
             #include "UnityCG.cginc"
 

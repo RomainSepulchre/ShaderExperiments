@@ -243,7 +243,7 @@ GameObject:
   - component: {fileID: 244525766}
   - component: {fileID: 244525765}
   m_Layer: 0
-  m_Name: CubeBIRP
+  m_Name: CubeBIRP_Bases
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -618,7 +618,7 @@ GameObject:
   - component: {fileID: 828497996}
   - component: {fileID: 828497995}
   m_Layer: 0
-  m_Name: CubeBIRP (1)
+  m_Name: CubeBIRP_ConnectionVariables(Properties)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -778,7 +778,7 @@ GameObject:
   - component: {fileID: 1349151154}
   - component: {fileID: 1349151153}
   m_Layer: 0
-  m_Name: CubeBIRP (2)
+  m_Name: CubeBIRP_MPD_Toggle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
