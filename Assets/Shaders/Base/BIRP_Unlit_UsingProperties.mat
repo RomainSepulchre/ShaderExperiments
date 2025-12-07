@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: BIRP_Unlit_ConnectionVariables
+  m_Name: BIRP_Unlit_UsingProperties
   m_Shader: {fileID: 4800000, guid: dcd0764aee999a24f8f3835bdd99dfa1, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -88,7 +88,7 @@ Material:
     - _OcclusionStrength: 1
     - _Parallax: 0.02
     - _RangeExample: 50
-    - _SecTexBrightness: 0.942
+    - _SecTexBrightness: 0.835
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
