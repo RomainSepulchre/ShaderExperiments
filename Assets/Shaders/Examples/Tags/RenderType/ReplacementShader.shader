@@ -1,20 +1,11 @@
-// Shader with comment to better understand the SubShader section
-// See https://docs.unity3d.com/6000.2/Documentation/Manual/SL-SubShader-object.html
-
-Shader "LearnShader/BIRP_Unlit_SubShader"
+Shader "LearnShader/Examples/Tags/RenderType/ReplacementShader"
 {
     Properties
     {
         _MainTex ("Texture", 2D) = "white" {}
     }
-
-    // SubShader
-    // -> Each shader is composed of a least one subShader section. When there is several subshader Unity process all of them from 
-    //    the first to the last and choose the more suitable subshader for the current hardware characteritics.
-    // -> If no subshader are supported Unity will try to use the Fallback component if it exist   
     SubShader
     {
-        // Tags
         Tags { "RenderType"="Opaque" }
         LOD 100
 
@@ -57,6 +48,7 @@ Shader "LearnShader/BIRP_Unlit_SubShader"
             {
                 // sample the texture
                 fixed4 col = tex2D(_MainTex, i.uv);
+                col *= float4(1,0,0,1) // Multiply color by red
                 // apply fog
                 UNITY_APPLY_FOG(i.fogCoord, col);
                 return col;
