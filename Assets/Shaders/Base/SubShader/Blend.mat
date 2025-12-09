@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: BIRP_Unlit_Bases
-  m_Shader: {fileID: 4800000, guid: aa62a32201dbaf44a8f4e819f4dbd76a, type: 3}
+  m_Name: Blend
+  m_Shader: {fileID: 4800000, guid: e8069793620416346ad39b244fd6187b, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -77,7 +77,7 @@ Material:
     - _BumpScale: 1
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
-    - _DstBlend: 0
+    - _DstBlend: 1
     - _FloatExample: 0.999
     - _GlossMapScale: 1
     - _Glossiness: 0.5

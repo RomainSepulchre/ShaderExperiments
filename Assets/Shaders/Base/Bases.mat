@@ -7,13 +7,11 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: BIRP_Unlit_MPD_Toggle
-  m_Shader: {fileID: 4800000, guid: b941c3aede6aca34798f60bd5b3abc4f, type: 3}
+  m_Name: Bases
+  m_Shader: {fileID: 4800000, guid: aa62a32201dbaf44a8f4e819f4dbd76a, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords:
-  - _ENABLETEXTURE_ON
-  - _TOGGLEOFFEXAMPLE_OFF
+  m_ValidKeywords: []
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -80,7 +78,6 @@ Material:
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
-    - _EnableTexture: 1
     - _FloatExample: 0.999
     - _GlossMapScale: 1
     - _Glossiness: 0.5
@@ -95,12 +92,10 @@ Material:
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
-    - _ToggleOffExample: 0
-    - _ToggleWithCustomKeyword: 0
     - _UVSec: 0
     - _ZWrite: 1
     m_Colors:
-    - _Color: {r: 1, g: 0.32043707, b: 0, a: 1}
+    - _Color: {r: 0.23039278, g: 0.29962862, b: 0.703504, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _MultColor: {r: 0.4117647, g: 0.44143665, b: 0.84313726, a: 1}
     - _SecondaryColor: {r: 0.86522907, g: 0.7218016, b: 0.7218016, a: 1}

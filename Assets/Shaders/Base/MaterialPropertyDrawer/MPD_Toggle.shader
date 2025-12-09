@@ -6,7 +6,7 @@
 // See https://docs.unity3d.com/6000.2/Documentation/ScriptReference/MaterialPropertyDrawer.html
 // See https://docs.unity3d.com/6000.2/Documentation/Manual/SL-PragmaDirectives.html
 
-Shader "LearnShader/MaterialPropertyDrawer/BIRP_Unlit_MPD_Toggle"
+Shader "LearnShader/BIRP_Unlit/MaterialPropertyDrawer/MPD_Toggle"
 {
     Properties
     {
