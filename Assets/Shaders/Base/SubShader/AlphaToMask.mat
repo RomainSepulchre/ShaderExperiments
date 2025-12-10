@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Blend
-  m_Shader: {fileID: 4800000, guid: e8069793620416346ad39b244fd6187b, type: 3}
+  m_Name: AlphaToMask
+  m_Shader: {fileID: 4800000, guid: 3fd5b552111ff7e47a0d1deb8e7713bb, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []

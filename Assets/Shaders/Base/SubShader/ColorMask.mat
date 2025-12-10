@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Blend
-  m_Shader: {fileID: 4800000, guid: e8069793620416346ad39b244fd6187b, type: 3}
+  m_Name: ColorMask
+  m_Shader: {fileID: 4800000, guid: 394d6251c7e03a74ebae71252c24a590, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -52,7 +52,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: d7a26962fc9d3fe4b8be591a928128e6, type: 3}
+        m_Texture: {fileID: 2800000, guid: 3546cd8e60491654ba319bca8ed66478, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:

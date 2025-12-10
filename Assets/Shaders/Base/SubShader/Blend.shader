@@ -1,4 +1,4 @@
-// Shader with comment to better understand the SubShader section
+// Shader with comment to better understand Blend command in the SubShader section
 // See https://docs.unity3d.com/6000.2/Documentation/Manual/SL-SubShader-object.html
 // See https://docs.unity3d.com/6000.3/Documentation/Manual/SL-Blend.html
 
@@ -55,10 +55,6 @@ Shader "LearnShader/BIRP_Unlit/SubShader/Blend"
         //      - Blend OneMinusSrcColor One = Soft light blending
         //      - Blend Zero OneMinusSrcColor = Negative color blending
 
-        // Note: Alpha channel blending is done the same way as the RGB blending but in an independant process since it's not frequently used. This
-        // also allows to optimize the writing in the Render Target.
-        // Note: Blend can 
-
         Blend [_SrcBlend] [_DstBlend] // Use enum properties to set the blend mode in the inspector
         
         // Example: Common transparent blending
@@ -66,6 +62,11 @@ Shader "LearnShader/BIRP_Unlit/SubShader/Blend"
 
         // Example: Disable the blend
         // Blend Off
+
+        // Note: Alpha channel blending is done the same way as the RGB blending but in an independant process since it's not frequently used. This
+        // also allows to optimize the writing in the Render Target.
+        // Note: Blend can 
+
 
         LOD 100
 

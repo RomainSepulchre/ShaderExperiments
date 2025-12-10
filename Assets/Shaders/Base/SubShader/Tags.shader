@@ -1,4 +1,4 @@
-// Shader with comment to better understand the SubShader section
+// Shader with comment to better understand Tags command in the SubShader section
 // See https://docs.unity3d.com/6000.2/Documentation/Manual/SL-SubShader-object.html
 // See https://docs.unity3d.com/6000.2/Documentation/Manual/SL-SubShaderTags.html
 // See https://docs.unity3d.com/6000.2/Documentation/Manual/SL-ShaderReplacement.html
