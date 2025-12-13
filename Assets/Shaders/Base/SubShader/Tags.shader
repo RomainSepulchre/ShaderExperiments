@@ -31,6 +31,8 @@ Shader "LearnShader/BIRP_Unlit/SubShader/Tags"
             //      - AlphaTest (2400-2699, default value=2450) - used for semi-transparent objects that are in front of an opaque object but behind a transparent object.
             //      - Transparent (2700-3599, default value=3000) - used for tranparent elements that must be in front of the others.
             //      - Overlay (3600-5000, default value=4000) - used for element rendered in front of the scene like UI ir images.
+            // -> It's also possible define an offset from a queue by specifying it after the queue name ("Queue"="QueueName+/-Offset"). For example
+            //    this is useful for transparent water, we want to draw after opaque objects but before transparent objects ("Queue"="Transparent-1").
             // -> HDRP use the Render Queue differently by using two control methods: Material order and Renderer order.
             "Queue"="Geometry"
 
