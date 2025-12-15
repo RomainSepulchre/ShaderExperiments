@@ -89,9 +89,8 @@ Shader "LearnShader/BIRP_Unlit/CG_HLSL/DataTypes"
             SamplerState samplerStateExample;
             // - Sampler2D / SamplerCube: It store a both a texture ant its sample.
             sampler2D sampler2DExample;
-
             
-
+            // See Texture2D, SamplerState and sampler2D example below...
             struct appdata
             {
                 float4 vertex : POSITION;
