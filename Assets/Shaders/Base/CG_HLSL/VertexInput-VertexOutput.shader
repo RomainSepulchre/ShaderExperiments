@@ -95,7 +95,7 @@ Shader "LearnShader/BIRP_Unlit/CG_HLSL/VertexInput-VertexOutput"
             sampler2D _MainTex;
             float4 _MainTex_ST;
 
-            // Vertex shader stage
+            // Vertex shader stage (stage where vertices are transformed from a 3D space to a 2D projection on the screen)
             v2f vert (appdata v) // appdata struct is used as an argument
             {
                 // We declare a new v2f struct
