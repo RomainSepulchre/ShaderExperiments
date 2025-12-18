@@ -1,3 +1,6 @@
+// See https://docs.unity3d.com/6000.1/Documentation/Manual/SL-VertexProgramInputs.html -> info on CBUFFER
+// See https://docs.unity3d.com/6000.3/Documentation/Manual/SL-VertexProgramInputs.html
+
 Shader "LearnShader/CG_HLSL_Comparison/HLSL_URP_Unlit"
 {
     Properties
