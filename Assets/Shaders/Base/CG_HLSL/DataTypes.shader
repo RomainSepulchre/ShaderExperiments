@@ -34,10 +34,10 @@ Shader "LearnShader/BIRP_Unlit/CG_HLSL/DataTypes"
             //        calculation such as trigonometry or exponentiation.
             //      - Half: 16 bit medium precision data type. Usually used for the calculation of low magnitude vectors, directions, object-space
             //        positions and high dynamic range colors.
-            //      - Fixed (only works with CG, not compatible with HLSL): 11 bit low precision data type. Usually uaed for simple operations like
+            //      - Fixed (only works with CG, not compatible with HLSL): 11 bit low precision data type. Usually used for simple operations like
             //        basic color storage.
             // -> Why not use only float ? It's possible in practice but since its a high precision data type the GPU will take a longer time to
-            //    process the additionnal decimals. Using the correct data type allows to optimize the program and reduce the graohic load.
+            //    process the additionnal decimals. Using the correct data type allows to optimize the program and reduce the graphic load.
 
             // Scalar values: return a real number either an integer or decimal.
 
@@ -91,6 +91,7 @@ Shader "LearnShader/BIRP_Unlit/CG_HLSL/DataTypes"
             sampler2D sampler2DExample;
             
             // See Texture2D, SamplerState and sampler2D example below...
+
             struct appdata
             {
                 float4 vertex : POSITION;

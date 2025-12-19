@@ -41,7 +41,8 @@ Shader "LearnShader/BIRP_Unlit/CG_HLSL/VertexShaderStage"
 
             // -> The vertex shader stage is a programmable render pipleline stage where the objects vertices are transformed from a 3D space to
             //    a 2D projection on the screen. Its smallest unit of calculation is an independent vertex.
-            // -> vert() correspond to the Vertex Shader Stage because of the directive "#pragma vertex vert"\
+            // -> `vert()` correspond to the Vertex Shader Stage because of the directive `#pragma vertex vert`, without this pragma directive the
+            //    GPU no longer knows that `vert()` is the Vertex Shader Stage.
 
             // v2f vert (appdata v)
             // -> When we look at vert() function signature we can see 2 things:

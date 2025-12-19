@@ -50,6 +50,8 @@ Shader "LearnShader/BIRP_Unlit/CG_HLSL/FragmentShaderStage"
 
             // -> Fragment refers to a pixel on the screen, an individual fragment or a group that covers an object area. The Fragment shader stage 
             //     process every pixels on the computer screen that belong to an object that use the shader.
+            // -> `frag()` correspond to the Fragment Shader Stage because of the directive `#pragma fragment frag`, without this pragma directive
+            //    the GPU no longer knows that `frag()` is the Fragment Shader Stage.
 
             // fixed4 frag (v2f i) : SV_Target
             // -> The frag() function return a four dimensional value (here a fixed4) that correspond to the color of a pixel we need to draw.

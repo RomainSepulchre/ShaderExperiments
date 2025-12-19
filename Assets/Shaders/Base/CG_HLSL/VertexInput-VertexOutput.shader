@@ -89,7 +89,7 @@ Shader "LearnShader/BIRP_Unlit/CG_HLSL/VertexInput-VertexOutput"
             {
                 float2 uv : TEXCOORD0;
                 UNITY_FOG_COORDS(1)
-                float4 vertex : SV_POSITION; // Prefic SV_ means System value
+                float4 vertex : SV_POSITION; // Prefix SV_ means System value
             };
 
             sampler2D _MainTex;
@@ -110,14 +110,14 @@ Shader "LearnShader/BIRP_Unlit/CG_HLSL/VertexInput-VertexOutput"
                 return o; 
             }
 
-            // Fragment shader stage
+            // Fragment shader stage (stage where the pixels are processed to draw the object)
             fixed4 frag (v2f i) : SV_Target // v2f struct is used as an argument
             {
-                // We use the data from v2f to define the color to draw ()
+                // We use the data from v2f to define the color to draw
                 fixed4 col = tex2D(_MainTex, i.uv);
                 UNITY_APPLY_FOG(i.fogCoord, col);
 
-                // We return a color used to drawn the pixel
+                // We return a color used to draw the pixel
                 return col;
             }
             ENDCG
