@@ -15,7 +15,7 @@
     - [Tags](Notes/2_Subshader/2_Tags.md)
         - *Queue Tag*
         - *Render Type tag*
-    - [Blending](Notes/2_Subshader/3_Blending.md)
+    - [Blend](Notes/2_Subshader/3_Blend.md)
     - [AlphaToMask](Notes/2_Subshader/4_AlphaToMask.md)
     - [ColorMask](Notes/2_Subshader/5_ColorMask.md)
     - [Culling and depth testing introduction](Notes/2_Subshader/6_CullingAndDepthTestingIntro.md)

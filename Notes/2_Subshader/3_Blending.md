@@ -1,7 +1,0 @@
-# Blending
-
-**Links:**
-
-- 
-
-## Blending
