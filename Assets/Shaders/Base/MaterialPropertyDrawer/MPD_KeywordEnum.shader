@@ -71,7 +71,7 @@ Shader "LearnShader/BIRP_Unlit/MaterialPropertyDrawer/MPD_KeywordEnum"
                 fixed4 col = tex2D(_MainTex, i.uv);
 
                 // KeywordEnum - Multiply texture by a color depending on enum state
-            #if _TEXCOLOR_OFF // = multiped by white
+            #if _TEXCOLOR_OFF // = multiplied by white
                 // No need to do anything
             #elif _TEXCOLOR_BLACK
                 col *= float4(0.1,0.1,0.1,1);

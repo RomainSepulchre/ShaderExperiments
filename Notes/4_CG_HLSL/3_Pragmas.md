@@ -67,7 +67,7 @@ Shader "..."
 
 `#pragma shader_feature` is a pragma directive thats allows us to generate different shader variant by declaring keyword that we use in the CG/HLSL code to branch between different version of the shader.
 
-The keyword we declare is usually linked to property and we modify the shader depending on the state of this property. A good example of this is the [toggle property](../1_Properties/3_MaterialPropertyDrawer/1_Toggle.md#use-toggle-value-to-enabledisable-shader-feature).
+The keyword we declare is usually linked to property and we modify the shader depending on the state of this property. A good example of this is the [toggle property](../1_Properties/3_MaterialPropertyDrawer/1_Toggle.md#use-toggle-value-to-enabledisable-shader-feature) or the [keywordEnum property](../1_Properties/3_MaterialPropertyDrawer/2_KeywordEnum.md#use-the-keyword-enum-states-in-the-shader)
 
 ```c#
 // Declaring a keyword with the pragma 
@@ -75,7 +75,7 @@ The keyword we declare is usually linked to property and we modify the shader de
 ```
 
 ```c#
-// Use the keyword to branch between behaviour
+// Use the shader_feature keyword to branch between behaviour
 #if MYKEYWORD
     ...
 #else
@@ -89,7 +89,32 @@ The keyword we declare is usually linked to property and we modify the shader de
 
 `#pragma shader_feature` comes with a limitation, it only compile one version of the shader when we build the project. This means we can't change the value of the property at execution time in a build. If we want to be able to do that we need to compile every shader variant, the pragma directive that allows to do this is `#pragma multi_compile`.
 
+`#pragma multi_compile` works like `#pragma shader_feature`, we declare keywords that we can use in the CG/HLSL code to branch between behaviour. The keyword we declare is usually linked to property and we modify the shader depending on the state of this property. A good example of this is the [toggle property](../1_Properties/3_MaterialPropertyDrawer/1_Toggle.md#pragma-multi_compile) or the [keywordEnum property](../1_Properties/3_MaterialPropertyDrawer/2_KeywordEnum.md#use-the-keyword-enum-states-in-the-shader)
+
 ```c#
-// #pragma multi_compile that use our toggle property
+// #pragma multi_compile with several states (ex: keywordEnum)
+#pragma multi_compile _MYKEYWORDENUM_STATE1 _MYKEYWORDENUM_STATE2 _MYKEYWORDENUM_STATE3 _MYKEYWORDENUM_STATE4
+
+// #pragma multi_compile for an on/off state (ex: toggle)
 #pragma multi_compile __ _MYTOGGLEPROPERTY_ON
+```
+
+```c#
+// Use multi_compile keywords to branch between different state 
+#if _MYKEYWORDENUM_STATE1
+    // Do this when state 1
+#elif _MYKEYWORDENUM_STATE2
+    // Do this when state 2
+#elif _MYKEYWORDENUM_STATE3
+    // Do this when state 3
+#elif _MYKEYWORDENUM_STATE4
+    // Do this when state 4
+#endif
+
+// Use a multi_compile keyword to branch on/off state
+#if _MYTOGGLEPROPERTY_ON
+    ...
+#else
+    ...
+#endif
 ```
