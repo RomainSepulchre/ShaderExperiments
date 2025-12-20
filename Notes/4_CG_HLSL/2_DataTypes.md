@@ -110,7 +110,7 @@ sampler2D sampler2DExample;
 Here a short code example that shows the use of sampler2D vs the use of Texture2D/SamplerState:
 
 ```c#
-Shader ""
+Shader "..."
 {
     Properties
     {

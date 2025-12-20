@@ -62,3 +62,34 @@ Shader "..."
     }
 }
 ```
+
+## Pragma shader_feature
+
+`#pragma shader_feature` is a pragma directive thats allows us to generate different shader variant by declaring keyword that we use in the CG/HLSL code to branch between different version of the shader.
+
+The keyword we declare is usually linked to property and we modify the shader depending on the state of this property. A good example of this is the [toggle property](../1_Properties/3_MaterialPropertyDrawer/1_Toggle.md#use-toggle-value-to-enabledisable-shader-feature).
+
+```c#
+// Declaring a keyword with the pragma 
+#pragma shader_feature MYKEYWORD
+```
+
+```c#
+// Use the keyword to branch between behaviour
+#if MYKEYWORD
+    ...
+#else
+    ...
+#endif
+```
+
+>⚠️`#pragma shader_feature` cannot compile multiple variants of a shader for an application this means it's not possible to change the value of the toogle in a build at execution time. To do that we need to use `#pragma multi_compile`.
+
+## Pragma multi_compile
+
+`#pragma shader_feature` comes with a limitation, it only compile one version of the shader when we build the project. This means we can't change the value of the property at execution time in a build. If we want to be able to do that we need to compile every shader variant, the pragma directive that allows to do this is `#pragma multi_compile`.
+
+```c#
+// #pragma multi_compile that use our toggle property
+#pragma multi_compile __ _MYTOGGLEPROPERTY_ON
+```

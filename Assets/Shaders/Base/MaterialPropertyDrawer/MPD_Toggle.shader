@@ -94,7 +94,7 @@ Shader "LearnShader/BIRP_Unlit/MaterialPropertyDrawer/MPD_Toggle"
                 fixed4 tex = tex2D(_MainTex, i.uv);
 
                 // Toggle Off - Multiply texture by color when toggle is off
-            # if _TOGGLEOFFEXAMPLE_OFF
+            #if _TOGGLEOFFEXAMPLE_OFF
                 tex *= _Color;
             #endif
 
