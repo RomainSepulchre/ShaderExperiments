@@ -65,7 +65,7 @@ Shader "LearnShader/BIRP_Unlit/SubShader/Stencil"
             //  - DecrSat (4): Decrement the value in the buffer, if the value is already at 0 it stays at 0
             //  - Invert (5): Negate all the bits of the current value in the buffer
             //  - IncrWrap (6): Increment the value in the buffer, if the value is already at 255 it wraps to 0
-            //  - DecrWrap (7): DecrSat (4): Decrement the value in the buffer, if the value is already at 0 it wraps to 255
+            //  - DecrWrap (7): Decrement the value in the buffer, if the value is already at 0 it wraps to 255
             //  Note: Correspond to an int value in Rendering.StencilOp enum value 
             Pass Replace
             
