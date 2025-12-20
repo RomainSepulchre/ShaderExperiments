@@ -32,7 +32,7 @@ Shader
 
         Pass
         {
-            Blend SrcAlpha OneMinusSrcAlpha
+            Blend SrcAlpha OneMinusSrcAlpha // can be defined in a pass have a specific setting in it
             ...
         }
     }

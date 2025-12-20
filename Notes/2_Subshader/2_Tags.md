@@ -26,7 +26,7 @@ Shader
 
         Pass
         {
-            Tags { "TagName"="TagValue" }
+            Tags { "TagName"="TagValue" } // can be defined in a pass have a specific setting in it
             ...
         }
     }
