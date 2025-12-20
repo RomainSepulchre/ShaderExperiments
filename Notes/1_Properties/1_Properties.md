@@ -19,6 +19,7 @@ Shader "..."
     {
         ...
     }
+}
 ```
 
 The syntax to declare a property is :
