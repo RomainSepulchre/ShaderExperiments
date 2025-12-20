@@ -3,6 +3,7 @@
 **Links:**
 
 - https://docs.unity3d.com/6000.1/Documentation/Manual/SL-VertexProgramInputs.html
+- https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-semantics
 
 ## Struct
 
