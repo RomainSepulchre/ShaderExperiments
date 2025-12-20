@@ -23,7 +23,7 @@ Shader "LearnShader/BIRP_Unlit/SubShader/Blend"
         //    where the color of the pixel is merged with the frame buffer. Merging is also where the Stencil-Buffer, Z-Buffer and Color blending
         //    are executed.
         // -> Blend is an optionnal command that is mainly used to work with transparent objects. The effect of the parameter is similar to the
-        //    bleding modes in Photoshop.
+        //    blending modes in Photoshop.
         // -> Like the tags, Blend can be declared in the Subshader or in the Pass.
 
         // -> The syntax to declare a Blend is : Blend sourceFactor DestinationFactor
@@ -65,8 +65,6 @@ Shader "LearnShader/BIRP_Unlit/SubShader/Blend"
 
         // Note: Alpha channel blending is done the same way as the RGB blending but in an independant process since it's not frequently used. This
         // also allows to optimize the writing in the Render Target.
-        // Note: Blend can 
-
 
         LOD 100
 
