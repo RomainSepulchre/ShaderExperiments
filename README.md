@@ -21,7 +21,7 @@
     - [Culling and depth testing introduction](Notes/2_Subshader/6_CullingAndDepthTestingIntro.md)
     - [Cull](Notes/2_Subshader/7_Cull.md)
     - [Stencil](Notes/2_Subshader/10_Stencil.md)
-    - [Pass Block](Notes/2_Subshader/11_PassBlock.md)
+    - [Pass Block](Notes/2_Subshader/11_Pass.md)
 
 - [Fallback](Notes/3_Fallback.md)
 
