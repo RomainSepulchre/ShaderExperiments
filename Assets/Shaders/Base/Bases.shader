@@ -40,13 +40,13 @@ Shader "LearnShader/BIRP_Unlit/Bases" // Inspector path: path of the shader in U
 
             #include "UnityCG.cginc"
 
-            struct appdata // ??? need more finfo
+            struct appdata
             {
                 float4 vertex : POSITION;
                 float2 uv : TEXCOORD0;
             };
 
-            struct v2f // ??? Vertex To Fragment -> Need more info
+            struct v2f
             {
                 float2 uv : TEXCOORD0;
                 UNITY_FOG_COORDS(1)
