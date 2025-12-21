@@ -3,7 +3,7 @@
 - **Properties**
     - [Properties](Notes/1_Properties/1_Properties.md)
     - [Connection variables](Notes/1_Properties/2_ConnectionVariables.md)
-    - **Material property drawer**
+    - Material property drawer
         - [Toggle](Notes/1_Properties/3_MaterialPropertyDrawer/1_Toggle.md)
         - [KeywordEnum](Notes/1_Properties/3_MaterialPropertyDrawer/2_KeywordEnum.md)
         - [Enum](Notes/1_Properties/3_MaterialPropertyDrawer/3_Enum.md)
@@ -33,3 +33,4 @@
     - [Vertex Input and Vertex Output (appdata and v2f struct)](Notes/4_CG_HLSL/5_VertextInput_VertexOutput.md)
     - [Vertex Shader Stage](Notes/4_CG_HLSL/6_VertexShaderStage.md)
     - [Fragment Shader Stage](Notes/4_CG_HLSL/7_FragmentShaderStage.md)
+    - [Functions](Notes/4_CG_HLSL/8_Functions.md)
