@@ -1,4 +1,4 @@
-// BIRP Unlit Shader converted to HLSL URP with annotation
+// Annoted BIRP Unlit Shader converted to HLSL to make it compatible with URP with
 
 // Convert shader to URP
 // 1. Add the RenderPipeline Tag ("RenderPipeline"="UniversalRenderPipeline")
@@ -9,7 +9,7 @@
 
 // See https://docs.unity3d.com/Packages/com.unity.render-pipelines.universal@14.0/manual/urp-shaders/birp-urp-custom-shader-upgrade-guide.html
 
-Shader "LearnShader/BIRP_Unlit/CG_HLSL/URP_Compatibility"
+Shader "LearnShader/BIRP_Unlit/CG_HLSL/CG_To_HLSL"
 {
     Properties
     {
