@@ -38,3 +38,5 @@
 
 - **Intrisic functions**
     - [Abs](Assets/Shaders/Base/CG_HLSL/Intrinsic%20functions/Abs.shader)
+    - [Ceil](Assets/Shaders/Base/CG_HLSL/Intrinsic%20functions/Ceil.shader)
+    - [Clamp](Assets/Shaders/Base/CG_HLSL/Intrinsic%20functions/Clamp.shader)
