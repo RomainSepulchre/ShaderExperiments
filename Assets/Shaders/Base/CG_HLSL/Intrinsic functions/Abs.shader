@@ -14,7 +14,7 @@
 //      - Abs(7) = 7
 // -> Abs() is useful to recreate many effects such as kaleidoscope or generating a triplanar projection.
 //      - Kaleidoscope: Get the absolute value of the uv coordinates and offset the texture to place center the kaleidoscope effect.
-//      - Triplanar projection: Determine absolute value of the mesh normal to generate projections on both and negative axis
+//      - Triplanar projection: Determine absolute value of the mesh normal to generate projections on both and negative axis (https://catlikecoding.com/unity/tutorials/advanced-rendering/triplanar-mapping/)
 
 // -> In this shader we use Abs() to create a kaleidoscope effect  
 
