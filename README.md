@@ -35,3 +35,6 @@
     - [Fragment Shader Stage](Notes/4_CG_HLSL/7_FragmentShaderStage.md)
     - [Functions](Notes/4_CG_HLSL/8_Functions.md)
     - [CG to HLSL](Notes/4_CG_HLSL/9_CgToHlsl.md)
+
+- **Intrisic functions**
+    - [Abs](Assets/Shaders/Base/CG_HLSL/Intrinsic%20functions/Abs.shader)
