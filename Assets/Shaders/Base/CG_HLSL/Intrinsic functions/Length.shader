@@ -64,10 +64,24 @@ Shader "LearnShader/BIRP_Unlit/CG_HLSL/Intrinsic Functions/Length"
             // Calculate magnitude of a vector and substract the radius
             float Circle(float2 p)
             {
-                float c = length(p - float2(_CenterU, _CenterV)) - _Radius;
+                float2 center = float2(_CenterU, _CenterV);
+                float c = length(p - center) - _Radius;
                 float minSmooth = c - _Smooth;
                 float maxSmooth = c + _Smooth;
                 return smoothstep(minSmooth, maxSmooth, _Radius);
+            }
+            
+            float CircleNotCentered(float2 p)
+            {
+                float c = length(p) - _Radius;
+                return c;
+            }
+            
+            float CircleCentered(float2 p)
+            {
+                float2 center = float2(_CenterU, _CenterV);
+                float c = length(p - center) - _Radius;
+                return c;
             }
 
             v2f vert (appdata v)

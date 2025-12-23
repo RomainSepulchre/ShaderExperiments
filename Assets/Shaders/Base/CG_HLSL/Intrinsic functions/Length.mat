@@ -66,8 +66,8 @@ Material:
     m_Floats:
     - _BumpScale: 1
     - _Center: 0.5
-    - _CenterU: 0.622
-    - _CenterV: 0.531
+    - _CenterU: 0.351
+    - _CenterV: 0.346
     - _Cutoff: 0.5
     - _Debug: -1.31
     - _DetailNormalMapScale: 1
@@ -85,10 +85,10 @@ Material:
     - _OffsetU: 0.5
     - _OffsetV: 0.5
     - _Parallax: 0.02
-    - _Radius: 0.141
+    - _Radius: 0.133
     - _RotationAxis: 1
     - _Sections: 14.9
-    - _Smooth: 0.057
+    - _Smooth: 0.038
     - _SmoothnessTextureChannel: 0
     - _Space: 0.37
     - _SpecularHighlights: 1
