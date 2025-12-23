@@ -1,4 +1,4 @@
-// Shader that use Abs() intrinsic function how it works
+// Shader that use Abs() intrinsic function to show how it works
 
 // Intrinsic functions are CG/HLSL functions that does mathematical operations and help you to produce some effects. Like the word
 // intrinsic suggest they are available without any include both in CG and HLSL 
