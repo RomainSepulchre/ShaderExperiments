@@ -1,4 +1,4 @@
-// Shader that use Sin() and Cos intrinsic function how it works
+// Shader that use Sin() and Cos intrinsic function to show how it works
 
 // Intrinsic functions are CG/HLSL functions that does mathematical operations and help you to produce some effects. Like the word
 // intrinsic suggest they are available without any include both in CG and HLSL 
@@ -13,7 +13,7 @@
 //      - Cosine() = cosine (ratio between adjacent keg and hypotenuse)
 //      - See https://en.wikipedia.org/wiki/Sine_and_cosine#/media/File:Sine_cosine_one_period.svg
 
-// -> Sin() and Cos() are very useful functions in computer graphics, you use them to generate geometric figures and matrix
+// -> Sin() and Cos() are very useful functions in computer graphics, you can use them to generate geometric figures and matrix
 //    transformations.
 
 // -> In this shader we use Sin() and Cos() to rotate the vertices of an object
