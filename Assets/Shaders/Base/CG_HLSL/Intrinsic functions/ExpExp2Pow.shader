@@ -21,7 +21,7 @@
 //      - To rotate a vertex in 2D we sin() y axis to have a wave motion from top to bottom and we cos() x axis to have a
 //        wave motion from left to right. The combination of both reproduce a circular motion.
 
-Shader "LearnShader/BIRP_Unlit/CG_HLSL/Intrinsic Functions/ExpExp2Pow"
+Shader "LearnShader/BIRP_Unlit/CG_HLSL/Intrinsic Functions/Exp Exp2 Pow"
 {
     Properties
     {

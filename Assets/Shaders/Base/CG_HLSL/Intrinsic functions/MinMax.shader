@@ -1,4 +1,4 @@
-// Shader that use Step() and SmoothStep() intrinsic function to show how they works
+// Shader that use Min and Max intrinsic function to show how they works
 
 // Intrinsic functions are CG/HLSL functions that does mathematical operations and help you to produce some effects. Like the word
 // intrinsic suggest they are available without any include both in CG and HLSL 
@@ -6,26 +6,21 @@
 // See https://developer.download.nvidia.com/CgTutorial/cg_tutorial_appendix_e.html
 // See https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-intrinsic-functions
 
-// Step and SmoothStep
+// Min and Max
 
-// -> Step() and SmoothStep() are similar functions that use an argument called edge to define the value that must be returned.
-//      - Step(e, x): return one when x is greater or equal to e. otherwise return 0.
-//      - SmoothStep(min, max, x): works like step but the value returned are interpolated linearly
+// -> Min() and Max() simply compare 2 values to return the smallest or the biggest of the 2 values
+//      - min(2, 6.1) = 2
+//      - max(3.1, 8.2) = 8.2 
 
-// -> Step() and Smoothstep can be used to create to create mask.
+// -> Min() and Max() can be used to calculate the diffusion of an object by returning the maximum between 0 and the dot product
+//    of the normal and the light direction.
 
-// -> In this shader we use 
 
-Shader "LearnShader/BIRP_Unlit/CG_HLSL/Intrinsic Functions/Step Smoothstep"
+Shader "LearnShader/BIRP_Unlit/CG_HLSL/Intrinsic Functions/Min Max"
 {
     Properties
     {
         _MainTex ("Texture", 2D) = "white" {}
-        
-        // Step and Smoothstep properties
-        [KeywordEnum(Step, SmoothStep)] _StepType ("Step Type", float) = 0
-        _Edge ("Edge", Range(0,1)) = 0.5
-        _Smooth ("Smooth", Range(0,1)) = 0.1
     }
     SubShader
     {
@@ -37,10 +32,8 @@ Shader "LearnShader/BIRP_Unlit/CG_HLSL/Intrinsic Functions/Step Smoothstep"
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
+            // make fog work
             #pragma multi_compile_fog
-            
-            // Keyword for step type selection
-            #pragma multi_compile _STEPTYPE_STEP _STEPTYPE_SMOOTHSTEP
 
             #include "UnityCG.cginc"
 
@@ -59,9 +52,6 @@ Shader "LearnShader/BIRP_Unlit/CG_HLSL/Intrinsic Functions/Step Smoothstep"
 
             sampler2D _MainTex;
             float4 _MainTex_ST;
-            
-            float _Edge;
-            float _Smooth;
 
             v2f vert (appdata v)
             {
@@ -74,18 +64,9 @@ Shader "LearnShader/BIRP_Unlit/CG_HLSL/Intrinsic Functions/Step Smoothstep"
 
             fixed4 frag (v2f i) : SV_Target
             {
+                // sample the texture
                 fixed4 col = tex2D(_MainTex, i.uv);
-                
-            #if _STEPTYPE_STEP
-                fixed3 vStep = step(_Edge, i.uv.y);
-            #elif _STEPTYPE_SMOOTHSTEP
-                float smoothMin = i.uv.y - _Smooth; // Define the start position of the smooth 
-                float smoothMax = i.uv.y + _Smooth; // Define the stop position of the smooth 
-                fixed3 vStep = smoothstep(smoothMin, smoothMax, _Edge);
-            #endif
-                
-                col.rgb *= vStep;
-                
+                // apply fog
                 UNITY_APPLY_FOG(i.fogCoord, col);
                 return col;
             }
