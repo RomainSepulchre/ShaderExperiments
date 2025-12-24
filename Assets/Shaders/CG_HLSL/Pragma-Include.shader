@@ -58,7 +58,7 @@ Shader "LearnShader/BIRP_Unlit/CG_HLSL/Pragma-Include"
 
             // Note: It's possible to create our own .cginc file to declare custom variables and functions. We just need to create a new file, declare
             // our variables/functions, save the file with the extension ".cginc" and use #include to include the file in the code.
-            #include "Assets/Shaders/Base/CG_HLSL/CustomCG.cginc"           
+            #include "Assets/Shaders/CG_HLSL/CustomCG.cginc"           
 
             struct appdata
             {
