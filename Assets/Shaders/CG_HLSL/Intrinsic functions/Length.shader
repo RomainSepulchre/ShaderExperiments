@@ -14,7 +14,7 @@
 
 // -> In this shader we use Length() to create a circle shape
 
-Shader "LearnShader/BIRP_Unlit/CG_HLSL/Intrinsic Functions/Length"
+Shader "LearnShader/CG_HLSL/Intrinsic Functions/Length (BIRP_Unlit)"
 {
     Properties
     {

@@ -9,7 +9,7 @@
 
 // See https://docs.unity3d.com/Packages/com.unity.render-pipelines.universal@14.0/manual/urp-shaders/birp-urp-custom-shader-upgrade-guide.html
 
-Shader "LearnShader/BIRP_Unlit/CG_HLSL/CG_To_HLSL"
+Shader "LearnShader/CG_HLSL/CG to HLSL (BIRP_Unlit)"
 {
     Properties
     {

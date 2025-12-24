@@ -7,7 +7,7 @@
 // See https://docs.unity3d.com/6000.2/Documentation/ScriptReference/MaterialPropertyDrawer.html
 // See https://docs.unity3d.com/6000.2/Documentation/Manual/SL-PragmaDirectives.html
 
-Shader "LearnShader/BIRP_Unlit/MaterialPropertyDrawer/MPD_HeaderAndSpace"
+Shader "LearnShader/Material Property Drawer/Header And Space (BIRP_Unlit)"
 {
     Properties
     {

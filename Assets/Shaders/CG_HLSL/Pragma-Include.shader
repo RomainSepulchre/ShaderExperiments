@@ -4,7 +4,7 @@
 // See https://docs.unity3d.com/6000.2/Documentation/Manual/shader-include-directives.html
 // See https://docs.unity3d.com/6000.3/Documentation/Manual/writing-shader-programs-pragma-directives.html
 
-Shader "LearnShader/BIRP_Unlit/CG_HLSL/Pragma-Include"
+Shader "LearnShader/CG_HLSL/Pragma and Include (BIRP_Unlit)"
 {
     Properties
     {

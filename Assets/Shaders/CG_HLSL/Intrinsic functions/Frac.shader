@@ -16,7 +16,7 @@
 
 // -> In this shader we use Frac() to create a circle shape
 
-Shader "LearnShader/BIRP_Unlit/CG_HLSL/Intrinsic Functions/Frac"
+Shader "LearnShader/CG_HLSL/Intrinsic Functions/Frac (BIRP_Unlit)"
 {
     Properties
     {

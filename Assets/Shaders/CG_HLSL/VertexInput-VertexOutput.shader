@@ -2,7 +2,7 @@
 
 // See https://docs.unity3d.com/6000.1/Documentation/Manual/SL-VertexProgramInputs.html
 
-Shader "LearnShader/BIRP_Unlit/CG_HLSL/VertexInput-VertexOutput"
+Shader "LearnShader/CG_HLSL/Vertex Input and Vertex Output (BIRP_Unlit)"
 {
     Properties
     {

@@ -3,7 +3,7 @@
 // See https://docs.unity3d.com/6000.2/Documentation/Manual/SL-SubShaderTags.html
 // See https://docs.unity3d.com/6000.2/Documentation/Manual/SL-ShaderReplacement.html
 
-Shader "LearnShader/BIRP_Unlit/SubShader/Tags"
+Shader "LearnShader/SubShader/Tags (BIRP_Unlit)"
 {
     Properties
     {

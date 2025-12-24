@@ -2,7 +2,7 @@
 // See https://docs.unity3d.com/6000.2/Documentation/Manual/SL-SubShader-object.html
 // See https://docs.unity3d.com/6000.3/Documentation/Manual/SL-Stencil.html
 
-Shader "LearnShader/BIRP_Unlit/SubShader/Stencil"
+Shader "LearnShader/SubShader/Stencil (BIRP_Unlit)"
 {
     Properties
     {

@@ -3,7 +3,7 @@
 // ! Current up-to-date documentation is on HLSL language but most of the concept remains the same: 
 // See https://docs.unity3d.com/6000.3/Documentation/Manual/writing-shader-writing-shader-programs-hlsl.html
 
-Shader "LearnShader/BIRP_Unlit/CG_HLSL/CgProgram"
+Shader "LearnShader/CG_HLSL/CgProgram (BIRP_Unlit)"
 {
     Properties
     {

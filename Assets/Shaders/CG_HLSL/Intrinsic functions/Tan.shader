@@ -17,7 +17,7 @@
 // -> In this shader we use Tan() to generate a procedural grid-like mask that we use to simulate an holographic projection effect
 //      - To do that we calculate the absolute value of the tangent at one of uv coordinates within the fragment shader
 
-Shader "LearnShader/BIRP_Unlit/CG_HLSL/Intrinsic Functions/Tan"
+Shader "LearnShader/CG_HLSL/Intrinsic Functions/Tan (BIRP_Unlit)"
 {
     Properties
     {

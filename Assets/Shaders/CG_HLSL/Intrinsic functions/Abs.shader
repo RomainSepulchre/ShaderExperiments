@@ -18,7 +18,7 @@
 
 // -> In this shader we use Abs() to create a kaleidoscope effect  
 
-Shader "LearnShader/BIRP_Unlit/CG_HLSL/Intrinsic Functions/Abs"
+Shader "LearnShader/CG_HLSL/Intrinsic Functions/Abs (BIRP_Unlit)"
 {
     Properties
     {

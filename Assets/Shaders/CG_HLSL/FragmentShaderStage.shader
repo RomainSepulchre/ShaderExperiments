@@ -1,6 +1,6 @@
 // Shader with annotation on CG/HLSL Fragment shader stage
 
-Shader "LearnShader/BIRP_Unlit/CG_HLSL/FragmentShaderStage"
+Shader "LearnShader/CG_HLSL/Fragment Shader Stage (BIRP_Unlit)"
 {
     Properties
     {

@@ -1,4 +1,4 @@
-Shader "LearnShader/Examples/Tags/RenderType/ReplacementShader"
+Shader "LearnShader/Examples/Tags/Render Type/Replacement Shader"
 {
     Properties
     {

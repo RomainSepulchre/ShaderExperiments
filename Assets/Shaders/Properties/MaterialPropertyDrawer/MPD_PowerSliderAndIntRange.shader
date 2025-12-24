@@ -6,7 +6,7 @@
 // Ex: Toggle, Enum, KeywordEnum, PowerSlider, IntRange, Space, Header
 // See https://docs.unity3d.com/6000.2/Documentation/ScriptReference/MaterialPropertyDrawer.html
 
-Shader "LearnShader/BIRP_Unlit/MaterialPropertyDrawer/MPD_PowerSliderAndIntRange"
+Shader "LearnShader/Material Property Drawer/PowerSlider and IntRange (BIRP_Unlit)"
 {
     Properties
     {

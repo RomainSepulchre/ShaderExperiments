@@ -1,7 +1,7 @@
 // Shader with annotation on Fallback block
 // See https://docs.unity3d.com/6000.3/Documentation/Manual/SL-Fallback.html
 
-Shader "LearnShader/BIRP_Unlit/Fallback"
+Shader "LearnShader/Fallback (BIRP_Unlit)"
 {
     Properties
     {

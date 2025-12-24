@@ -1,7 +1,7 @@
 // Shader for the object that is masked, mask the object when it is outside of the mask
 // See https://docs.unity3d.com/6000.3/Documentation/Manual/SL-Stencil.html
 
-Shader "LearnShader/Examples/Stencil/StencilExample_Masked_Out"
+Shader "LearnShader/Examples/Stencil/Stencil_Masked_Out"
 {
     Properties
     {

@@ -1,6 +1,6 @@
 // Shader with annotation on CG/HLSL Vertex shader stage
 
-Shader "LearnShader/BIRP_Unlit/CG_HLSL/VertexShaderStage"
+Shader "LearnShader/CG_HLSL/Vertex Shader Stage (BIRP_Unlit)"
 {
     Properties
     {

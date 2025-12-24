@@ -16,7 +16,7 @@
 //    of the normal and the light direction.
 
 
-Shader "LearnShader/BIRP_Unlit/CG_HLSL/Intrinsic Functions/Min Max"
+Shader "LearnShader/CG_HLSL/Intrinsic Functions/Min Max (BIRP_Unlit)"
 {
     Properties
     {

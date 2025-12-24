@@ -36,7 +36,7 @@
 
 // -> In this shader we use _Time and _SinTime/_CosTime to animate the UV coordinate and create a texture scroll animation
 
-Shader "LearnShader/BIRP_Unlit/CG_HLSL/Intrinsic Functions/Time SinTime CosTime"
+Shader "LearnShader/CG_HLSL/Intrinsic Functions/Time SinTime CosTime (BIRP_Unlit)"
 {
     Properties
     {

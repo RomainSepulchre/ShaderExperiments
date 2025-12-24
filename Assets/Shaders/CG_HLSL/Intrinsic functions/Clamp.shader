@@ -17,7 +17,7 @@
 
 // -> In this shader we use Clamp() to limit the gamma color of the texture to a min and max 
 
-Shader "LearnShader/BIRP_Unlit/CG_HLSL/Intrinsic Functions/Clamp"
+Shader "LearnShader/CG_HLSL/Intrinsic Functions/Clamp (BIRP_Unlit)"
 {
     Properties
     {

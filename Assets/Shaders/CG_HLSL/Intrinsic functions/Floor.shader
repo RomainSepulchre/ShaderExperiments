@@ -17,7 +17,7 @@
 
 // -> In this shader we use Floor() to create the base of a toon shader effect
 
-Shader "LearnShader/BIRP_Unlit/CG_HLSL/Intrinsic Functions/Floor"
+Shader "LearnShader/CG_HLSL/Intrinsic Functions/Floor (BIRP_Unlit)"
 {
     Properties
     {

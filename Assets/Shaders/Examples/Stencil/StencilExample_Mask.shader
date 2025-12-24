@@ -1,7 +1,7 @@
 // Shader for the object that act as a mask
 // See https://docs.unity3d.com/6000.3/Documentation/Manual/SL-Stencil.html
 
-Shader "LearnShader/Examples/Stencil/StencilExample_Mask"
+Shader "LearnShader/Examples/Stencil/Stencil_Mask"
 {
     Properties
     {

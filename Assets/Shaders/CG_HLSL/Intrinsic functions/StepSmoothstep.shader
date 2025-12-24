@@ -16,7 +16,7 @@
 
 // -> In this shader we use 
 
-Shader "LearnShader/BIRP_Unlit/CG_HLSL/Intrinsic Functions/Step Smoothstep"
+Shader "LearnShader/CG_HLSL/Intrinsic Functions/Step Smoothstep (BIRP_Unlit)"
 {
     Properties
     {

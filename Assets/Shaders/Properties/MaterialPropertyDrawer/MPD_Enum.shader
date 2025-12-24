@@ -6,7 +6,7 @@
 // See https://docs.unity3d.com/6000.2/Documentation/ScriptReference/MaterialPropertyDrawer.html
 // See https://docs.unity3d.com/6000.2/Documentation/Manual/SL-Cull.html
 
-Shader "LearnShader/BIRP_Unlit/MaterialPropertyDrawer/MPD_Enum"
+Shader "LearnShader/Material Property Drawer/Enum (BIRP_Unlit)"
 {
     Properties
     {

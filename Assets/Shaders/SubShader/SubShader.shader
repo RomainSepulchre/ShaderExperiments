@@ -4,7 +4,7 @@
 // See https://docs.unity3d.com/6000.2/Documentation/Manual/SL-ShaderReplacement.html
 // See https://docs.unity3d.com/6000.3/Documentation/Manual/SL-Blend.html
 
-Shader "LearnShader/BIRP_Unlit/SubShader/SubShader"
+Shader "LearnShader/SubShader/SubShader (BIRP_Unlit)"
 {
     Properties
     {

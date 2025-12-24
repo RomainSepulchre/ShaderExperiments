@@ -2,7 +2,7 @@
 // See https://docs.unity3d.com/6000.2/Documentation/Manual/SL-SubShader-object.html
 // See https://docs.unity3d.com/6000.2/Documentation/Manual/SL-AlphaToMask.html
 
-Shader "LearnShader/BIRP_Unlit/SubShader/AlphaToMask"
+Shader "LearnShader/SubShader/AlphaToMask (BIRP_Unlit)"
 {
     Properties
     {

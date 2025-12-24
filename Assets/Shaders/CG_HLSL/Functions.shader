@@ -2,7 +2,7 @@
 
 // See https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-functions
 
-Shader "LearnShader/BIRP_Unlit/CG_HLSL/Functions"
+Shader "LearnShader/CG_HLSL/Functions (BIRP_Unlit)"
 {
     Properties
     {

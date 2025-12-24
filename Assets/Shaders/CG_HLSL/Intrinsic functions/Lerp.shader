@@ -15,7 +15,7 @@
 
 // -> In this shader we use Lerp() to crossfade between two textures
 
-Shader "LearnShader/BIRP_Unlit/CG_HLSL/Intrinsic Functions/Lerp"
+Shader "LearnShader/CG_HLSL/Intrinsic Functions/Lerp (BIRP_Unlit)"
 {
     Properties
     {

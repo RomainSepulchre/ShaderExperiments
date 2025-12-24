@@ -17,7 +17,7 @@
 
 // -> In this shader we use Ceil() to zoom in our texture
 
-Shader "LearnShader/BIRP_Unlit/CG_HLSL/Intrinsic Functions/Ceil"
+Shader "LearnShader/CG_HLSL/Intrinsic Functions/Ceil (BIRP_Unlit)"
 {
     Properties
     {

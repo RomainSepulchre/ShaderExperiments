@@ -15,7 +15,7 @@
 //          - A first pass for the background color of the diamond
 //          - A second pass for the brightness of the diamond surface 
 
-Shader "LearnShader/BIRP_Unlit/SubShader/ZWrite"
+Shader "LearnShader/SubShader/ZWrite (BIRP_Unlit)"
 {
     Properties
     {

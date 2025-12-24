@@ -2,7 +2,7 @@
 // See https://docs.unity3d.com/6000.2/Documentation/Manual/SL-SubShader-object.html
 // See https://docs.unity3d.com/6000.2/Documentation/Manual/SL-ColorMask.html
 
-Shader "LearnShader/BIRP_Unlit/SubShader/ColorMask"
+Shader "LearnShader/SubShader/ColorMask (BIRP_Unlit)"
 {
     Properties
     {

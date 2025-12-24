@@ -3,7 +3,7 @@
 // See https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-data-types
 // See https://developer.download.nvidia.com/cg/Cg_language.html
 
-Shader "LearnShader/BIRP_Unlit/CG_HLSL/DataTypes"
+Shader "LearnShader/CG_HLSL/Data Types (BIRP_Unlit)"
 {
     Properties
     {
