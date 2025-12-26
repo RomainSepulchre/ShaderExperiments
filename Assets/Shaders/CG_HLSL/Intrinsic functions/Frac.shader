@@ -12,7 +12,7 @@
 //      - frac(3.27) = 0.27
 //      - frac(1.467) = 0.467
 
-// -> Frac() is used to create noise, random repeating patterns ans much more.
+// -> Frac() is used to create noise, random repeating patterns and much more.
 
 // -> In this shader we use Frac() to create a circle shape
 

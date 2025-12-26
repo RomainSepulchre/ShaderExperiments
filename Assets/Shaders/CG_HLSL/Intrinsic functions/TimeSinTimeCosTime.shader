@@ -9,7 +9,7 @@
 
 // -> _Time, _SinTime and _CosTime give you access to your app time value. The time is measured in seconds and scaled by the "Time multiplier" 
 //    parameter of the project "Time Settings".
-// -> All the time built-in variables are four dimensions vector, ecah component of the vector returns a different time value:
+// -> All the time built-in variables are four dimensions vector, each component of the vector returns a different time value:
 //      - _Time: time since the level load (similar to Unity Time.timeSinceLevelLoad)
 //          - _Time.x = t/20
 //          - _Time.y = t

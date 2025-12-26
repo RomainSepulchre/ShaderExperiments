@@ -10,11 +10,11 @@
 
 // -> Step() and SmoothStep() are similar functions that use an argument called edge to define the value that must be returned.
 //      - Step(e, x): return one when x is greater or equal to e. otherwise return 0.
-//      - SmoothStep(min, max, x): works like step but the value returned are interpolated linearly
+//      - SmoothStep(min, max, x): works like step but the value returned is interpolated linearly
 
-// -> Step() and Smoothstep can be used to create to create mask.
+// -> Step() and Smoothstep() can be used to create mask.
 
-// -> In this shader we use 
+// -> In this shader we use step and smoothstep to create a mask.
 
 Shader "LearnShader/CG_HLSL/Intrinsic Functions/Step Smoothstep (BIRP_Unlit)"
 {

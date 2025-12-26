@@ -14,12 +14,7 @@
 //      - Pow(x, n): n power of x (x ^ n) 
 //      - See https://en.wikipedia.org/wiki/Exponential_function
 
-// -> Exp(), Exp2() and Pow() are generally used to calculate noise gamma increase in the output color and repetition patterns.
-
-// -> In this shader we use Sin() and Cos() to rotate the vertices of an object
-//      - vertex has 3d coordinates (X,Y,Z) that we can transform with a rotation matrix to simulate the illusion of a rotation
-//      - To rotate a vertex in 2D we sin() y axis to have a wave motion from top to bottom and we cos() x axis to have a
-//        wave motion from left to right. The combination of both reproduce a circular motion.
+// -> Exp(), Exp2() and Pow() are generally used to calculate noise, gamma increase in the output color and repetition patterns.
 
 Shader "LearnShader/CG_HLSL/Intrinsic Functions/Exp Exp2 Pow (BIRP_Unlit)"
 {
