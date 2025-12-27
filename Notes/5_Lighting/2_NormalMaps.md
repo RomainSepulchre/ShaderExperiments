@@ -158,56 +158,73 @@ v2f vert (appdata v)
 
 <!-- I NEED TO REARRANGE THIS: maybe a UnpackNormal section with this and DXT compression ? -->
 
-### Remap normal map RGBA value
+### Unpack normal map
 
-When using the normal map texture value in the fragment shader, the X,Y,Z,W coordinates of the normal map are embedded in RGBA channels that range from [0 to 1]. Since a normal use value from [-1 to 1] we need to remap the numerical range from [0 to 1] to [-1 to 1].
+Before using a normal map we need to unpack it with `UnpackNormal()` function that is part of UnityCG.cginc.
 
-> **normalMap.rgb** => **[0 to 1]**  
-> **normalMap.rgb \* 2** => **[0\*2 to 1\*2]** == **[0 to 2]**  
-> **(normalMap.rgb \* 2) - 1** => **[0-1 to 2-1]** == **[-1 to 1]**  
+This `UnpackNormal()` function has 2 purposes:
+
+- it remap the normal RGBA value so they can be used as XYZW coordinate.
+- it decode a DXT compression applied to the normal map to reduce its graphic load.
+
+```c#
+// Sample normal map texture
+fixed4 normalMap = tex2D(_NormalMap, i.uv_normal);
+
+// Compress and remap RGB value with UnpackNormal()
+fixed3 normalUnpacked = UnpackNormal(normalMap);
+```
+
+#### Remap normal map RGBA value as XYZW coordinate
+
+When we sample a normal map texture value in the fragment shader we get value from RGBA channels that range from [0 to 1]. However, we want to use these value as X,Y,Z,W coordinates for the normal and those need to range from [-1 to 1]. To solve this problem we need to remap the numerical range of the RGBA value from [0 to 1] to [-1 to 1].
+
+This can be done very easily by multiplying the RGBA values by 2 and then substract 1.
 
 ```c#
 normalMap.rgb = normalMap.rgb * 2 - 1; // Remap RGB value from [0 to 1] to [-1 to 1] to use them as normal XYZ value
 ```
 
-### DXT compression
+> Here is the detail of the remap calculation:  
+> **normalMap.rgb** => **[0 to 1]**  
+> **normalMap.rgb \* 2** => **[0\*2 to 1\*2]** == **[0 to 2]**  
+> **(normalMap.rgb \* 2) - 1** => **[0-1 to 2-1]** == **[-1 to 1]**
 
-A normal map texture is more heavy than a common texture and produce a significant graphic load on the GPU. To reduce its impact on performance, it is essential to compress the texture within the shader (especially on mobile device, where increased graphic lead can generate bettery overheating and affect user experience).
+By calling `UnpackNormal()` on our normal map the remap is automatically done at the same time the texture is compressed so we don't need to do it manually.
 
-<!-- I NEED TO CLARIFY THIS BETTER AND CLEAN THE NOTES -->
+### Decode DXT compression
 
-DXT compression is one of the most used compression for normal maps. It divide the texture into blocks of 4 by 4 which are minimized using only the A and G channels. This allows a normal map to reduce its resolution to 1/4 of its original resolution.
+A normal map texture is more heavy than a common texture and produce a significant graphic load on the GPU. To reduce its impact on performance, it is essential to compress the texture within the shader (especially on mobile device, where increased graphic lead can generate bettery overheating and affect user experience). When we set the type of a texture to **Normal map**, the texture is automatically compressed using a DXT compression (**DXT5nm** to precise).
 
- - Check if DTX compatible, if not fallback to uncompressed value (we also remap RGB value to [-1 to 1])
- - Compression:
-    - Replace R channel by Alpha channel and remap value to [-1 to 1]
-    - Keep G channel and remap value to [-1 to 1]
-    - Replace B channel by `sqrt( 1 - (pow(normalCol.r, 2) + pow(normalCol.g, 2)) );`(= we calulate a new coordinate using A and G coordinates) 
+**DXT5nm** is a compression optimized for normal maps. It rely on the fact a normal map pixel store the value of a normalized X,Y,Z vector. Since the vector magnitude is always 1, we can reconstruct Z channel from X and Y channel: `z = sqrt(1 - x^2 - y^2)`. This means we only need the informations from X and Y channel and can get rid of Z channel.
 
+When an image is compressed in **DXT5nm** the texture is divided into blocks of 4 by 4 pixels and we only keep the Alpha and Green channel that store X and Y value. This allows a normal map to reduce its resolution to 1/4 of its original resolution.
+
+However, this means that when we want to use our normal map in the shader we need to decode the compression. `UnpackNormal()` check if the texture is DTX compatible and if it is the case it decode the compression: X and Y values are correctly reassigned to R and G channels and they are used to recalculate Z value that was deleted in the compression. At the same time they are decoded, the X, Y and Z values are also remapped to [-1 to 1].
+
+Here is a code example of how DXT decompression works:
 ```c#
-float3 DXTCompression (float4 normalMap)
+float3 DXTDecompression (float4 normalMap)
 {
 #if defined (UNITY_NO_DXT5nm) 
 
     // No compression, DTX5nm not supported
-    // -> RGB value remap (normalMap.rgb * 2 - 1) is done here even if there is no compression 
+    // -> Not compressed, we return the normal RGB value after they have been remapped to [-1 to 1] (normalMap.rgb * 2 - 1)
     return normalMap.rgb * 2 - 1;
 
 #else 
 
     // DTX Compression
+    // -> We need to decode compression
     float3 normalCol;
-    // Replace R channel by A channel and keep G channel
-    normalCol = float3 (normalMap.a * 2 -1, normalMap.g * 2 - 1, 0); // RGB value remap is done on alpha and green channel before compression
-    normalCol.b = sqrt( 1 - (pow(normalCol.r, 2) + pow(normalCol.g, 2)) ); // Calculate a new normalized vector with A  and G coordinates
+    // Move X and Y values: R channel is replaced by A channel, G channel stay the same
+    normalCol = float3 (normalMap.a * 2 -1, normalMap.g * 2 - 1, 0); // RGB value remap is done on alpha and green channel during decompression
+    normalCol.b = sqrt( 1 - (pow(normalCol.r, 2) + pow(normalCol.g, 2)) ); // Recalculate Z value using the X and Y coordinates that have been moved in the R and G channels
     return normalCol;
 
 #endif
 }
 ```
-
-<!-- THIS SHOULD BE MAIN INFO and Remap/DXT should sub-information that details what UnpackNormals does -->
---> Equivalent of UnpackNormal() from UnityCG.cginc 
 
 ### Create TBN matrix and use it in the fragment shader
 
@@ -241,7 +258,7 @@ Now that we have defined our TBN matrix we can use it to convert the value of ou
 fixed4 normalMap = tex2D(_NormalMap, i.uv_normal);
 
 // Compress and remap RGB value with UnpackNormal()
-fixed3 normalCompressed = UnpackNormal(normalMap);
+fixed3 normalUnpacked = UnpackNormal(normalMap);
 
 // Declare TBN matrix
 float3x3 TBN = float3x3
@@ -252,6 +269,6 @@ float3x3 TBN = float3x3
 );
 
 // Convert normal map to tangent-space
-normalMap = fixed4 (normalize(mul(TBN, normalCompressed )), 1);
+normalMap = fixed4 (normalize(mul(TBN, normalUnpacked )), 1);
 ```
 

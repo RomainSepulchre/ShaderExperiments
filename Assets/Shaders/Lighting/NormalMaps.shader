@@ -30,7 +30,8 @@
 //        to NORMAL semantic and float4 to TANGENT semantic
 //      - Declare in the vertex output shader the value we want to pass from vert() to frag(): uv_normal, normal_world, tangent_world, binormal_world.
 //      - Process Tangent and Normal in vert() to calculate the binormal, get their world-space coordinates and pass the result to the fragment shader.
-//      - DXT compression  of normal map to optimize performance
+//      - Unpack normal: decode compressed texture and remap RGBA value
+//      - Build TBN matrix and multiply normal value by TBN matrix
 
 Shader "LearnShader/Lighting/Normal Maps (BIRP Unlit)"
 {
@@ -89,18 +90,20 @@ Shader "LearnShader/Lighting/Normal Maps (BIRP Unlit)"
             sampler2D _NormalMap;
             float4 _NormalMap_ST;
             
-            // DXT compression (this is the equivalent of UnpackNormal() from UnityCG.cginc)
-            float3 DXTCompression (float4 normalMap)
+            // DXT Decompression (this a custom equivalent of UnpackNormal() from UnityCG.cginc)
+            float3 DXTDecompression (float4 normalMap)
             {
             #if defined (UNITY_NO_DXT5nm)
                 // No compression, DTX5nm not supported
-                // -> RGB value remap (normalMap.rgb * 2 - 1) is done here even if there is no compression
+                // -> Not compressed, we return the normal RGB value after they have been remapped to [-1 to 1] (normalMap.rgb * 2 - 1)
                 return normalMap.rgb * 2 - 1;
             #else
-                // DTX Compression
+                // DTX Decompression
+                // -> We need to decode compression
                 float3 normalCol;
-                normalCol = float3 (normalMap.a * 2 - 1, normalMap.g * 2 - 1, 0); // RGB value remap is done on alpha and green channel before compression
-                normalCol.b = sqrt( 1 - (pow(normalCol.r, 2) + pow(normalCol.g, 2)) );
+                // Move X and Y values: R channel is replaced by A channel, G channel stay the same
+                normalCol = float3 (normalMap.a * 2 - 1, normalMap.g * 2 - 1, 0); // RGB value remap is done on alpha and green channel during decompression
+                normalCol.b = sqrt( 1 - (pow(normalCol.r, 2) + pow(normalCol.g, 2)) ); // Recalculate Z value using the X and Y coordinates that have been moved in the R and G channels
                 return normalCol;
             #endif
             }
@@ -131,15 +134,18 @@ Shader "LearnShader/Lighting/Normal Maps (BIRP Unlit)"
                 // sample normal map texture
                 fixed4 normalMap = tex2D(_NormalMap, i.uv_normal);
                 
-                //fixed3 normalCompressed = DXTCompression(normalMap);
-                fixed3 normalCompressed = UnpackNormal(normalMap); // DXTCompression we wrote is the equivalent of UnpackNormal() from unityCG.cginc 
+                // We unpack the normal to compress the texture and remap RGBA value
+                fixed3 normalUnpacked = UnpackNormal(normalMap); 
+                //fixed3 normalDecompressed = DXTDecompression(normalMap); // DXTCompression() is a custom equivalent of UnpackNormal() from unityCG.cginc
                 
-                // X,Y,Z,W coordinates of the normal map are embedded in RGBA channels that range from 0.0 to 1.0. Since a normal use value
-                // from -1 to 1f we need to remap the numerical range from [0 to 1] to [-1 to 1].
-                //  - normalMap.rgb * 2 => [0*2 to 1*2] => [0 to 2]
-                //  - normalMap.rgb - 1 => [0-1 to 2-1] => [-1 to 1]
-                // -> Included in DTX compression function we wrote, so no need to do it here when texture goes through DXTCompression()
-                // normalMap.rgb = normalMap.rgb * 2 - 1;
+                // Remap RGBA value
+                // -> X,Y,Z,W coordinates of the normal map are embedded in RGBA channels that range from 0.0 to 1.0. Since a normal use value
+                //    from -1 to 1f we need to remap the numerical range from [0 to 1] to [-1 to 1].
+                // -> Remap calculation: normalMap.rgb = normalMap.rgb * 2 - 1;
+                //      - normalMap.rgb * 2 => [0*2 to 1*2] => [0 to 2]
+                //      - normalMap.rgb - 1 => [0-1 to 2-1] => [-1 to 1]
+                // -> The remap is directly included in the DTX compression that UnpackNormal() does, so no need to reamp manually is the normal has been unpacked
+                
                 
                 // Create TBN matrix
                 float3x3 TBN = float3x3
@@ -153,7 +159,7 @@ Shader "LearnShader/Lighting/Normal Maps (BIRP Unlit)"
                 fixed4 tex = tex2D(_MainTex, i.uv);
                 
                 // Convert normal map to tangent-space
-                normalMap = fixed4 (normalize(mul(TBN, normalCompressed )), 1);
+                normalMap = fixed4 (normalize(mul(TBN, normalUnpacked )), 1);
                 
                 // Mix texture and normal map            
                 fixed4 col = tex * normalMap;
