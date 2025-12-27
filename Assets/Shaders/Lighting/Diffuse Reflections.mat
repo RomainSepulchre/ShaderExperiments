@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Normal Map
-  m_Shader: {fileID: 4800000, guid: 28a3222b383642447870fc0fc7d0ecd0, type: 3}
+  m_Name: Diffuse Reflections
+  m_Shader: {fileID: 4800000, guid: c103d020dd6ab914fa1556aca9ad8d6d, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -66,6 +66,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _Ambient: 1
     - _BumpScale: 1
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
@@ -73,6 +74,7 @@ Material:
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
+    - _LightInt: 1
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
