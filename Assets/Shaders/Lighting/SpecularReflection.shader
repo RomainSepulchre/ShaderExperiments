@@ -1,4 +1,4 @@
-// Shader that shows how diffuse reflections works
+// Shader that shows how specular reflections works
 
 // The specular reflections add a specular brightness to a surface according to the position of its normal.
 
@@ -90,7 +90,7 @@ Shader "LearnShader/Lighting/Specular Reflection"
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
                 UNITY_TRANSFER_FOG(o,o.vertex);
                 o.normal_world =  UnityObjectToWorldNormal(v.normal); // UnityObjectToWorldNormal() is a UnityCG.cginc function that does the normal object to world-space conversion
-                o.vertex_world = mul(unity_ObjectToWorld, v.vertex);
+                o.vertex_world = mul(unity_ObjectToWorld, v.vertex); // convert vertex position to world-space
                 return o;
             }
 
@@ -98,7 +98,7 @@ Shader "LearnShader/Lighting/Specular Reflection"
             {
                 fixed4 col = tex2D(_MainTex, i.uv);
                 
-                // Specular reflection parameter
+                // Specular reflection parameters
                 fixed3 colorRefl = _LightColor0;  // _LightColor0 = internal variable that refers to scene lighting color (need initialization in CG uniform variables)
                 fixed3 specCol = tex2D(_SpecularTex, i.uv) * colorRefl;
                 float3 normal = i.normal_world;
