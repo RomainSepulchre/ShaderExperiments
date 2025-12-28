@@ -8,6 +8,8 @@
 // D = Dr * Dl * max(0, dot(n, l))
 // Diffusion = Reflection color of light source * light intensity * max(0, dot(surface normal, light direction))
 
+// -> See https://en.wikipedia.org/wiki/Diffuse_reflection
+// -> https://www.geeksforgeeks.org/computer-graphics/diffuse-reflection-in-computer-graphics/
 
 Shader "LearnShader/Lighting/Diffuse Reflection"
 {
@@ -25,7 +27,7 @@ Shader "LearnShader/Lighting/Diffuse Reflection"
 
         Pass
         {
-            // Configure render path
+            // Since reflection is lighting pass we need to configure the render path
             Tags { "LightMode"="ForwardBase" }
             
             CGPROGRAM
