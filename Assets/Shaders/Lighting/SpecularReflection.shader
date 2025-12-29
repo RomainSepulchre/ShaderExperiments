@@ -18,7 +18,7 @@
 
 // -> UnityObjectToWorldNormal() is a UnityCG.cginc function that does the normal object to world-space conversion
 
-Shader "LearnShader/Lighting/Specular Reflection"
+Shader "LearnShader/Lighting/Specular Reflection (BIRP Unlit)"
 {
     Properties
     {

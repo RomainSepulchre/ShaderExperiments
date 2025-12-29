@@ -6,7 +6,7 @@
 // Of course this means that calculating those type of reflections in real-time use a lot of GPU power. To avoid that we can use a cubemap texture
 // to apply pre-calculated reflections. Inside Unity we can use a reflection probe to generate this reflection cubemap.
 
-Shader "LearnShader/Lighting/Environmental Reflection"
+Shader "LearnShader/Lighting/Environmental Reflection (BIRP Unlit)"
 {
     Properties
     {

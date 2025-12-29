@@ -11,7 +11,7 @@
 // -> See https://en.wikipedia.org/wiki/Diffuse_reflection
 // -> https://www.geeksforgeeks.org/computer-graphics/diffuse-reflection-in-computer-graphics/
 
-Shader "LearnShader/Lighting/Diffuse Reflection"
+Shader "LearnShader/Lighting/Diffuse Reflection (BIRP Unlit)"
 {
     Properties
     {

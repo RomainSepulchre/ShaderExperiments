@@ -9,7 +9,7 @@
 
 // -> To get the value of the ambient color we can use UNITY_LIGHTMODEL_AMBIENT built-in variable (HDR value -> float for precision type)
 
-Shader "LearnShader/Lighting/Ambient Color"
+Shader "LearnShader/Lighting/Ambient Color (BIRP Unlit)"
 {
     Properties
     {
