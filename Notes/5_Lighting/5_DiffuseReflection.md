@@ -123,7 +123,7 @@ struct appdata
 };
 ```
 
-We also need to declare another `float3` in the output (`v2f` struct) to pass the normal value to the fragment shader. Since we we will convert the normal to world-space inside `vert()` we call this `float3` *normal_world* and we bind it to the semantic `TEXCOORD1` since `NORMAL` is not available as an output semantic.
+We also need to declare another `float3` in the output (`v2f` struct) to pass the normal value to the fragment shader. Since we will convert the normal to world-space inside `vert()` we call this `float3` *normal_world* and we bind it to the semantic `TEXCOORD1` since `NORMAL` is not available as an output semantic.
 
 ```c#
 struct v2f

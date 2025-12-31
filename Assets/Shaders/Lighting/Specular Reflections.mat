@@ -65,7 +65,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _SpecularTex:
-        m_Texture: {fileID: 2800000, guid: d7a26962fc9d3fe4b8be591a928128e6, type: 3}
+        m_Texture: {fileID: 2800000, guid: e194dc1ddd45a124b93d4654c56f8634, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: []
@@ -86,7 +86,7 @@ Material:
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SpecularInt: 1
-    - _SpecularPow: 15
+    - _SpecularPow: 10
     - _SrcBlend: 1
     - _UVSec: 0
     - _UseWorldNormals: 1
