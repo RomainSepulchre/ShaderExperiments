@@ -146,18 +146,6 @@ v2f vert (appdata v)
 >   }
 > ```
 
-<br>
-<br>
-<br>
-
- 🚧 Still work in progress
-
-<br>
-<br>
-<br>
-
-<!-- I NEED TO REARRANGE THIS: maybe a UnpackNormal section with this and DXT compression ? -->
-
 ### Unpack normal map
 
 Before using a normal map we need to unpack it with `UnpackNormal()` function that is part of UnityCG.cginc.
