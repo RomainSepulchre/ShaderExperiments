@@ -40,7 +40,7 @@ Shader "LearnShader/Lighting/Standard Surface/Input Output"
 
         // -> Input is different from appdata. In appdata we can define our object semantics as an input while in Input we can determine
         //    our shader predefined functions for lighting calculation. This means in input we don't have to bind our variable to a semantic,
-        //    however we need to use specific variable name that refers to a spefic input structure.
+        //    however we need to use specific variable name that refers to a specific input data.
         // -> List of these references: https://docs.unity3d.com/6000.2/Documentation/Manual/surface-shaders-language-reference-input-structure.html
         struct Input
         {

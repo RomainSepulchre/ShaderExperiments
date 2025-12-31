@@ -57,3 +57,7 @@
     - [lighting model](Notes/5_Lighting/3_LightingModel.md)
     - [Ambient color](Notes/5_Lighting/4_AmbientColor.md)
     - [Diffuse reflections](Notes/5_Lighting/5_DiffuseReflection.md)
+    - [Specular reflection](Notes/5_Lighting/6_SpecularReflection.md)
+    - [Environmental reflection](Notes/5_Lighting/7_EnvironmentalReflection.md)
+    - [Fresnel effect](Notes/5_Lighting/8_FresnelEffect.md)
+    - [Standard Surface shader](Notes/5_Lighting/9_StandardSurface.md)
