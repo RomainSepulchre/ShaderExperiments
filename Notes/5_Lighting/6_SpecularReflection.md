@@ -4,7 +4,7 @@
 
 - https://en.wikipedia.org/wiki/Specular_reflection
 
-## ## What is a Specular reflection ?
+## What is a Specular reflection ?
 
 The specular reflection define the way light is reflected in a specific direction, contrary to diffuse reflection which disperse light, the specular reflection create sharp reflection that depends on the angle of view.
 
@@ -47,7 +47,13 @@ float3 SpecularShading(float3 colorRefl, float specularInt, float3 normal, float
 }
 ```
 
-So, if we want to add diffuse reflection to our shader we need to get 6 informations: the *reflection color of the light*, the *specular intensity*, the *normal of the surface*, the *direction of the light*, the *direction of the view* and the *specularity exponent*.
+So, if we want to add diffuse reflection to our shader we need to get 6 informations:
+- the *reflection color of the light*
+- the *specular intensity*
+- the *normal of the surface*
+- the *direction of the light*
+- the *direction of the view*
+- the *specularity exponent*
 
 We also need to add a *specular texture map* to define where on the object the specular reflection should happen.
 
@@ -72,7 +78,7 @@ Properties
 }
 ```
 
-We also need to declare a connection variable inside CGPROGRAM to be able to use the property later in the code.
+We also need to declare a connection variable inside CGPROGRAM to be able to use the properties later in the code.
 
 ```c#
 CGPROGRAM
@@ -185,6 +191,12 @@ float3 viewDir = normalize(_WorldSpaceCameraPos - i.vertex_world); // Calculate 
 ```
 
 >⚠️ `_WorldSpaceCameraPos` is initialized inside UnityCG.cginc so we don't need to declate it as a uniform variable to use it.
+
+UnityCG.cginc also provide `UnityWorldSpaceViewDir()`, you pass the vertex position (in world-space) as argument and it return the view direction,
+
+```c#
+ half3 viewDir = normalize(UnityWorldSpaceViewDir(i.vertex_world)); // UnityWorldSpaceViewDir() is a UnityCG.cginc function that calculate view direction from vertex world position
+```
 
 ### Light direction (world-space)
 

@@ -38,7 +38,11 @@ float3 DiffuseShading(float3 ColorRefl, float lightInt, float3 normal, float3 li
 }
 ```
 
-So, if we want to add diffuse reflection to our shader we need to get 4 informations: the *reflection color of the light*, the *light intensity*, the *normal of the surface* and the *direction of the light*.
+So, if we want to add diffuse reflection to our shader we need to get 4 informations:
+- the *reflection color of the light*
+- the *light intensity*
+- the *normal of the surface*
+- the *direction of the light*
 
 > ⚠️ The *normal* and the *light direction* must in world-space so we will need to make sure they are converted them from object-space to world-space. 
 

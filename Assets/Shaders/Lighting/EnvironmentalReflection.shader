@@ -70,8 +70,8 @@ Shader "LearnShader/Lighting/Environmental Reflection (BIRP Unlit)"
             
             float3 AmbientReflection(samplerCUBE colorRefl, float reflectionInt, half reflectionLod, float3 normal, float3 viewDir, float reflectionExp)
             {
-                viewDir = -viewDir; // we need to negate view dir otherwise reflections are upside down
-                float3 reflection_world = reflect(viewDir, normal); // reflect(): reflect a vector using another vector as simmetry axis
+                viewDir = -viewDir; // we need to inverse view dir otherwise reflections are upside down
+                float3 reflection_world = reflect(viewDir, normal); // reflect(): reflect a vector using another vector as symmetry axis
                 
                 // sample cubemap with a specified level of details (LOD level is W component of the sample coordinates)
                 float4 cubemap = texCUBElod(colorRefl, float4(reflection_world, reflectionLod));
@@ -112,7 +112,7 @@ Shader "LearnShader/Lighting/Environmental Reflection (BIRP Unlit)"
                 half3 reflect_world = reflect(-viewDir, normal); // negate view dir to prevent upside down reflections
                 
                 // Sample default reflection cubemap
-                // -> UNITY_SAMPLE_TEXCUBE macro sample the data using the refelction coordinates
+                // -> UNITY_SAMPLE_TEXCUBE macro sample the data using the reflection coordinates
                 // -> unity_SpecCube[n] contains the data of Unity default reflection probe
                 half4 reflectionData = UNITY_SAMPLE_TEXCUBE(unity_SpecCube0, reflect_world);
                 
