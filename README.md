@@ -52,4 +52,8 @@
     - [_Time, _SinTime, _CosTime](Notes/4_CG_HLSL/10_IntrinsicFunctions.md#_time-_sintime-_costime)
 
 - **Lighting**
-    -[Normals](Notes/5_Lighting/1_Normals.md)
+    - [Normals](Notes/5_Lighting/1_Normals.md)
+    - [Normal maps](Notes/5_Lighting/2_NormalMaps.md)
+    - [lighting model](Notes/5_Lighting/3_LightingModel.md)
+    - [Ambient color](Notes/5_Lighting/4_AmbientColor.md)
+    - [Diffuse reflections](Notes/5_Lighting/5_DiffuseReflection.md)

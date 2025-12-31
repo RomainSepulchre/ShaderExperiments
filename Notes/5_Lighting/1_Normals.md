@@ -83,7 +83,13 @@ In the examples above we use the normal object-space coordinate, but usually for
 
 To convert coordinates from object-space to world-space we simply have to multiply the object-space coordinates by `unity_ObjectToWorld` matrix. This matrix is part of the [built-in variables](https://docs.unity3d.com/6000.3/Documentation/Manual/SL-UnityShaderVariables.html) and allows to convert an object-space vector to world-space.
 
-Here is a simply function that convert the normal from object-sapce to world-space:
+UnityCg.cginc provide `UnityObjectToWorldNormal()`, which is a function dedicated to convert normal from object-space to world-space.
+
+```c#
+UnityObjectToWorldNormal(normalToConvert);
+```
+
+However to better understand the operation we do to achieve the object to world space convertion, here is a simple function that convert the normal from object-space to world-space:
 
 ```c#
 // Function to transform the normal from object to world space
@@ -113,3 +119,5 @@ v2f vert (appdata v)
     return o;
 }
 ```
+
+> 
