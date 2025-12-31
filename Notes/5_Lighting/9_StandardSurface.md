@@ -23,8 +23,8 @@ Like we said previously in a standard surface shader, `#pragma vertex vert` and 
 ```
 
 As we can see `#pragma surface surf` has additional argument compared to `#pragma vertex vert` and `#pragment fragment frag`:
-- `Standard` is a parameter that define the lighting model. The common light model are: `Standard`, `Lambert`, `BlinnPhong` and `StandardSpecular`.
-- `fullforwardshadows` is an optionnal parameter that enable the support of shadows from directional, point, and spot lights in Forward Rendering
+- `Standard` is a parameter that define the lighting model. The [common light model are](https://docs.unity3d.com/6000.2/Documentation/Manual/surface-shaders-language-reference-required-directives.html): `Standard`, `Lambert`, `BlinnPhong` and `StandardSpecular`.
+- `fullforwardshadows` is an optionnal parameter that enable the support of shadows from directional, point, and spot lights in Forward Rendering ([here is a list of the optionnal directive](https://docs.unity3d.com/6000.2/Documentation/Manual/surface-shaders-language-reference-optional-directives.html))
 
 ## surf()
 
@@ -78,7 +78,7 @@ In the example above `viewDir`, `worldPos` and `worldNormal` will have the same 
 
  This struct type define all the color output that are used by the standard lighting model. It represent all the parameters that are used to describe how the object surface will be rendered and how light will interact with it.
 
-`SurfaceOutputStandard` struct is not defined inside `CGPROGRAM`, it is defined internally and all the variables are already predefined.
+`SurfaceOutputStandard` struct is not defined inside `CGPROGRAM`, it is defined internally and all the variables are already predefined. [Here is the structure of the surface output shader](https://docs.unity3d.com/6000.2/Documentation/Manual/SL-SurfaceShaders-output.html).
 
 Here is the list of the variables defined inside `SurfaceOutputStandard`:
 
