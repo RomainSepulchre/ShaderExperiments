@@ -12,7 +12,7 @@
 
 Diffuse reflection is the reflection of light on a matte or glossy surface, the light is reflected in many direction. It compare the light source direction and the surface normal to define the illumination of the object.
 
-![Representation of diffuse and specular reflection on a glossy surface](https://upload.wikimedia.org/wikipedia/commons/b/bd/Lambert2.gif)
+<img src="https://upload.wikimedia.org/wikipedia/commons/b/bd/Lambert2.gif" alt="Representation of diffuse and specular reflection on a glossy surface" width="400"/>
 
 In real-time 3D diffuse reflection follows Lambert model and obeys to *Lambert's cosine law* which describe how a matte surface reflect the light uniformally in all directions. This allows us to calculate how bright the surfaces of an object surface should be depending on the light source direction.
 

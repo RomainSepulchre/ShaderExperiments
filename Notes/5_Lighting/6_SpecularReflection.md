@@ -8,7 +8,7 @@
 
 The specular reflection define the way light is reflected in a specific direction, contrary to diffuse reflection which disperse light, the specular reflection create sharp reflection that depends on the angle of view.
 
-![Representation of diffuse and specular reflection on a glossy surface](https://upload.wikimedia.org/wikipedia/commons/b/bd/Lambert2.gif)
+<img src="https://upload.wikimedia.org/wikipedia/commons/b/bd/Lambert2.gif" alt="Representation of diffuse and specular reflection on a glossy surface" width="400"/>
 
 In real-time 3D, Phong model adds specular reflections add a specular brightness to a surface according to the position of its normal.
 
