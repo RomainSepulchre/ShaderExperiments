@@ -1,6 +1,16 @@
 // Shader that shows how shadows caster pass works
 
-// To have a fully functional shadow compatible shader we need 2 pass:
+// Shadow mapping
+// -> Shadow mapping is a simple concept, we use the frustum of the light source to generate a map of the light and shadow areas. This means
+//    that the shadow projection of a directional light will be orthographic while the shadow projection of a point light or spot light will
+//    be rendered in perspective.
+// -> To calculate that we compare if a pixel is visible from the light source, if it isn't then another object block the light and the pixel must
+//    be a shadow.
+// -> To have a fully functional shadow mapping we need two things:
+//      - A shadow caster, the shadow area projected by an object
+//      - A shadow map, the shadow cast on an object
+
+// If we translate this to shader, this means we need 2 pass:
 // - one pass to cast shadows (Shadow caster)
 // - one pass to receive shadows (Shadow map)
 
@@ -8,7 +18,7 @@
 
 // -> In this example we include two version of the shadow caster pass:
 //      - A simple version of the pass that use the vertex position and return 0 (black) as the frag() output but won't be compatible with
-//        some of the lighting settings, we need to define more property for that.
+//        the lighting shadow projection settings, we need to define more property for that.
 //      - A version that use the macros included in UnityCG.cginc which makes all the lighting settings works out of the box
 
 Shader "LearnShader/Shadows/Shadow Caster"
@@ -24,7 +34,7 @@ Shader "LearnShader/Shadows/Shadow Caster"
         Tags { "RenderType"="Opaque" }
         LOD 100
         
-        // Shadow caster pass
+        // Shadow caster pass: handle shadow projection
         Pass
         {
             // We declare a name for our shadow caster pass -> naming a pass is useful to use a functionality dynamically with the UsePass command
