@@ -131,7 +131,7 @@ Shader "LearnShader/Shadows/Shadow Map"
             // -> Only exist within CGPROGRAM, must not be declared as a property and we don't have to pass a texture manually in the inspector
             // -> We will generate a projection that will work as a texture.
             // -> the projection process must be done in frag() because the projection must be calulated per-pixel.
-            // ? Do we need to use "_ShadowMapTexture" as name ??? not clear 
+            // _> _ShadowMapTexture is a global texture that refers to the calculated shadow map its must have this specific name. 
             sampler2D _ShadowMapTexture;
             
             // How to generate projection ?

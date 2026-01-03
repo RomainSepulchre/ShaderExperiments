@@ -61,3 +61,8 @@
     - [Environmental reflection](Notes/5_Lighting/7_EnvironmentalReflection.md)
     - [Fresnel effect](Notes/5_Lighting/8_FresnelEffect.md)
     - [Standard Surface shader](Notes/5_Lighting/9_StandardSurface.md)
+
+- **Shadows**
+    - [Shadow mapping](Notes/6_Shadows/1_ShadowMapping.md)
+    - [Shadow caster](Notes/6_Shadows/2_ShadowCaster.md)
+    - [Shadow map]
