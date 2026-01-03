@@ -98,7 +98,7 @@ Pass
 
 If we want to make this simple pass compatible with the lighting shadow settings we need to define more property. A more effective way is use the macro provided by UnityCG.cginc to implement our shadow caster pass.
 
-## Macro shadow caster pass
+## Optimized shadow caster pass with macro
 
 Using macro allows us to make a shadow caster pass fully compatible with the lighting settings in only a few lines. For that we will only use 3 macros: `V2F_SHADOW_CASTER`, `TRANSFER_SHADOW_CASTER_NORMALOFFSET` and `SHADOW_CASTER_FRAGMENT`.
 
