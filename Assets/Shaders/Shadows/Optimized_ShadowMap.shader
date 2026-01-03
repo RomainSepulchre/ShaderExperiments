@@ -1,3 +1,5 @@
+// Shader that shows how to implement BIRP shadow mapping with optimized macro
+
 Shader "LearnShader/Shadows/Optimized Shadow Map"
 {
     Properties

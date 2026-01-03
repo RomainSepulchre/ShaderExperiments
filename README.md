@@ -66,3 +66,4 @@
     - [Shadow mapping](Notes/6_Shadows/1_ShadowMapping.md)
     - [Shadow caster](Notes/6_Shadows/2_ShadowCaster.md)
     - [Shadow map](Notes/6_Shadows/3_ShadowMap.md)
+    - [URP Shadow mapping](Notes/6_Shadows/4_URP_ShadowMapping.md)
