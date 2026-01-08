@@ -10,7 +10,12 @@ RWTexture2D<float4> Result;
 [numthreads(8,8,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-    // TODO: insert actual code here!
-
+    // all texels are blue
+    //Result[id.xy] = float4(0,0,1,1);
+    
+    // Test to change value to get scale the grid displayed
+    //Result[id.xy] = float4((id.x &7)/7, (id.y &7)/7, 0,0);
+    
+    // Default calculation
     Result[id.xy] = float4(id.x & id.y, (id.x & 15)/15.0, (id.y & 15)/15.0, 0.0);
 }
