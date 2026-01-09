@@ -23,12 +23,6 @@
 //      - a number of threads used to process the texture texel ("numthread")
 //      - a "CSMain" function that includes a semantic as argument and return a RGBA color saved in the Result 2D texture
 
-// How to use a compute shader
-
-// -> Just like a vertex-fragment shader use shaderlab to communicate between Unity and CGPROGRAM/HLSLPROGRAM, a compute shader require to be associated with a c# script that will
-//    allow to declare global variables and buffers that we will be able to connect with the CG/HLSL code.
-// -> the function that is in charge of executing CSMain kernel is called "Dispatch()". It launch a certain number of thread in it XYZ dimensions.
-
 // 
 // Default Compute Shader code commented
 //
@@ -39,7 +33,6 @@
 #pragma kernel CSMain
 
 // Result 2D texture
-// -> Create a RenderTexture with enableRandomWrite flag and set it with cs.SetTexture
 // -> this texture is used to write and read the result of the CSMain function we declared
 // -> since the texture has read/write capability, it allows data to be sent from the CPU to the GPU, be processed in parallel and returned
 RWTexture2D<float4> Result;
@@ -47,8 +40,8 @@ RWTexture2D<float4> Result;
 //      ex: Texture2d<float4> WriteVariable;
 
 // Numthread
-// -> Define the number of thread we must use to process CSMain and calculate the texels of our Result texture
-// -> numthreads(X,Y,Z): To tell the number of thread we want to use we specify the number of column on X axis (X), row on Y axis (Y) and set on the Z-axis (Z).
+// -> Define the number of threads we must use to process CSMain and calculate the texels of our Result texture
+// -> numthreads(X,Y,Z): To tell the number of thread we want to use we specify the number of column on X axis (X), row on Y axis (Y) and depth on the Z-axis (Z).
 //      - For example numthreads(8,8,1) means we use 8 columns on X axis, 8 rows on Y axis and 1 set on Z axis
 //      - To calculate the number of thread used we just multiply all the axis together (X * Y * Z = number of threads)
 // -> By default, the program has a group of 64 threads (8 * 8 * 1 = 64). 

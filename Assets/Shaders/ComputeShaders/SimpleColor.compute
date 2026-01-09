@@ -1,5 +1,11 @@
 // Compute shader that ...
 
+// How to use a compute shader
+
+// -> Just like a vertex-fragment shader use shaderlab to communicate between Unity and CGPROGRAM/HLSLPROGRAM, a compute shader require to be associated with a c# script that will
+//    allow to declare global variables and buffers that we will be able to connect with the CG/HLSL code.
+// -> the function that is in charge of executing CSMain kernel is called "Dispatch()". It launch a certain number of thread in it XYZ dimensions.
+
 // Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel CSMain
 
