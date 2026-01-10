@@ -110,13 +110,17 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 This function is the actual declaration and body of the function defined by the `#pragma kernel CSMain` directive. It contains all the operations we want to process on the GPU to calculate the value of a texel.
 The function return the result of the operations by storing them into the `Result` read/write texture that was declared early.
 
-<!-- WIP: Point to a section dedicated to thread groups and semantics ? -->
-
 ### SV_DispatchThreadID semantic
 
-The function use the semantic `SV_DispatchThreadID` as argument. This semantic is a `uint3` (3D vector of unsigned ints) that refers to ...
+The function use the semantic `SV_DispatchThreadID` as argument. This semantic is a `uint3` (3D vector of unsigned ints) which represent a unique identifier for a thread.
 
-<img src="https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/images/threadgroupids.png" alt="Explanation of thread groups structure" width="600"/>
+We can calculate this unique id by combining the coordinates of the thread group in the dispatch ([SV_GroupID](./3_ThreadGroups.md#sv_groupid)), the dimensions of numthreads and the coordinates of the thread in its thread group ([SV_GroupThreadID](./3_ThreadGroups.md#sv_groupthreadid))
+
+```c#
+SV_DispatchThreadID = ( SV_GroupID * numthreads ) + SV_GroupThreadID
+```
+
+<img src="./Images/SV_DispatchThreadID.PNG" alt="Schema for SV_DispatchThreadID semantic" width="900"/>
 
 
 
