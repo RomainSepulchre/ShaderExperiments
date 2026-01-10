@@ -67,3 +67,8 @@
     - [Shadow caster](Notes/6_Shadows/2_ShadowCaster.md)
     - [Shadow map](Notes/6_Shadows/3_ShadowMap.md)
     - [URP Shadow mapping](Notes/6_Shadows/4_URP_ShadowMapping.md)
+
+- **Compute Shader**
+    - [Compute Shader](Notes/7_ComputeShader/1_ComputeShader.md)
+    - [Thread Groups](Notes/7_ComputeShader/3_ThreadGroups.md)
+    - [Run a compute shader](Notes/7_ComputeShader/2_RunAComputeShader.md)
