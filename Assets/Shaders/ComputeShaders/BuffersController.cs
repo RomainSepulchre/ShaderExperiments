@@ -18,6 +18,7 @@ public class BuffersController : MonoBehaviour
     [Range(0f, 0.5f)] public float radius = 0.5f;
     [Range(0f, 1f)] public float center = 0.5f;
     [Range(0f, 0.5f)] public float smooth = 0.01f;
+    [Range(0f, 20f)] public float circleDist = 0.25f;
     public Color mainColor = new Color();
     
     private RenderTexture rt;
@@ -39,6 +40,8 @@ public class BuffersController : MonoBehaviour
     void Start()
     {
         CreateShaderTexture();
+        
+        //SetShaderTexture();
     }
     
     void Update()
@@ -73,13 +76,17 @@ public class BuffersController : MonoBehaviour
         {
             Circle circle = circles[i];
             circle.radius = radius;
-            circle.center = center;
+            circle.center = center + (i / (float)size) * circleDist;
+            Debug.Log($"circle center: " + circle.center);
             circle.smooth = smooth;
             circles[i] = circle;
         }
         
         // Initialize compute buffer
-        int stride = 12; // number of bits require for a Circle (3 float variable = 3 * 4 bits = 12)
+        // Strides
+        // -> number of bits require for a Circle (3 float variable = 3 * 4 bits = 12)
+        // -> another easier way to get the size is: "int stride = System.Runtime.InteropServices.Marshal.SizeOf(typeof(Circle));"
+        int stride = 12; // 
         buffer = new ComputeBuffer(circles.Length, stride, ComputeBufferType.Default); //  number of element in the buffer, size of the element in bits, type of buffer
         buffer.SetData(circles);
         
@@ -93,7 +100,7 @@ public class BuffersController : MonoBehaviour
         
         // Dispatch
         // -> Why size, size when numthreads(128,1,1) ???
-        shader.Dispatch(0, size, size, 1);
+        shader.Dispatch(0, size/128, size/1, 1);
         
         // Dispose buffer
         buffer.Release();

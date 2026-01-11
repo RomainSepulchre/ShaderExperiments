@@ -58,15 +58,31 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     // UV
     float2 uv = float2((id.xy + 0.5) / float2(width, height));
     
+    float4 color = float4(0,0,0,0);
+    uint circleCount, strides;
+    CircleBuffer.GetDimensions(circleCount, strides);
+    
+    for (int i = 0; i < circleCount; i++)
+    {
+        float center = CircleBuffer[i].center;
+        float radius = CircleBuffer[i].radius;
+        float smooth = CircleBuffer[i].smooth;
+        float c = CircleShape(uv, center, radius, smooth);
+        color += float4(c, c, c, 1) * mainColor;
+    }
+    
     // Access buffer values
-    float center = CircleBuffer[id.x].center;
-    float radius = CircleBuffer[id.x].radius;
-    float smooth = CircleBuffer[id.x].smooth;
+    // float center = CircleBuffer[id.x].center;
+    // float radius = CircleBuffer[id.x].radius;
+    // float smooth = CircleBuffer[id.x].smooth;
     
     // Create circle
-    float c = CircleShape(uv,center,radius,smooth);
+    //float c = CircleShape(uv,center,radius,smooth);
     
-    Result[id.xy] = float4(c, c, c, 1) * mainColor;
+    //Result[id.xy] = float4(c, c, c, 1) * mainColor;
+    
+    
+    Result[id.xy] = color * mainColor;
     //Result[id.xy] = float4(id.x & id.y, (id.x & 15)/15.0, (id.y & 15)/15.0, 0.0);
 }
 
