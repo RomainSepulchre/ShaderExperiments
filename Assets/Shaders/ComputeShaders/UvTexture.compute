@@ -2,7 +2,6 @@
 
 // See https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-to-samplelevel
 
-
 #pragma kernel CSMain
 
 RWTexture2D<float4> Result; // Outpout texture

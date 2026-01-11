@@ -1,0 +1,72 @@
+// Compute shader that use buffers
+
+// See https://docs.unity3d.com/6000.3/Documentation/ScriptReference/ComputeBuffer.html
+
+// Buffers
+
+// -> When working with compute shaders its sometimes necessary to process multiple data simultaneously (ex: particles, post-processing, ray tracing, simulations)
+// -> To speed up reading/writing in the memory buffer we can use two associated data types: ComputeBuffer and StructureBuffer.
+
+// ComputeBuffer and StructureBuffer
+
+// -> A ComputeBuffer is a buffer that we can fill with values from our c# script
+//    - Example of ComputeBuffer inside BufferController.cs
+
+// -> A StructureBuffer is the equivalent of a ComputeBuffer declared in the compute shader.
+//    - Example of StructuredBuffer:
+struct Properties
+{
+    float3 vertices;
+    float3 normals;
+    float4 tangents;
+};
+StructuredBuffer<Properties> meshProp;
+
+
+// Compute Shader code
+
+#pragma kernel CSMain
+
+// Shader global variables
+RWTexture2D<float4> Result;
+float4 mainColor;
+
+// Structured buffer
+struct Circle
+{
+    float radius;
+    float center;
+    float smooth;
+};
+StructuredBuffer<Circle> CircleBuffer;
+
+// Local function to draw the circle
+// -> must be declared before CSMain since we're in a shader
+float CircleShape (float2 p, float center, float radius, float smooth)
+{
+    float c = length(p - center);
+    return smoothstep(c - smooth, c + smooth, radius);
+}
+
+[numthreads(128,1,1)] // 128,1,1 because texture size is 128 and we only need one dimension to run the c# Circles array.
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    // Get Result texture dimensions
+    uint width, height;
+    Result.GetDimensions(width, height);
+    
+    // UV
+    float2 uv = float2((id.xy + 0.5) / float2(width, height));
+    
+    // Access buffer values
+    float center = CircleBuffer[id.x].center;
+    float radius = CircleBuffer[id.x].radius;
+    float smooth = CircleBuffer[id.x].smooth;
+    
+    // Create circle
+    float c = CircleShape(uv,center,radius,smooth);
+    
+    Result[id.xy] = float4(c, c, c, 1) * mainColor;
+    //Result[id.xy] = float4(id.x & id.y, (id.x & 15)/15.0, (id.y & 15)/15.0, 0.0);
+}
+
