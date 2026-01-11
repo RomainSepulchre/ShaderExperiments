@@ -23,5 +23,6 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     //Result[id.xy] = float4((id.x &7)/7, (id.y &7)/7, 0,0);
     
     // Default calculation
+    // -> create a graphical representation of the sierpinski triangle (https://en.wikipedia.org/wiki/Sierpi%C5%84ski_triangle)
     Result[id.xy] = float4(id.x & id.y, (id.x & 15)/15.0, (id.y & 15)/15.0, 0.0);
 }

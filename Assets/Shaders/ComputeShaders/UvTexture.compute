@@ -1,0 +1,53 @@
+// Compute shader that sample a texture
+
+// See https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-to-samplelevel
+
+
+#pragma kernel CSMain
+
+RWTexture2D<float4> Result; // Outpout texture
+
+Texture2D<float4> texColor; // existing texture assigned from c# script
+SamplerState sampler_texColor; // sampler associated with the texture
+
+bool repeatTexture;
+
+[numthreads(8,8,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    int width;
+    int height;
+    
+    // Get the x and y dimensions of the result texture and assign them to width and height
+    // -> This get the width and height arguments we set when we create a new RenderTexture in the c# script
+    Result.GetDimensions(width, height);
+    
+    // Determine UV coordinates
+    // -> we have 32*32*1 thread groups and 8*8*1 thread in a group so id.xy (=SV_DispatchThreadID.xy) values goes from 0-255 (31,31,0 * 8,8,1 + 7,7,0)
+    // -> Since uv coordinates range is [0 to 1] we divide id.xy by the texture size, we remap the values from [0 to width/height] to [0 to 1]
+    // -> We want values between 0.0 and 1.0 so we need to cast the result as a float2 since id.xy, width and height are all int.
+    // ??? min = 0/256 and max = 255/256 ? no 256/256 ???
+    float2 uv = float2(id.xy / float2(width, height));
+    
+    // Take texture wrap mode into account
+    // -> The above operation is perfect for texture with the Clamp warp mode, however for texture in repeat mode we need to add 0.5 to id.xy value
+    //    otherwise it will reflect part of the edges in its projection. (caused by max uv value 255/256)
+    float2 uv_clamp = float2(id.xy / float2(width, height));
+    float2 uv_repeat = float2((id.xy + float2(0.5, 0.5)) / float2(width, height)); // add 0.5 to id.xy to prevent issue with repeat mode
+    
+    // Handle clamp/repeat wrap mode by using chacking texture wrap mode
+    if (repeatTexture)
+    {
+        uv = uv_repeat;
+    }
+    
+    // Sample the texture
+    // -> SampleLevel() is similar to Sample() but it takes an extra parameter to specify the texture LOD
+    float4 color = texColor.SampleLevel(sampler_texColor, uv, 0); // LOD is set to 0 (=best level of quality)
+    
+    // Keep default color calculated to multiply texture color
+    float4 defaultColor = float4(id.x & id.y, (id.x & 15)/15.0, (id.y & 15)/15.0, 0.0);
+    
+    // Store value in output result texture
+    Result[id.xy] = color * defaultColor;
+}
