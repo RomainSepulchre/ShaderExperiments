@@ -72,3 +72,4 @@
     - [Compute Shader](Notes/7_ComputeShader/1_ComputeShader.md)
     - [Thread and Thread Groups](Notes/7_ComputeShader/2_ThreadGroups.md)
     - [Run a compute shader](Notes/7_ComputeShader/3_RunAComputeShader.md)
+    - [Buffers (ComputeBuffer and StructuredBuffer)](Notes/7_ComputeShader/4_Buffers.md)

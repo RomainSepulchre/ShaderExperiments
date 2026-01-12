@@ -4,6 +4,7 @@
 
 - https://docs.unity3d.com/6000.3/Documentation/Manual/class-ComputeShader.html
 - https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/sm5-attributes-numthreads
+- https://www.youtube.com/watch?v=9RHGLZLUuwc&list=LL2T54R7-vJmcMBzcaTL_oBw&index=3
 
 ## What is a Compute Shader ?
 
