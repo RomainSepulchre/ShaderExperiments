@@ -2,17 +2,6 @@ using UnityEngine;
 
 public class BuffersController : MonoBehaviour
 {
-    // Example of ComputeBuffer
-    struct Properties
-    {
-        Vector3 vertices;
-        Vector3 normals;
-        Vector4 tangents;
-    };
-    Properties[] meshProp;
-    ComputeBuffer meshBuffer;
-    
-    // Global variable
     public ComputeShader shader;
 
     [Range(0f, 0.5f)] public float radius = 0.5f;
@@ -77,7 +66,6 @@ public class BuffersController : MonoBehaviour
             Circle circle = circles[i];
             circle.radius = radius;
             circle.center = center + (i / (float)size) * circleDist;
-            Debug.Log($"circle center: " + circle.center);
             circle.smooth = smooth;
             circles[i] = circle;
         }

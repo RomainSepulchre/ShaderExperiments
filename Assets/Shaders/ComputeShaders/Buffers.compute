@@ -5,14 +5,14 @@
 // Buffers
 
 // -> When working with compute shaders its sometimes necessary to process multiple data simultaneously (ex: particles, post-processing, ray tracing, simulations)
-// -> To speed up reading/writing in the memory buffer we can use two associated data types: ComputeBuffer and StructureBuffer.
+// -> To speed up reading/writing in the memory buffer we can use two associated data types: ComputeBuffer and StructuredBuffer.
 
-// ComputeBuffer and StructureBuffer
+// ComputeBuffer and StructuredBuffer
 
 // -> A ComputeBuffer is a buffer that we can fill with values from our c# script
 //    - Example of ComputeBuffer inside BufferController.cs
 
-// -> A StructureBuffer is the equivalent of a ComputeBuffer declared in the compute shader.
+// -> A StructuredBuffer is the equivalent of a ComputeBuffer declared in the compute shader.
 //    - Example of StructuredBuffer:
 struct Properties
 {
