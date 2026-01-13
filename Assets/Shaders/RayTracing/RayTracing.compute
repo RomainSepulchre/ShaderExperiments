@@ -1,0 +1,310 @@
+#pragma kernel CSMain  // 0
+#pragma kernel ColorfulSky // 1
+#pragma kernel Skybox // 2
+#pragma kernel GroundPlane // 3
+#pragma kernel GroundAndSpheres // 4
+#pragma kernel Spheres // 5
+
+// Result output texture
+RWTexture2D<float4> Result;
+
+// Skybox texture
+Texture2D SkyboxTexture;
+SamplerState sampler_SkyboxTexture;
+
+// Camera matrices
+float4x4 CameraToWorld;
+float4x4 CameraInverseProjection;
+
+// Antialiasing
+float2 PixelOffset;
+bool UseAntialiasing;
+
+// Constants
+static const float PI = 3.14159265f;
+
+// Ray
+struct Ray
+{
+    float3 origin;
+    float3 direction;
+    float3 energy;
+};
+
+Ray CreateRay(float3 origin, float3 direction)
+{
+     Ray ray;
+    ray.origin = origin;
+    ray.direction = direction;
+    ray.energy = float3(1.0f, 1.0f, 1.0f);
+    return ray;
+}
+
+// Ray Hit
+struct RayHit
+{
+    float3 position;
+    float distance;
+    float3 normal;
+};
+
+RayHit CreateRayHit()
+{
+    RayHit hit;
+    hit.position = float3(0.0f, 0.0f, 0.0f);
+    hit.distance = 1.#INF; // 1.#INF = infini
+    hit.normal = float3(0.0f, 0.0f, 0.0f);
+    return hit;
+}
+
+Ray CreateCameraRay(float2 uv)
+{
+    // transform camera origin to world space
+    float3 origin = mul(CameraToWorld, float4(0,0,0,1)).xyz;
+    
+    // Invert perspective projection of the view-space position
+    float3 direction = mul(CameraInverseProjection, float4(uv,0,1)).xyz;
+    
+    // Transform direction from camera to world-space and normalize
+    direction = mul(CameraToWorld, float4(direction, 0)).xyz; // 
+    direction = normalize(direction);
+    
+    return CreateRay(origin, direction);
+}
+
+void IntersectGroundPlane(Ray ray, inout RayHit bestHit)
+{
+    // Calculate distance along the ray where the ground plane is intersected
+    float t = -ray.origin.y / ray.direction.y;
+    if (t > 0 && t < bestHit.distance)
+    {
+        bestHit.distance = t;
+        bestHit.position = ray.origin + t * ray.direction;
+        bestHit.normal = float3(0.0f, 1.0f, 0.0f);
+    }
+}
+
+void IntersectSphere(Ray ray, inout RayHit bestHit, float4 sphere)
+{
+    // Calculate distance along the ray where the sphere is intersected
+    float3 d = ray.origin - sphere.xyz;
+    float p1 = -dot(ray.direction, d);
+    float p2sqr = p1 * p1 - dot(d,d) + sphere.w * sphere.w;
+    
+    if (p2sqr < 0) return;
+    
+    float p2 = sqrt(p2sqr);
+    float t = p1 - p2 > 0 ? p1- p2 : p1 + p2;
+    if (t > 0 && t < bestHit.distance)
+    {
+        bestHit.distance = t;
+        bestHit.position = ray.origin + t * ray.direction;
+        bestHit.normal = normalize(bestHit.position - sphere.xyz);
+    }
+}
+
+RayHit Trace(Ray ray, bool traceGround = true, bool traceSphere = true)
+{
+    RayHit bestHit = CreateRayHit();
+    
+    if (traceGround)
+    {
+        IntersectGroundPlane(ray, bestHit);
+    }
+    
+    if (traceSphere)
+    {
+        IntersectSphere(ray, bestHit, float4(0, 3.0f, 0, 1.0f));
+        IntersectSphere(ray, bestHit, float4(-3.27f, 1.02f, -0.82f, 1.0f));
+        IntersectSphere(ray, bestHit, float4(2.132f, 4.546f, 1.257f, 1.0f));
+        IntersectSphere(ray, bestHit, float4(0.982f, 1.489f, -3.218f, 1.0f));
+        IntersectSphere(ray, bestHit, float4(4.1f, 2.12f, -2.34f, 1.0f));
+    }
+    
+    return bestHit;
+}
+
+float3 Shade(inout Ray ray, RayHit hit)
+{
+    if (hit.distance < 1.#INF)
+    {
+        return hit.normal * 0.5f + 0.5f; // return normal
+    }
+    else
+    {
+        // Sample skybox and write it
+        
+        // Transform our cartesian direction vector to spherical coordinates
+        // -> See https://en.wikipedia.org/wiki/Spherical_coordinate_system#Coordinate_system_conversions
+        float theta = acos(ray.direction.y) / -PI;
+        float phi = atan2(ray.direction.x, -ray.direction.z) / -PI * 0.5f;
+    
+        // Sample the skybox with the spherical coordinates to set output texture color
+        return SkyboxTexture.SampleLevel(sampler_SkyboxTexture, float2(phi, theta), 0).xyz;
+    }
+}
+
+float3 ShadeWithReflections(inout Ray ray, RayHit hit)
+{
+    if (hit.distance < 1.#INF)
+    {
+        float3 specular = float3(0.6f, 0.6f, 0.6f);
+        
+        // Reflect ray and multiply energy with specular
+        ray.origin = hit.position + hit.normal * 0.001f; // 0.001f offset to prevent self-occlusion
+        ray.direction = reflect(ray.direction, hit.normal);
+        ray.energy *= specular;
+        
+        return  float3(0,0,0); // return nothing
+    }
+    else
+    {
+        ray.energy = 0.0f; // Erase energy sky doesn't reflect
+        
+        // Sample skybox and write it
+        
+        // Transform our cartesian direction vector to spherical coordinates
+        // -> See https://en.wikipedia.org/wiki/Spherical_coordinate_system#Coordinate_system_conversions
+        float theta = acos(ray.direction.y) / -PI;
+        float phi = atan2(ray.direction.x, -ray.direction.z) / -PI * 0.5f;
+    
+        // Sample the skybox with the spherical coordinates to set output texture color
+        return SkyboxTexture.SampleLevel(sampler_SkyboxTexture, float2(phi, theta), 0).xyz;
+    }
+}
+
+// Kernel main function
+[numthreads(8,8,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    // Get RenderTexture dimensions
+    uint width, height;
+    Result.GetDimensions(width, height);
+    
+    // Calculate uv position and remap to [-1,1] range
+    float2 offset = UseAntialiasing ? PixelOffset : float2(0.5f, 0.5f); // uv pixel offset
+    float2 uv = float2((id.xy + offset) / float2(width, height)); // Calculate uv position
+    uv = uv * 2.0f - 1.0f; // Remap to [-1,1] range
+    
+    Ray ray = CreateCameraRay(uv);
+    
+    // Trace and Shade
+    float3 result = float3(0,0,0);
+    for (int i = 0; i < 8; i++) // 8 = max number of bounce
+    {
+        RayHit hit = Trace(ray);
+        result += ray.energy * ShadeWithReflections(ray, hit);
+        
+        if (!any(ray.energy)) break;
+    }
+
+    Result[id.xy] = float4(result, 1.0f);
+}
+
+
+// Other kernel functions
+
+
+[numthreads(8,8,1)]
+void ColorfulSky (uint3 id : SV_DispatchThreadID)
+{
+    // Get RenderTexture dimensions
+    uint width, height;
+    Result.GetDimensions(width, height);
+    
+    // Calculate uv position and remap to [-1,1] range
+    float2 offset = UseAntialiasing ? PixelOffset : float2(0.5f, 0.5f); // uv pixel offset
+    float2 uv = float2((id.xy + offset) / float2(width, height)); // Calculate uv position
+    uv = uv * 2.0f - 1.0f; // Remap to [-1,1] range
+    
+    Ray ray = CreateCameraRay(uv);
+    
+    Result[id.xy] = float4(ray.direction * 0.5f + 0.5f, 1.0f);
+}
+
+[numthreads(8,8,1)]
+void Skybox (uint3 id : SV_DispatchThreadID)
+{
+    // Get RenderTexture dimensions
+    uint width, height;
+    Result.GetDimensions(width, height);
+    
+    // Calculate uv position and remap to [-1,1] range
+    float2 offset = UseAntialiasing ? PixelOffset : float2(0.5f, 0.5f); // uv pixel offset
+    float2 uv = float2((id.xy + offset) / float2(width, height)); // Calculate uv position
+    uv = uv * 2.0f - 1.0f; // Remap to [-1,1] range
+    
+    Ray ray = CreateCameraRay(uv);
+    
+    // Transform our cartesian direction vector to spherical coordinates
+    // -> See https://en.wikipedia.org/wiki/Spherical_coordinate_system#Coordinate_system_conversions
+    float theta = acos(ray.direction.y) / -PI;
+    float phi = atan2(ray.direction.x, -ray.direction.z) / -PI * 0.5f;
+    
+    // Sample the skybox with the spherical coordinates to set output texture color
+    Result[id.xy] = SkyboxTexture.SampleLevel(sampler_SkyboxTexture, float2(phi, theta), 0);
+}
+
+[numthreads(8,8,1)]
+void GroundPlane (uint3 id : SV_DispatchThreadID)
+{
+    // Get RenderTexture dimensions
+    uint width, height;
+    Result.GetDimensions(width, height);
+    
+    // Calculate uv position and remap to [-1,1] range
+    float2 offset = UseAntialiasing ? PixelOffset : float2(0.5f, 0.5f); // uv pixel offset
+    float2 uv = float2((id.xy + offset) / float2(width, height)); // Calculate uv position
+    uv = uv * 2.0f - 1.0f; // Remap to [-1,1] range
+    
+    Ray ray = CreateCameraRay(uv);
+    
+    // Trace and Shade
+    RayHit hit = Trace(ray, true, false);
+    float3 result = Shade(ray, hit);
+
+    Result[id.xy] = float4(result, 1.0f);
+}
+
+[numthreads(8,8,1)]
+void GroundAndSpheres (uint3 id : SV_DispatchThreadID)
+{
+    // Get RenderTexture dimensions
+    uint width, height;
+    Result.GetDimensions(width, height);
+    
+    // Calculate uv position and remap to [-1,1] range
+    float2 offset = UseAntialiasing ? PixelOffset : float2(0.5f, 0.5f); // uv pixel offset
+    float2 uv = float2((id.xy + offset) / float2(width, height)); // Calculate uv position
+    uv = uv * 2.0f - 1.0f; // Remap to [-1,1] range
+    
+    Ray ray = CreateCameraRay(uv);
+    
+    // Trace and Shade
+    RayHit hit = Trace(ray, true, true);
+    float3 result = Shade(ray, hit);
+
+    Result[id.xy] = float4(result, 1.0f);
+}
+
+[numthreads(8,8,1)]
+void Spheres (uint3 id : SV_DispatchThreadID)
+{
+    // Get RenderTexture dimensions
+    uint width, height;
+    Result.GetDimensions(width, height);
+    
+    // Calculate uv position and remap to [-1,1] range
+    float2 offset = UseAntialiasing ? PixelOffset : float2(0.5f, 0.5f); // uv pixel offset
+    float2 uv = float2((id.xy + offset) / float2(width, height)); // Calculate uv position
+    uv = uv * 2.0f - 1.0f; // Remap to [-1,1] range
+    
+    Ray ray = CreateCameraRay(uv);
+    
+    // Trace and Shade
+    RayHit hit = Trace(ray, false, true);
+    float3 result = Shade(ray, hit);
+
+    Result[id.xy] = float4(result, 1.0f);
+}
+
