@@ -40,6 +40,8 @@ public class RayTracingController : MonoBehaviour
     {
         public Vector3 position;
         public float scale;
+        public Vector3 albedo;
+        public Vector3 specular;
     }
     SphereData[] spheresDatas;
     ComputeBuffer spheresBuffer;
@@ -62,13 +64,19 @@ public class RayTracingController : MonoBehaviour
             currentSample = 0;
             directionalLight.transform.hasChanged = false;
         }
+        
+        UpdateSpheresComputeBuffer();
     }
 
-    private void OnDestroy()
+    private void OnEnable()
     {
-        // TODO: ??? Why memory leaks ?
-        // Ensure buffer is released at on destroy
-        spheresBuffer?.Dispose(); 
+        currentSample = 0;
+        SetSpheresComputeBuffer();
+    }
+
+    private void OnDisable()
+    {
+        if(spheresBuffer != null) spheresBuffer.Release();
     }
 
     // Called when camera has finished to render
@@ -91,8 +99,8 @@ public class RayTracingController : MonoBehaviour
 
         shader.Dispatch((int)RenderMode, threadGroupsX, threadGroupsY, 1);
         
-        // TODO: ??? Why memory leaks ?
-        spheresBuffer.Dispose(); // Release sphere buffer
+        // TODO: Why releasing the buffer here brings memory leaks (probably related to the call frequency of OnRenderImage())
+        //if(spheresBuffer != null) spheresBuffer.Release();
         
         if (useAntialiasing)
         {
@@ -106,8 +114,6 @@ public class RayTracingController : MonoBehaviour
         {
             Graphics.Blit(rt, destination); // Write result to screen
         }
-        
-        
     }
 
     private void InitializeRenderTexture()
@@ -134,10 +140,9 @@ public class RayTracingController : MonoBehaviour
         
         Vector3 lightDir = directionalLight.transform.forward;
         shader.SetVector("DirectionalLight", new Vector4(lightDir.x, lightDir.y, lightDir.z, directionalLight.intensity));
-        shader.SetVector("Albedo", albedoColor);
-        shader.SetVector("Specular", new Vector3(specularValue, specularValue, specularValue));
         
-        SetSpheresComputeBuffer();
+        //SetSpheresComputeBuffer();
+        shader.SetBuffer((int)RenderMode, "Spheres", spheresBuffer);
     }
 
     private void SetSpheresComputeBuffer()
@@ -149,15 +154,38 @@ public class RayTracingController : MonoBehaviour
             SphereData sphereData = new SphereData();
             sphereData.position = spheresTransforms[i].position;
             sphereData.scale = spheresTransforms[i].localScale.x;
+            // sphereData.albedo = new Vector3(albedoColor.r, albedoColor.g, albedoColor.b);
+            // sphereData.specular = new Vector3(specularValue, specularValue, specularValue);
+            Color color = Random.ColorHSV();
+            bool metal = Random.value < 0.5f;
+            sphereData.albedo = metal ? Vector3.zero : new Vector3(color.r, color.g, color.b);
+            sphereData.specular = metal ? new Vector3(color.r, color.g, color.b) :  Vector3.one * specularValue;
             spheresDatas[i] = sphereData;
         }
         
         // Set compute buffer
-        int stride = (sizeof(float) * 3) + sizeof(float); // vector3 + float
+        int stride = (3 * (sizeof(float) * 3)) + sizeof(float); // 3 * vector3 + float
         spheresBuffer = new ComputeBuffer(spheresDatas.Length, stride);
         spheresBuffer.SetData(spheresDatas);
+    }
+    
+    private void UpdateSpheresComputeBuffer()
+    {
+        if(spheresDatas.Length == 0) return;
         
-        shader.SetBuffer((int)RenderMode, "Spheres", spheresBuffer);
+        for (int i = 0; i < spheresDatas.Length; i++)
+        {
+            spheresDatas[i].position = spheresTransforms[i].position;
+            spheresDatas[i].scale = spheresTransforms[i].localScale.x;
+        }
+        
+        // Release previous buffer before assigning new buffer
+        if(spheresBuffer != null) spheresBuffer.Release();
+        
+        // Set compute buffer
+        int stride = (3 * (sizeof(float) * 3)) + sizeof(float); // 3 * vector3 + float
+        spheresBuffer = new ComputeBuffer(spheresDatas.Length, stride);
+        spheresBuffer.SetData(spheresDatas);
     }
     
 }

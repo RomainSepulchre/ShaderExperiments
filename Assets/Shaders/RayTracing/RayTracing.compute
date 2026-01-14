@@ -30,6 +30,8 @@ struct SphereData
 {
     float3 position;
     float scale;
+    float3 albedo;
+    float3 specular;
 };
 StructuredBuffer<SphereData> Spheres;
 
@@ -38,8 +40,6 @@ int Bounces;
 
 // Directional light (XYZ = direction, W = Intensity )
 float4 DirectionalLight;
-float4 Albedo;
-float3 Specular;
 
 // Ray
 struct Ray
@@ -64,6 +64,8 @@ struct RayHit
     float3 position;
     float distance;
     float3 normal;
+    float3 albedo;
+    float3 specular;
 };
 
 RayHit CreateRayHit()
@@ -72,6 +74,8 @@ RayHit CreateRayHit()
     hit.position = float3(0.0f, 0.0f, 0.0f);
     hit.distance = 1.#INF; // 1.#INF = infini
     hit.normal = float3(0.0f, 0.0f, 0.0f);
+    hit.albedo = float3(0.0f, 0.0f, 0.0f);
+    hit.specular = float3(0.0f, 0.0f, 0.0f);
     return hit;
 }
 
@@ -113,11 +117,11 @@ void IntersectGroundPlane(Ray ray, inout RayHit bestHit)
 // IntersectSphere()
 // -> Check if the ray intersect with a sphere
 //
-void IntersectSphere(Ray ray, inout RayHit bestHit, float4 sphere)
+void IntersectSphere(Ray ray, inout RayHit bestHit, SphereData sphere)
 {
     // Calculate distance along the ray where the sphere is intersected
-    float radius = sphere.w / 2;
-    float3 d = ray.origin - sphere.xyz; 
+    float radius = sphere.scale / 2;
+    float3 d = ray.origin - sphere.position; 
     float p1 = -dot(ray.direction, d);
     float p2sqr = p1 * p1 - dot(d,d) + radius * radius;
     
@@ -129,7 +133,9 @@ void IntersectSphere(Ray ray, inout RayHit bestHit, float4 sphere)
     {
         bestHit.distance = t;
         bestHit.position = ray.origin + t * ray.direction;
-        bestHit.normal = normalize(bestHit.position - sphere.xyz);
+        bestHit.normal = normalize(bestHit.position - sphere.position);
+        bestHit.albedo = sphere.albedo;
+        bestHit.specular = sphere.specular;
     }
 }
 
@@ -152,8 +158,7 @@ RayHit Trace(Ray ray, bool traceGround = true, bool traceSphere = true)
         Spheres.GetDimensions(count, stride);
         for (uint i = 0; i < count; i++)
         {
-            SphereData sphere = Spheres[i];
-            IntersectSphere(ray, bestHit, float4(sphere.position , sphere.scale));
+            IntersectSphere(ray, bestHit, Spheres[i]);
         }
     }
     
@@ -196,7 +201,7 @@ float3 ShadeWithReflections(inout Ray ray, RayHit hit)
         // Reflect ray and multiply energy with specular
         ray.origin = hit.position + hit.normal * 0.001f; // 0.001f offset to prevent self-occlusion
         ray.direction = reflect(ray.direction, hit.normal);
-        ray.energy *= Specular;
+        ray.energy *= hit.specular;
         
         return  float3(0,0,0); // return nothing
     }
@@ -228,7 +233,7 @@ float3 ShadeWithDiffuseReflections(inout Ray ray, RayHit hit)
         // Reflect ray and multiply energy with specular
         ray.origin = hit.position + hit.normal * 0.001f; // 0.001f offset to prevent self-occlusion
         ray.direction = reflect(ray.direction, hit.normal);
-        ray.energy *= Specular;
+        ray.energy *= hit.specular;
         
         // Shadow management
         // -> Send a new ray in the direction of the light to see if it is blocked by something
@@ -244,7 +249,7 @@ float3 ShadeWithDiffuseReflections(inout Ray ray, RayHit hit)
         // -> dot product of normal and direction of light to get cosine of the angle
         // -> * -1 to invert result because ray and light point in opposite directions
         // -> Saturate (= Clamp(0,1)) to prevent negative value
-        return saturate(dot(hit.normal, DirectionalLight.xyz) * -1) * DirectionalLight.w * Albedo.rgb;
+        return saturate(dot(hit.normal, DirectionalLight.xyz) * -1) * DirectionalLight.w * hit.albedo;
     }
     else // No hit, render skybox
     {
