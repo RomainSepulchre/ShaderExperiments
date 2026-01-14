@@ -1,0 +1,266 @@
+#pragma kernel CSMain  // 0
+
+// Constants
+static const float PI = 3.14159265f;
+
+// Result output texture
+RWTexture2D<float4> Result;
+
+// Skybox texture
+Texture2D SkyboxTexture;
+SamplerState sampler_SkyboxTexture;
+
+// Camera matrices
+float4x4 CameraToWorld;
+float4x4 CameraInverseProjection;
+
+// Antialiasing
+float2 PixelOffset;
+bool UseAntialiasing;
+
+// Sphere structured buffer
+struct SphereData
+{
+    float3 position;
+    float scale;
+    float3 albedo;
+    float3 specular;
+};
+StructuredBuffer<SphereData> Spheres;
+
+// Ground
+float3 GroundColor;
+
+// Reflections
+int Bounces;
+
+// Directional light (XYZ = direction, W = Intensity )
+float4 DirectionalLight;
+float3 DefaultSpecular;
+
+// Ray
+struct Ray
+{
+    float3 origin;
+    float3 direction;
+    float3 energy;
+};
+
+Ray CreateRay(float3 origin, float3 direction)
+{
+     Ray ray;
+    ray.origin = origin;
+    ray.direction = direction;
+    ray.energy = float3(1.0f, 1.0f, 1.0f);
+    return ray;
+}
+
+// Ray Hit
+struct RayHit
+{
+    float3 position;
+    float distance;
+    float3 normal;
+    float3 albedo;
+    float3 specular;
+};
+
+RayHit CreateRayHit()
+{
+    RayHit hit;
+    hit.position = float3(0.0f, 0.0f, 0.0f);
+    hit.distance = 1.#INF; // 1.#INF = infini
+    hit.normal = float3(0.0f, 0.0f, 0.0f);
+    hit.albedo = float3(0.0f, 0.0f, 0.0f);
+    hit.specular = float3(0.0f, 0.0f, 0.0f);
+    return hit;
+}
+
+// Shader Random
+float2 PixelSeed; // pixel position to have different random value for every pixel
+float Seed;
+
+float rand( float2 pixel)
+{
+    float result = frac(sin(Seed / 100.0f * dot(PixelSeed, float2(12.9898f, 78.233f))) * 43758.5453f);
+    Seed += 1.0f;
+    return result;
+}
+
+//
+// CreateCameraRay()
+// -> Create a ray from the camera view
+//
+Ray CreateCameraRay(float2 uv)
+{
+    // transform camera origin to world space
+    float3 origin = mul(CameraToWorld, float4(0,0,0,1)).xyz;
+    
+    // Invert perspective projection of the view-space position
+    float3 direction = mul(CameraInverseProjection, float4(uv,0,1)).xyz;
+    
+    // Transform direction from camera to world-space and normalize
+    direction = mul(CameraToWorld, float4(direction, 0)).xyz; // 
+    direction = normalize(direction);
+    
+    return CreateRay(origin, direction);
+}
+
+//
+// IntersectGroundPlane()
+// -> Check if the ray intersect with a ground
+//
+void IntersectGroundPlane(Ray ray, inout RayHit bestHit) 
+{
+    float t = -ray.origin.y / ray.direction.y; // Calculate distance along the ray where the ground plane is intersected
+    if (t > 0 && t < bestHit.distance)
+    {
+        bestHit.distance = t;
+        bestHit.position = ray.origin + t * ray.direction;
+        bestHit.normal = float3(0.0f, 1.0f, 0.0f);
+        
+        bestHit.albedo = GroundColor;
+        bestHit.specular = DefaultSpecular;
+    }
+}
+
+//
+// IntersectSphere()
+// -> Check if the ray intersect with a sphere
+//
+void IntersectSphere(Ray ray, inout RayHit bestHit, SphereData sphere)
+{
+    // Calculate distance along the ray where the sphere is intersected
+    float radius = sphere.scale / 2;
+    float3 d = ray.origin - sphere.position; 
+    float p1 = -dot(ray.direction, d);
+    float p2sqr = p1 * p1 - dot(d,d) + radius * radius;
+    
+    if (p2sqr < 0) return;
+    
+    float p2 = sqrt(p2sqr);
+    float t = p1 - p2 > 0 ? p1- p2 : p1 + p2;
+    if (t > 0 && t < bestHit.distance)
+    {
+        bestHit.distance = t;
+        bestHit.position = ray.origin + t * ray.direction;
+        bestHit.normal = normalize(bestHit.position - sphere.position);
+        bestHit.albedo = sphere.albedo;
+        bestHit.specular = sphere.specular;
+    }
+}
+
+//
+// Trace()
+// -> Trace the ray and check for intersection
+//
+RayHit Trace(Ray ray, bool traceGround = true, bool traceSphere = true)
+{
+    RayHit bestHit = CreateRayHit();
+    
+    if (traceGround)
+    {
+        IntersectGroundPlane(ray, bestHit);
+    }
+    
+    if (traceSphere)
+    {
+        uint count, stride;
+        Spheres.GetDimensions(count, stride);
+        for (uint i = 0; i < count; i++)
+        {
+            IntersectSphere(ray, bestHit, Spheres[i]);
+        }
+    }
+    
+    return bestHit;
+}
+
+//
+// Shade()
+// -> Return a diffuse-shaded color for the pixel with reflections: reflection of the ray when there is a hit or the skybox when there is not hit
+//
+float3 Shade(inout Ray ray, RayHit hit)
+{
+    
+    if (hit.distance < 1.#INF)
+    {        
+        // Reflect ray and multiply energy with specular
+        ray.origin = hit.position + hit.normal * 0.001f; // 0.001f offset to prevent self-occlusion
+        ray.direction = reflect(ray.direction, hit.normal);
+        ray.energy *= hit.specular;
+        
+        // Shadow management
+        // -> Send a new ray in the direction of the light to see if it is blocked by something
+        bool shadow = false;
+        Ray shadowRay = CreateRay(hit.position + hit.normal * 0.001f, -1 * DirectionalLight.xyz);
+        RayHit shadowHit = Trace(shadowRay);
+        if (shadowHit.distance != 1.#INF)
+        {
+            return float3(0.0f, 0.0f, 0.0f);
+        }
+        
+        // return diffuse-shaded color
+        // -> dot product of normal and direction of light to get cosine of the angle
+        // -> * -1 to invert result because ray and light point in opposite directions
+        // -> Saturate (= Clamp(0,1)) to prevent negative value
+        return saturate(dot(hit.normal, DirectionalLight.xyz) * -1) * DirectionalLight.w * hit.albedo;
+    }
+    else // No hit, render skybox
+    {
+        ray.energy = 0.0f; // Erase energy, sky doesn't reflect
+        
+        // Sample skybox and write it
+        
+        // Transform our cartesian direction vector to spherical coordinates
+        // -> See https://en.wikipedia.org/wiki/Spherical_coordinate_system#Coordinate_system_conversions
+        float theta = acos(ray.direction.y) / -PI;
+        float phi = atan2(ray.direction.x, -ray.direction.z) / -PI * 0.5f;
+    
+        // Sample the skybox with the spherical coordinates to set output texture color
+        return SkyboxTexture.SampleLevel(sampler_SkyboxTexture, float2(phi, theta), 0).xyz;
+    }
+}
+
+// ********************
+// Kernel main function
+// ********************
+[numthreads(8,8,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    // Set Pixel value for random
+    PixelSeed = id.xy;
+    
+    // Get RenderTexture dimensions
+    uint width, height;
+    Result.GetDimensions(width, height);
+    
+    // Calculate uv position and remap to [-1,1] range
+    float2 offset = UseAntialiasing ? PixelOffset : float2(0.5f, 0.5f); // uv pixel offset
+    float2 uv = float2((id.xy + offset) / float2(width, height)); // Calculate uv position
+    uv = uv * 2.0f - 1.0f; // Remap uv to [-1,1] range
+    
+    Ray ray = CreateCameraRay(uv);
+    
+    // Trace and Shade
+    float3 result = float3(0,0,0);
+    for (int i = 0; i < Bounces; i++) // 8 = max number of bounce
+    {
+        RayHit hit = Trace(ray);
+        result += ray.energy * Shade(ray, hit);
+        
+        if (!any(ray.energy)) break;
+    }
+
+    Result[id.xy] = float4(result, 1.0f);
+}
+
+
+// -----------------------
+//
+// Other kernel functions
+//
+// -----------------------
+
+
+
