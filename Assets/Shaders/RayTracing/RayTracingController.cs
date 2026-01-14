@@ -23,8 +23,8 @@ public class RayTracingController : MonoBehaviour
     public Texture skybox;
     public Light directionalLight;
     [Range(0, 8)] public int reflectionBounces = 8;
-    public Color albedoColor = new Color(0.8f, 0.8f, 0.8f);
-    [Range(0, 1)] public float specularValue = 0.6f;
+    public Color groundColor = new Color(0.8f, 0.8f, 0.8f);
+    [Range(0, 1)] public float defaultSpecular = 0.6f;
     public List<Transform> spheresTransforms = new List<Transform>();
     
     // Antialiasing
@@ -137,6 +137,8 @@ public class RayTracingController : MonoBehaviour
         shader.SetVector("PixelOffset", new Vector2(Random.value, Random.value));
         shader.SetBool("UseAntialiasing", useAntialiasing);
         shader.SetInt("Bounces", reflectionBounces);
+        shader.SetVector("DefaultSpecular", new Vector3(defaultSpecular, defaultSpecular, defaultSpecular));
+        shader.SetVector("GroundColor", new Vector3(groundColor.r, groundColor.g, groundColor.b));
         
         Vector3 lightDir = directionalLight.transform.forward;
         shader.SetVector("DirectionalLight", new Vector4(lightDir.x, lightDir.y, lightDir.z, directionalLight.intensity));
@@ -159,7 +161,7 @@ public class RayTracingController : MonoBehaviour
             Color color = Random.ColorHSV();
             bool metal = Random.value < 0.5f;
             sphereData.albedo = metal ? Vector3.zero : new Vector3(color.r, color.g, color.b);
-            sphereData.specular = metal ? new Vector3(color.r, color.g, color.b) :  Vector3.one * specularValue;
+            sphereData.specular = metal ? new Vector3(color.r, color.g, color.b) :  Vector3.one * defaultSpecular;
             spheresDatas[i] = sphereData;
         }
         

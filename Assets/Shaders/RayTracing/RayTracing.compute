@@ -35,11 +35,15 @@ struct SphereData
 };
 StructuredBuffer<SphereData> Spheres;
 
+// Ground
+float3 GroundColor;
+
 // Reflections
 int Bounces;
 
 // Directional light (XYZ = direction, W = Intensity )
 float4 DirectionalLight;
+float3 DefaultSpecular;
 
 // Ray
 struct Ray
@@ -110,6 +114,9 @@ void IntersectGroundPlane(Ray ray, inout RayHit bestHit)
         bestHit.distance = t;
         bestHit.position = ray.origin + t * ray.direction;
         bestHit.normal = float3(0.0f, 1.0f, 0.0f);
+        
+        bestHit.albedo = GroundColor;
+        bestHit.specular = DefaultSpecular;
     }
 }
 
