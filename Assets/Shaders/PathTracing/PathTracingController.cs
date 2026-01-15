@@ -13,7 +13,8 @@ public class PathTracingController : MonoBehaviour
         CSMain = 0,
         OnlyRayTracing = 1,
         Lambert = 2,
-        Phong = 3
+        Phong = 3,
+        BetterSampling = 4
     }
     [SerializeField] private Mode RenderMode = Mode.CSMain;
     public bool useAntialiasing;

@@ -2,6 +2,7 @@
 #pragma kernel CS_OnlyRayTracing // 1
 #pragma kernel CS_Lambert // 2
 #pragma kernel CS_Phong // 3
+#pragma kernel CS_BetterSampling // 4
 
 // Constants
 static const float PI = 3.14159265f;
@@ -152,6 +153,15 @@ float3 SampleHemisphere(float3 normal)
 float sdot(float3 x, float3 y, float f = 1.0f)
 {
     return saturate(dot(x, y) * f);
+}
+
+//
+// energy()
+// -> average color channels
+//
+float energy(float3 color)
+{
+    return dot(color, 1.0f / 3.0f);
 }
 
 //
@@ -333,6 +343,57 @@ float3 ShadePhong(inout Ray ray, RayHit hit)
     }
 }
 
+//
+// ShadeWithBetterSampling()
+// -> 
+//
+float3 ShadeWithBetterSampling(inout Ray ray, RayHit hit)
+{
+    if (hit.distance < 1.#INF)
+    {    
+        // calculate chances for diffuse or specular reflection
+        hit.albedo = min(1.0f - hit.specular, hit.albedo);
+        float specChance = energy(hit.specular);
+        float diffChance = energy(hit.albedo);
+        float sum = specChance + diffChance;
+        specChance /= sum;
+        diffChance /= sum;
+        
+        // randomize the selection for specular/diffuse path
+        float chance = rand();
+        if (chance < specChance)
+        {
+            // specular reflection
+            ray.origin = hit.position + hit.normal * 0.001f;
+            ray.direction = reflect(ray.direction, hit.normal);
+            ray.energy *= (1.0f / specChance) * hit.specular * sdot(hit.normal, ray.direction);
+        }
+        else
+        {
+            // Diffuse reflection
+            ray.origin = hit.position + hit.normal * 0.001f;
+            ray.direction = SampleHemisphere(hit.normal);
+            ray.energy *= (1.0f / diffChance) * 2 * hit.albedo * sdot(hit.normal, ray.direction);
+        }
+        
+        return 0.0f;
+    }
+    else // No hit, render skybox
+    {
+        ray.energy = 0.0f; // Erase energy, sky doesn't reflect
+        
+        // Sample skybox and write it
+        
+        // Transform our cartesian direction vector to spherical coordinates
+        // -> See https://en.wikipedia.org/wiki/Spherical_coordinate_system#Coordinate_system_conversions
+        float theta = acos(ray.direction.y) / -PI;
+        float phi = atan2(ray.direction.x, -ray.direction.z) / -PI * 0.5f;
+    
+        // Sample the skybox with the spherical coordinates to set output texture color
+        return SkyboxTexture.SampleLevel(sampler_SkyboxTexture, float2(phi, theta), 0).xyz;
+    }
+}
+
 // ********************
 // Kernel main function
 // ********************
@@ -358,7 +419,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     for (int i = 0; i < Bounces; i++) // 8 = max number of bounce
     {
         RayHit hit = Trace(ray);
-        result += ray.energy * ShadePhong(ray, hit);
+        result += ray.energy * ShadeWithBetterSampling(ray, hit);
         
         if (!any(ray.energy)) break;
     }
@@ -466,6 +527,39 @@ void CS_Phong (uint3 id : SV_DispatchThreadID)
     {
         RayHit hit = Trace(ray);
         result += ray.energy * ShadePhong(ray, hit);
+        
+        if (!any(ray.energy)) break;
+    }
+
+    Result[id.xy] = float4(result, 1.0f);
+}
+
+//
+// Better Sampling: Randomize diffuse and specular reflection to improve sampling
+//
+[numthreads(8,8,1)]
+void CS_BetterSampling (uint3 id : SV_DispatchThreadID)
+{
+    // Set Pixel value for random
+    PixelSeed = id.xy;
+    
+    // Get RenderTexture dimensions
+    uint width, height;
+    Result.GetDimensions(width, height);
+    
+    // Calculate uv position and remap to [-1,1] range
+    float2 offset = UseAntialiasing ? PixelOffset : float2(0.5f, 0.5f); // uv pixel offset
+    float2 uv = float2((id.xy + offset) / float2(width, height)); // Calculate uv position
+    uv = uv * 2.0f - 1.0f; // Remap uv to [-1,1] range
+    
+    Ray ray = CreateCameraRay(uv);
+    
+    // Trace and Shade
+    float3 result = float3(0,0,0);
+    for (int i = 0; i < Bounces; i++) // 8 = max number of bounce
+    {
+        RayHit hit = Trace(ray);
+        result += ray.energy * ShadeWithBetterSampling(ray, hit);
         
         if (!any(ray.energy)) break;
     }

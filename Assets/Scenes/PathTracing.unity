@@ -18666,7 +18666,7 @@ MonoBehaviour:
   reflectionBounces: 8
   groundColor: {r: 0.8, g: 0.8, b: 0.8, a: 1}
   defaultSpecular: 0.04
-  alpha: 300
+  phongAlpha: 300
   useRandomSpheres: 1
   randomSpheresMaxCount: 10000
   randomSpheresMinMaxScale: {x: 5, y: 30}
