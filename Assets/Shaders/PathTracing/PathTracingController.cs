@@ -23,6 +23,7 @@ public class PathTracingController : MonoBehaviour
     [Range(0, 8)] public int reflectionBounces = 8;
     public Color groundColor = new Color(0.8f, 0.8f, 0.8f);
     [Range(0, 1)] public float defaultSpecular = 0.6f;
+    public float phongAlpha = 15f;
     
     [Header("Random spheres placement settings")]
     public bool useRandomSpheres;
@@ -155,6 +156,7 @@ public class PathTracingController : MonoBehaviour
         shader.SetVector("DefaultSpecular", new Vector3(defaultSpecular, defaultSpecular, defaultSpecular));
         shader.SetVector("GroundColor", new Vector3(groundColor.r, groundColor.g, groundColor.b));
         shader.SetFloat("Seed", Random.value); // This little fucker make me lose a full afternoon, value must be 0.1 so we use Random.value, I was using randomSeed by mistake   
+        shader.SetFloat("Alpha", phongAlpha);
         
         Vector3 lightDir = directionalLight.transform.forward;
         shader.SetVector("DirectionalLight", new Vector4(lightDir.x, lightDir.y, lightDir.z, directionalLight.intensity));

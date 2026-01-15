@@ -18658,7 +18658,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PathTracingController
   randomSeed: 2147483647
-  RenderMode: 2
+  RenderMode: 0
   useAntialiasing: 1
   shader: {fileID: 7200000, guid: 3f8d02b2727f9ed4abf0d292941345d9, type: 3}
   skybox: {fileID: 2800000, guid: 09b5c8f00293b2648a1ff732cad64cf3, type: 3}
@@ -18666,6 +18666,7 @@ MonoBehaviour:
   reflectionBounces: 8
   groundColor: {r: 0.8, g: 0.8, b: 0.8, a: 1}
   defaultSpecular: 0.04
+  alpha: 300
   useRandomSpheres: 1
   randomSpheresMaxCount: 10000
   randomSpheresMinMaxScale: {x: 5, y: 30}
@@ -18778,7 +18779,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1530321713}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 618b0e3f6c65dd247a4a016150006c57, type: 3}
   m_Name: 

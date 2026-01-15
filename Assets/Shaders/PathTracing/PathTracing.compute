@@ -41,6 +41,9 @@ int Bounces;
 float4 DirectionalLight;
 float3 DefaultSpecular;
 
+// Alpha
+float Alpha;
+
 // Ray
 struct Ray
 {
@@ -309,8 +312,7 @@ float3 ShadePhong(inout Ray ray, RayHit hit)
         float3 reflected = reflect(ray.direction, hit.normal);
         ray.direction = SampleHemisphere(hit.normal);
         float3 diffuse = 2 * min(1.0f - hit.specular, hit.albedo);
-        float alpha = 300.0f; //15.0f; // Sharpness of reflections
-        float3 specular = hit.specular * (alpha + 2) * pow(sdot(ray.direction,reflected), alpha);
+        float3 specular = hit.specular * (Alpha + 2) * pow(sdot(ray.direction,reflected), Alpha);
         ray.energy *= (diffuse + specular) * sdot(hit.normal, ray.direction);        
         
         return 0.0f;
