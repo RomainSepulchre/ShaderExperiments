@@ -92,7 +92,6 @@ public class RayTracingController : MonoBehaviour
         InitializeRenderTexture();
 
         shader.SetTexture((int)RenderMode, "Result", rt);
-        SetShaderParameters();
 
         int threadGroupsX = Mathf.CeilToInt(Screen.width / 8.0f); // 8 -> numthreads.x
         int threadGroupsY = Mathf.CeilToInt(Screen.height / 8.0f); // 8 -> numthreads.y

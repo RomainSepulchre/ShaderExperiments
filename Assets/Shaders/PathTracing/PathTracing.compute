@@ -1,4 +1,7 @@
 #pragma kernel CSMain  // 0
+#pragma kernel CS_OnlyRayTracing // 1
+#pragma kernel CS_Lambert // 2
+#pragma kernel CS_Phong // 3
 
 // Constants
 static const float PI = 3.14159265f;
@@ -80,7 +83,7 @@ RayHit CreateRayHit()
 float2 PixelSeed; // pixel position to have different random value for every pixel
 float Seed;
 
-float rand( float2 pixel)
+float rand()
 {
     float result = frac(sin(Seed / 100.0f * dot(PixelSeed, float2(12.9898f, 78.233f))) * 43758.5453f);
     Seed += 1.0f;
@@ -104,6 +107,48 @@ Ray CreateCameraRay(float2 uv)
     direction = normalize(direction);
     
     return CreateRay(origin, direction);
+}
+
+
+//
+// GetTangentSpace()
+// -> Build and return a TBN matrix (Tangent, Binormal, Normal) to calculate tangent space
+//
+float3x3 GetTangentSpace(float3 normal)
+{
+    float3 helper = float3(1,0,0); // helper vector for cross product
+    if (abs(normal.x) > 0.99f) helper = float3(0,0,1);
+    
+    // Generate tangent and binormal vectors
+    float3 tangent = normalize(cross(normal, helper));
+    float3 binormal = normalize(cross(normal, tangent));
+    return float3x3(tangent, binormal, normal);
+}
+
+//
+// SampleHemisphere()
+// -> return random directions uniformly distributed on the hemisphere
+//
+float3 SampleHemisphere(float3 normal)
+{
+    // Uniformly sample hemisphere direction
+    float cosTheta = rand();
+    float sinTheta = sqrt( max(0.0f, 1.0f - cosTheta * cosTheta));
+    float phi = 2 * PI * rand();
+    float3 tangentSpaceDir = float3(cos(phi) * sinTheta, sin(phi) * sinTheta, cosTheta);
+    
+    // Convert tangent-space direction to world-space with TBN Matrix
+    return mul (tangentSpaceDir, GetTangentSpace(normal));
+}
+
+
+//
+// sdot()
+// -> utility that return a saturated dot product (clamped bet 0 and 1)
+//
+float sdot(float3 x, float3 y, float f = 1.0f)
+{
+    return saturate(dot(x, y) * f);
 }
 
 //
@@ -139,7 +184,7 @@ void IntersectSphere(Ray ray, inout RayHit bestHit, SphereData sphere)
     if (p2sqr < 0) return;
     
     float p2 = sqrt(p2sqr);
-    float t = p1 - p2 > 0 ? p1- p2 : p1 + p2;
+    float t = p1 - p2 > 0 ? p1 - p2 : p1 + p2;
     if (t > 0 && t < bestHit.distance)
     {
         bestHit.distance = t;
@@ -222,11 +267,116 @@ float3 Shade(inout Ray ray, RayHit hit)
     }
 }
 
+//
+// ShadeLambert()
+// -> 
+//
+float3 ShadeLambert(inout Ray ray, RayHit hit)
+{
+    if (hit.distance < 1.#INF)
+    {        
+        ray.origin = hit.position + hit.normal * 0.001f; // 0.001f offset to prevent self-occlusion
+        ray.direction = SampleHemisphere(hit.normal);
+        ray.energy *= 2 * hit.albedo * sdot(hit.normal, ray.direction);
+        
+        return 0.0f;
+    }
+    else // No hit, render skybox
+    {
+        ray.energy = 0.0f; // Erase energy, sky doesn't reflect
+        
+        // Sample skybox and write it
+        
+        // Transform our cartesian direction vector to spherical coordinates
+        // -> See https://en.wikipedia.org/wiki/Spherical_coordinate_system#Coordinate_system_conversions
+        float theta = acos(ray.direction.y) / -PI;
+        float phi = atan2(ray.direction.x, -ray.direction.z) / -PI * 0.5f;
+    
+        // Sample the skybox with the spherical coordinates to set output texture color
+        return SkyboxTexture.SampleLevel(sampler_SkyboxTexture, float2(phi, theta), 0).xyz;
+    }
+}
+
+//
+// ShadePhong()
+// -> 
+//
+float3 ShadePhong(inout Ray ray, RayHit hit)
+{
+    if (hit.distance < 1.#INF)
+    {    
+        ray.origin = hit.position + hit.normal * 0.001f; // 0.001f offset to prevent self-occlusion
+        float3 reflected = reflect(ray.direction, hit.normal);
+        ray.direction = SampleHemisphere(hit.normal);
+        float3 diffuse = 2 * min(1.0f - hit.specular, hit.albedo);
+        float alpha = 300.0f; //15.0f; // Sharpness of reflections
+        float3 specular = hit.specular * (alpha + 2) * pow(sdot(ray.direction,reflected), alpha);
+        ray.energy *= (diffuse + specular) * sdot(hit.normal, ray.direction);        
+        
+        return 0.0f;
+    }
+    else // No hit, render skybox
+    {
+        ray.energy = 0.0f; // Erase energy, sky doesn't reflect
+        
+        // Sample skybox and write it
+        
+        // Transform our cartesian direction vector to spherical coordinates
+        // -> See https://en.wikipedia.org/wiki/Spherical_coordinate_system#Coordinate_system_conversions
+        float theta = acos(ray.direction.y) / -PI;
+        float phi = atan2(ray.direction.x, -ray.direction.z) / -PI * 0.5f;
+    
+        // Sample the skybox with the spherical coordinates to set output texture color
+        return SkyboxTexture.SampleLevel(sampler_SkyboxTexture, float2(phi, theta), 0).xyz;
+    }
+}
+
 // ********************
 // Kernel main function
 // ********************
 [numthreads(8,8,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    // Set Pixel value for random
+    PixelSeed = id.xy;
+    
+    // Get RenderTexture dimensions
+    uint width, height;
+    Result.GetDimensions(width, height);
+    
+    // Calculate uv position and remap to [-1,1] range
+    float2 offset = UseAntialiasing ? PixelOffset : float2(0.5f, 0.5f); // uv pixel offset
+    float2 uv = float2((id.xy + offset) / float2(width, height)); // Calculate uv position
+    uv = uv * 2.0f - 1.0f; // Remap uv to [-1,1] range
+    
+    Ray ray = CreateCameraRay(uv);
+    
+    // Trace and Shade
+    float3 result = float3(0,0,0);
+    for (int i = 0; i < Bounces; i++) // 8 = max number of bounce
+    {
+        RayHit hit = Trace(ray);
+        result += ray.energy * ShadePhong(ray, hit);
+        
+        if (!any(ray.energy)) break;
+    }
+
+    Result[id.xy] = float4(result, 1.0f);
+}
+
+
+
+// -----------------------
+//
+// Other kernel functions
+//
+// -----------------------
+
+//
+// Only ray tracing: code before any path tracing implementation
+//
+[numthreads(8,8,1)]
+void CS_OnlyRayTracing (uint3 id : SV_DispatchThreadID)
 {
     // Set Pixel value for random
     PixelSeed = id.xy;
@@ -255,12 +405,69 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     Result[id.xy] = float4(result, 1.0f);
 }
 
-
-// -----------------------
 //
-// Other kernel functions
+// Lambert: Render with Lambert shading
 //
-// -----------------------
+[numthreads(8,8,1)]
+void CS_Lambert (uint3 id : SV_DispatchThreadID)
+{
+    // Set Pixel value for random
+    PixelSeed = id.xy;
+    
+    // Get RenderTexture dimensions
+    uint width, height;
+    Result.GetDimensions(width, height);
+    
+    // Calculate uv position and remap to [-1,1] range
+    float2 offset = UseAntialiasing ? PixelOffset : float2(0.5f, 0.5f); // uv pixel offset
+    float2 uv = float2((id.xy + offset) / float2(width, height)); // Calculate uv position
+    uv = uv * 2.0f - 1.0f; // Remap uv to [-1,1] range
+    
+    Ray ray = CreateCameraRay(uv);
+    
+    // Trace and Shade
+    float3 result = float3(0,0,0);
+    for (int i = 0; i < Bounces; i++) // 8 = max number of bounce
+    {
+        RayHit hit = Trace(ray);
+        result += ray.energy * ShadeLambert(ray, hit);
+        
+        if (!any(ray.energy)) break;
+    }
 
+    Result[id.xy] = float4(result, 1.0f);
+}
 
+//
+// Phong: Render with Phong shading
+//
+[numthreads(8,8,1)]
+void CS_Phong (uint3 id : SV_DispatchThreadID)
+{
+    // Set Pixel value for random
+    PixelSeed = id.xy;
+    
+    // Get RenderTexture dimensions
+    uint width, height;
+    Result.GetDimensions(width, height);
+    
+    // Calculate uv position and remap to [-1,1] range
+    float2 offset = UseAntialiasing ? PixelOffset : float2(0.5f, 0.5f); // uv pixel offset
+    float2 uv = float2((id.xy + offset) / float2(width, height)); // Calculate uv position
+    uv = uv * 2.0f - 1.0f; // Remap uv to [-1,1] range
+    
+    Ray ray = CreateCameraRay(uv);
+    
+    // Trace and Shade
+    float3 result = float3(0,0,0);
+    for (int i = 0; i < Bounces; i++) // 8 = max number of bounce
+    {
+        RayHit hit = Trace(ray);
+        result += ray.energy * ShadePhong(ray, hit);
+        
+        if (!any(ray.energy)) break;
+    }
+
+    Result[id.xy] = float4(result, 1.0f);
+}
 

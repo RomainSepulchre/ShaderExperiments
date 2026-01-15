@@ -10,7 +10,10 @@ public class PathTracingController : MonoBehaviour
     public int randomSeed;
     private enum Mode
     {
-        CSMain = 0
+        CSMain = 0,
+        OnlyRayTracing = 1,
+        Lambert = 2,
+        Phong = 3
     }
     [SerializeField] private Mode RenderMode = Mode.CSMain;
     public bool useAntialiasing;
@@ -93,13 +96,12 @@ public class PathTracingController : MonoBehaviour
     private void Render(RenderTexture destination)
     {
         InitializeRenderTexture();
-
+    
         shader.SetTexture((int)RenderMode, "Result", rt);
-        SetShaderParameters();
-
+    
         int threadGroupsX = Mathf.CeilToInt(Screen.width / 8.0f); // 8 -> numthreads.x
         int threadGroupsY = Mathf.CeilToInt(Screen.height / 8.0f); // 8 -> numthreads.y
-
+    
         shader.Dispatch((int)RenderMode, threadGroupsX, threadGroupsY, 1);
         
         // TODO: Why releasing the buffer here brings memory leaks (probably related to the call frequency of OnRenderImage())
@@ -125,12 +127,20 @@ public class PathTracingController : MonoBehaviour
     {
         if (rt == null || rt.width != Screen.width || rt.height != Screen.height)
         {
-            if (rt != null) rt.Release(); // Release already existing render texture
-
+            if (rt != null)
+            {
+                rt.Release(); // Release already existing render texture
+                rtConverged.Release();
+            }
+    
             rt = new RenderTexture(Screen.width, Screen.height, 0, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear);
-            rtConverged = new RenderTexture(Screen.width, Screen.height, 0, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear);
             rt.enableRandomWrite = true;
             rt.Create();
+            rtConverged = new RenderTexture(Screen.width, Screen.height, 0, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear);
+            rtConverged.enableRandomWrite = true;
+            rtConverged.Create();
+    
+            currentSample = 0;
         }
     }
     
@@ -144,7 +154,7 @@ public class PathTracingController : MonoBehaviour
         shader.SetInt("Bounces", reflectionBounces);
         shader.SetVector("DefaultSpecular", new Vector3(defaultSpecular, defaultSpecular, defaultSpecular));
         shader.SetVector("GroundColor", new Vector3(groundColor.r, groundColor.g, groundColor.b));
-        shader.SetFloat("Seed", randomSeed);
+        shader.SetFloat("Seed", Random.value); // This little fucker make me lose a full afternoon, value must be 0.1 so we use Random.value, I was using randomSeed by mistake   
         
         Vector3 lightDir = directionalLight.transform.forward;
         shader.SetVector("DirectionalLight", new Vector4(lightDir.x, lightDir.y, lightDir.z, directionalLight.intensity));
@@ -152,6 +162,7 @@ public class PathTracingController : MonoBehaviour
         //SetSpheresComputeBuffer();
         shader.SetBuffer((int)RenderMode, "Spheres", spheresBuffer);
     }
+
 
     private void SetSpheresComputeBuffer()
     {
@@ -184,7 +195,7 @@ public class PathTracingController : MonoBehaviour
 
                 // Albedo and specular color
                 Color color = Random.ColorHSV();
-                bool metal = Random.value < 0.5f;
+                bool metal = RenderMode == Mode.Lambert ? false : Random.value < 0.5f;
                 sphere.albedo = metal ? Vector3.zero : new Vector3(color.r, color.g, color.b);
                 sphere.specular = metal ? new Vector3(color.r, color.g, color.b) : Vector3.one * 0.04f;
 
@@ -209,7 +220,7 @@ public class PathTracingController : MonoBehaviour
                 // sphereData.albedo = new Vector3(albedoColor.r, albedoColor.g, albedoColor.b);
                 // sphereData.specular = new Vector3(specularValue, specularValue, specularValue);
                 Color color = Random.ColorHSV();
-                bool metal = Random.value < 0.5f;
+                bool metal = RenderMode == Mode.Lambert ? false : Random.value < 0.5f;
                 sphereData.albedo = metal ? Vector3.zero : new Vector3(color.r, color.g, color.b);
                 sphereData.specular = metal ? new Vector3(color.r, color.g, color.b) :  Vector3.one * defaultSpecular;
                 spheresDatas[i] = sphereData;
