@@ -18659,9 +18659,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PathTracingController
   randomSeed: 2147483647
   RenderMode: 0
-  useAntialiasing: 1
   shader: {fileID: 7200000, guid: 3f8d02b2727f9ed4abf0d292941345d9, type: 3}
-  skybox: {fileID: 2800000, guid: 09b5c8f00293b2648a1ff732cad64cf3, type: 3}
+  skybox: {fileID: 2800000, guid: 4c62bdd92fd36204280078a97210f246, type: 3}
   directionalLight: {fileID: 482406648}
   reflectionBounces: 8
   groundColor: {r: 0.8, g: 0.8, b: 0.8, a: 1}

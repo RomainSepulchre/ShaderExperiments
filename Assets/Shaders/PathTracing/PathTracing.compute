@@ -3,6 +3,7 @@
 #pragma kernel CS_Lambert // 2
 #pragma kernel CS_Phong // 3
 #pragma kernel CS_BetterSampling // 4
+#pragma kernel CS_ImportanceSampling // 5
 
 // Constants
 static const float PI = 3.14159265f;
@@ -20,7 +21,6 @@ float4x4 CameraInverseProjection;
 
 // Antialiasing
 float2 PixelOffset;
-bool UseAntialiasing;
 
 // Sphere structured buffer
 struct SphereData
@@ -87,11 +87,31 @@ RayHit CreateRayHit()
 float2 PixelSeed; // pixel position to have different random value for every pixel
 float Seed;
 
+//
+// Utilities
+//
+
+// rand()
+// -> return a pseudo-random number 
 float rand()
 {
     float result = frac(sin(Seed / 100.0f * dot(PixelSeed, float2(12.9898f, 78.233f))) * 43758.5453f);
     Seed += 1.0f;
     return result;
+}
+
+// sdot()
+// -> utility that return a saturated dot product (clamped bet 0 and 1)
+float sdot(float3 x, float3 y, float f = 1.0f)
+{
+    return saturate(dot(x, y) * f);
+}
+
+// energy()
+// -> average color channels
+float energy(float3 color)
+{
+    return dot(color, 1.0f / 3.0f);
 }
 
 //
@@ -131,7 +151,7 @@ float3x3 GetTangentSpace(float3 normal)
 
 //
 // SampleHemisphere()
-// -> return random directions uniformly distributed on the hemisphere
+// -> return random directions with an uniform sample distribution on the hemisphere
 //
 float3 SampleHemisphere(float3 normal)
 {
@@ -145,24 +165,22 @@ float3 SampleHemisphere(float3 normal)
     return mul (tangentSpaceDir, GetTangentSpace(normal));
 }
 
-
 //
-// sdot()
-// -> utility that return a saturated dot product (clamped bet 0 and 1)
+// SampleHemisphereCosine()
+// -> return random directions with a cosine distribution on the hemisphere
 //
-float sdot(float3 x, float3 y, float f = 1.0f)
+float3 SampleHemisphereCosine(float3 normal, float alpha)
 {
-    return saturate(dot(x, y) * f);
+    // Sample hemisphere with alpha to determine the kind of sampling
+    float cosTheta = pow(rand(), 1.0f / (alpha + 1.0f));
+    float sinTheta = sqrt(1.0f - cosTheta * cosTheta);
+    float phi = 2 * PI * rand();
+    float3 tangentSpaceDir = float3(cos(phi) * sinTheta, sin(phi) * sinTheta, cosTheta);
+    
+    // Convert tangent-space direction to world-space with TBN Matrix
+    return mul (tangentSpaceDir, GetTangentSpace(normal));
 }
 
-//
-// energy()
-// -> average color channels
-//
-float energy(float3 color)
-{
-    return dot(color, 1.0f / 3.0f);
-}
 
 //
 // IntersectGroundPlane()
@@ -394,6 +412,58 @@ float3 ShadeWithBetterSampling(inout Ray ray, RayHit hit)
     }
 }
 
+//
+// ShadeWithImportanceSampling()
+// -> 
+//
+float3 ShadeWithImportanceSampling(inout Ray ray, RayHit hit)
+{
+    if (hit.distance < 1.#INF)
+    {    
+        // calculate chances for diffuse or specular reflection
+        hit.albedo = min(1.0f - hit.specular, hit.albedo);
+        float specChance = energy(hit.specular);
+        float diffChance = energy(hit.albedo);
+        float sum = specChance + diffChance;
+        specChance /= sum;
+        diffChance /= sum;
+        
+        // randomize the selection for specular/diffuse path
+        float chance = rand();
+        if (chance < specChance)
+        {
+            // specular reflection
+            ray.origin = hit.position + hit.normal * 0.001f;
+            ray.direction = SampleHemisphereCosine(reflect(ray.direction, hit.normal), Alpha);
+            float f = (Alpha + 2) / (Alpha + 1);
+            ray.energy *= (1.0f / specChance) * hit.specular * sdot(hit.normal, ray.direction, f);
+        }
+        else
+        {
+            // Diffuse reflection
+            ray.origin = hit.position + hit.normal * 0.001f;
+            ray.direction = SampleHemisphereCosine(hit.normal, 1.0f);
+            ray.energy *= (1.0f / diffChance) * 2 * hit.albedo;
+        }
+        
+        return 0.0f;
+    }
+    else // No hit, render skybox
+    {
+        ray.energy = 0.0f; // Erase energy, sky doesn't reflect
+        
+        // Sample skybox and write it
+        
+        // Transform our cartesian direction vector to spherical coordinates
+        // -> See https://en.wikipedia.org/wiki/Spherical_coordinate_system#Coordinate_system_conversions
+        float theta = acos(ray.direction.y) / -PI;
+        float phi = atan2(ray.direction.x, -ray.direction.z) / -PI * 0.5f;
+    
+        // Sample the skybox with the spherical coordinates to set output texture color
+        return SkyboxTexture.SampleLevel(sampler_SkyboxTexture, float2(phi, theta), 0).xyz;
+    }
+}
+
 // ********************
 // Kernel main function
 // ********************
@@ -408,8 +478,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     Result.GetDimensions(width, height);
     
     // Calculate uv position and remap to [-1,1] range
-    float2 offset = UseAntialiasing ? PixelOffset : float2(0.5f, 0.5f); // uv pixel offset
-    float2 uv = float2((id.xy + offset) / float2(width, height)); // Calculate uv position
+    float2 uv = float2((id.xy + PixelOffset) / float2(width, height)); // Calculate uv position
     uv = uv * 2.0f - 1.0f; // Remap uv to [-1,1] range
     
     Ray ray = CreateCameraRay(uv);
@@ -419,7 +488,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     for (int i = 0; i < Bounces; i++) // 8 = max number of bounce
     {
         RayHit hit = Trace(ray);
-        result += ray.energy * ShadeWithBetterSampling(ray, hit);
+        result += ray.energy * ShadeWithImportanceSampling(ray, hit);
         
         if (!any(ray.energy)) break;
     }
@@ -449,8 +518,7 @@ void CS_OnlyRayTracing (uint3 id : SV_DispatchThreadID)
     Result.GetDimensions(width, height);
     
     // Calculate uv position and remap to [-1,1] range
-    float2 offset = UseAntialiasing ? PixelOffset : float2(0.5f, 0.5f); // uv pixel offset
-    float2 uv = float2((id.xy + offset) / float2(width, height)); // Calculate uv position
+    float2 uv = float2((id.xy + PixelOffset) / float2(width, height)); // Calculate uv position
     uv = uv * 2.0f - 1.0f; // Remap uv to [-1,1] range
     
     Ray ray = CreateCameraRay(uv);
@@ -482,8 +550,7 @@ void CS_Lambert (uint3 id : SV_DispatchThreadID)
     Result.GetDimensions(width, height);
     
     // Calculate uv position and remap to [-1,1] range
-    float2 offset = UseAntialiasing ? PixelOffset : float2(0.5f, 0.5f); // uv pixel offset
-    float2 uv = float2((id.xy + offset) / float2(width, height)); // Calculate uv position
+    float2 uv = float2((id.xy + PixelOffset) / float2(width, height)); // Calculate uv position
     uv = uv * 2.0f - 1.0f; // Remap uv to [-1,1] range
     
     Ray ray = CreateCameraRay(uv);
@@ -515,8 +582,7 @@ void CS_Phong (uint3 id : SV_DispatchThreadID)
     Result.GetDimensions(width, height);
     
     // Calculate uv position and remap to [-1,1] range
-    float2 offset = UseAntialiasing ? PixelOffset : float2(0.5f, 0.5f); // uv pixel offset
-    float2 uv = float2((id.xy + offset) / float2(width, height)); // Calculate uv position
+    float2 uv = float2((id.xy + PixelOffset) / float2(width, height)); // Calculate uv position
     uv = uv * 2.0f - 1.0f; // Remap uv to [-1,1] range
     
     Ray ray = CreateCameraRay(uv);
@@ -548,8 +614,7 @@ void CS_BetterSampling (uint3 id : SV_DispatchThreadID)
     Result.GetDimensions(width, height);
     
     // Calculate uv position and remap to [-1,1] range
-    float2 offset = UseAntialiasing ? PixelOffset : float2(0.5f, 0.5f); // uv pixel offset
-    float2 uv = float2((id.xy + offset) / float2(width, height)); // Calculate uv position
+    float2 uv = float2((id.xy + PixelOffset) / float2(width, height)); // Calculate uv position
     uv = uv * 2.0f - 1.0f; // Remap uv to [-1,1] range
     
     Ray ray = CreateCameraRay(uv);
@@ -567,3 +632,34 @@ void CS_BetterSampling (uint3 id : SV_DispatchThreadID)
     Result[id.xy] = float4(result, 1.0f);
 }
 
+//
+// Importance Sampling: improve diffuse and specular rendering with importance sampling
+//
+[numthreads(8,8,1)]
+void CS_ImportanceSampling (uint3 id : SV_DispatchThreadID)
+{
+    // Set Pixel value for random
+    PixelSeed = id.xy;
+    
+    // Get RenderTexture dimensions
+    uint width, height;
+    Result.GetDimensions(width, height);
+    
+    // Calculate uv position and remap to [-1,1] range
+    float2 uv = float2((id.xy + PixelOffset) / float2(width, height)); // Calculate uv position
+    uv = uv * 2.0f - 1.0f; // Remap uv to [-1,1] range
+    
+    Ray ray = CreateCameraRay(uv);
+    
+    // Trace and Shade
+    float3 result = float3(0,0,0);
+    for (int i = 0; i < Bounces; i++) // 8 = max number of bounce
+    {
+        RayHit hit = Trace(ray);
+        result += ray.energy * ShadeWithImportanceSampling(ray, hit);
+        
+        if (!any(ray.energy)) break;
+    }
+
+    Result[id.xy] = float4(result, 1.0f);
+}

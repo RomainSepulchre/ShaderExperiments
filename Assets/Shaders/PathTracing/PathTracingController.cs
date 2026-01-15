@@ -14,10 +14,10 @@ public class PathTracingController : MonoBehaviour
         OnlyRayTracing = 1,
         Lambert = 2,
         Phong = 3,
-        BetterSampling = 4
+        BetterSampling = 4,
+        ImportanceSampling = 5
     }
     [SerializeField] private Mode RenderMode = Mode.CSMain;
-    public bool useAntialiasing;
     public ComputeShader shader;
     public Texture skybox;
     public Light directionalLight;
@@ -109,20 +109,12 @@ public class PathTracingController : MonoBehaviour
         // TODO: Why releasing the buffer here brings memory leaks (probably related to the call frequency of OnRenderImage())
         //if(spheresBuffer != null) spheresBuffer.Release();
         
-        if (useAntialiasing)
-        {
-            if(antiAliasingMaterial == null) antiAliasingMaterial = new Material(Shader.Find("Hidden/Antialiasing"));
-            antiAliasingMaterial.SetFloat("_Sample", currentSample);
-            
-            Graphics.Blit(rt, rtConverged, antiAliasingMaterial);
-            Graphics.Blit(rtConverged, destination); // Write result to screen
-            currentSample++;
-        }
-        else
-        {
-            Graphics.Blit(rt, rtConverged);
-            Graphics.Blit(rtConverged, destination); // Write result to screen
-        }
+        if(antiAliasingMaterial == null) antiAliasingMaterial = new Material(Shader.Find("Hidden/Antialiasing"));
+        antiAliasingMaterial.SetFloat("_Sample", currentSample);
+        
+        Graphics.Blit(rt, rtConverged, antiAliasingMaterial);
+        Graphics.Blit(rtConverged, destination); // Write result to screen
+        currentSample++;
     }
 
     private void InitializeRenderTexture()
@@ -152,7 +144,6 @@ public class PathTracingController : MonoBehaviour
         shader.SetMatrix("CameraToWorld", cam.cameraToWorldMatrix);
         shader.SetMatrix("CameraInverseProjection", cam.projectionMatrix.inverse);
         shader.SetVector("PixelOffset", new Vector2(Random.value, Random.value));
-        shader.SetBool("UseAntialiasing", useAntialiasing);
         shader.SetInt("Bounces", reflectionBounces);
         shader.SetVector("DefaultSpecular", new Vector3(defaultSpecular, defaultSpecular, defaultSpecular));
         shader.SetVector("GroundColor", new Vector3(groundColor.r, groundColor.g, groundColor.b));
