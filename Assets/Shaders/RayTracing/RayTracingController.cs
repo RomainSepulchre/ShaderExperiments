@@ -53,6 +53,7 @@ public class RayTracingController : MonoBehaviour
 
     private void Update()
     {
+        // Check for change to reset the antialiasing shader sample count and show changes immediately
         if (transform.hasChanged)
         {
             currentSample = 0;
@@ -65,6 +66,16 @@ public class RayTracingController : MonoBehaviour
             directionalLight.transform.hasChanged = false;
         }
         
+        foreach (Transform tf in spheresTransforms)
+        {
+            if (tf.hasChanged)
+            {
+                currentSample = 0;
+                tf.hasChanged = false;
+            }
+        }
+        
+        // Update sphere position
         UpdateSpheresComputeBuffer();
     }
 

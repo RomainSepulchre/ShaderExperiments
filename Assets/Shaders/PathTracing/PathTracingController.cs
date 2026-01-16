@@ -78,6 +78,15 @@ public class PathTracingController : MonoBehaviour
             currentSample = 0;
             directionalLight.transform.hasChanged = false;
         }
+
+        foreach (Transform tf in spheresTransforms)
+        {
+            if (tf.hasChanged)
+            {
+                currentSample = 0;
+                tf.hasChanged = false;
+            }
+        }
         
         UpdateSpheresComputeBuffer();
     }
@@ -171,6 +180,8 @@ public class PathTracingController : MonoBehaviour
         if (useRandomSpheres) // Use a random sphere placement
         {
             List<SphereData> spheresAdded = new List<SphereData>();
+            spheresTransforms = new List<Transform>();
+            GameObject spheresParent = new GameObject("Random spheres");
 
             // Add a number of random spheres
             for (int i = 0; i < randomSpheresMaxCount; i++)
@@ -191,6 +202,12 @@ public class PathTracingController : MonoBehaviour
                     if (Vector3.SqrMagnitude(sphere.position - other.position) < minDist * minDist)
                         goto SkipSphere;
                 }
+                
+                GameObject spheresObj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                spheresObj.name = $"Sphere_{i}";
+                spheresObj.transform.parent = spheresParent.transform;
+                spheresObj.transform.position = sphere.position;
+                spheresObj.transform.localScale = Vector3.one * sphere.scale;
                 
                 // Albedo and specular color
                 Color color = Random.ColorHSV();
@@ -215,6 +232,7 @@ public class PathTracingController : MonoBehaviour
                 
                 // Add the sphere to the list
                 spheresAdded.Add(sphere);
+                spheresTransforms.Add(spheresObj.transform);
 
                 SkipSphere:
                 continue;
@@ -240,18 +258,18 @@ public class PathTracingController : MonoBehaviour
                 sphereData.smoothness = Random.value;
                 
                 // Set ~20% of emissive sphere
-                // float chanceOfEmissive = Random.value;
-                // if (UseSmoothnessAndEmission && chanceOfEmissive > 0.8f)
-                // {
-                //     // Reset albedo, specular and smoothness
-                //     sphereData.albedo = Vector3.zero;
-                //     sphereData.specular = Vector3.zero;
-                //     sphereData.smoothness = 0.0f;
-                //         
-                //     // Set emissive
-                //     Color emission = Random.ColorHSV(0, 1, 0, 1, 3.0f, 8.0f);
-                //     sphereData.emission = new Vector3(emission.r, emission.g, emission.b);
-                // }
+                float chanceOfEmissive = Random.value;
+                if (UseSmoothnessAndEmission && chanceOfEmissive > 0.8f)
+                {
+                    // Reset albedo, specular and smoothness
+                    sphereData.albedo = Vector3.zero;
+                    sphereData.specular = Vector3.zero;
+                    sphereData.smoothness = 0.0f;
+                        
+                    // Set emissive
+                    Color emission = Random.ColorHSV(0, 1, 0, 1, 3.0f, 8.0f);
+                    sphereData.emission = new Vector3(emission.r, emission.g, emission.b);
+                }
                 
                 spheresDatas[i] = sphereData;
             }
@@ -265,7 +283,9 @@ public class PathTracingController : MonoBehaviour
     
     private void UpdateSpheresComputeBuffer()
     {
-        if(spheresDatas.Length == 0 || useRandomSpheres) return;
+        if(spheresDatas.Length == 0) return;
+        
+        if(spheresDatas.Length != spheresTransforms.Count) Debug.LogError($"Difference between spheresTransforms.Count ({spheresTransforms.Count}) and sphereDatas.Length ({spheresDatas.Length}): this may lead to issue when updating the spheres");
         
         for (int i = 0; i < spheresDatas.Length; i++)
         {
@@ -277,7 +297,7 @@ public class PathTracingController : MonoBehaviour
         if(spheresBuffer != null) spheresBuffer.Release();
         
         // Set compute buffer
-        int stride = (3 * (sizeof(float) * 3)) + sizeof(float); // 3 * vector3 + float
+        int stride = (4 * (sizeof(float) * 3)) +  (2 * sizeof(float)); // 4 * vector3 + 2 * float
         spheresBuffer = new ComputeBuffer(spheresDatas.Length, stride);
         spheresBuffer.SetData(spheresDatas);
     }
