@@ -4,6 +4,7 @@
 #pragma kernel CS_Phong // 3
 #pragma kernel CS_BetterSampling // 4
 #pragma kernel CS_ImportanceSampling // 5
+#pragma kernel CS_SmoothnessEmission // 6
 
 // Constants
 static const float PI = 3.14159265f;
@@ -311,7 +312,7 @@ float3 Shade(inout Ray ray, RayHit hit)
         float phi = atan2(ray.direction.x, -ray.direction.z) / -PI * 0.5f;
     
         // Sample the skybox with the spherical coordinates to set output texture color
-        return SkyboxTexture.SampleLevel(sampler_SkyboxTexture, float2(phi, theta), 0).xyz;
+        return SkyboxTexture.SampleLevel(sampler_SkyboxTexture, float2(phi, theta), 0).xyz * DirectionalLight.w;
     }
 }
 
@@ -341,7 +342,7 @@ float3 ShadeLambert(inout Ray ray, RayHit hit)
         float phi = atan2(ray.direction.x, -ray.direction.z) / -PI * 0.5f;
     
         // Sample the skybox with the spherical coordinates to set output texture color
-        return SkyboxTexture.SampleLevel(sampler_SkyboxTexture, float2(phi, theta), 0).xyz;
+        return SkyboxTexture.SampleLevel(sampler_SkyboxTexture, float2(phi, theta), 0).xyz * DirectionalLight.w;
     }
 }
 
@@ -374,7 +375,7 @@ float3 ShadePhong(inout Ray ray, RayHit hit)
         float phi = atan2(ray.direction.x, -ray.direction.z) / -PI * 0.5f;
     
         // Sample the skybox with the spherical coordinates to set output texture color
-        return SkyboxTexture.SampleLevel(sampler_SkyboxTexture, float2(phi, theta), 0).xyz;
+        return SkyboxTexture.SampleLevel(sampler_SkyboxTexture, float2(phi, theta), 0).xyz * DirectionalLight.w;
     }
 }
 
@@ -425,7 +426,7 @@ float3 ShadeWithBetterSampling(inout Ray ray, RayHit hit)
         float phi = atan2(ray.direction.x, -ray.direction.z) / -PI * 0.5f;
     
         // Sample the skybox with the spherical coordinates to set output texture color
-        return SkyboxTexture.SampleLevel(sampler_SkyboxTexture, float2(phi, theta), 0).xyz;
+        return SkyboxTexture.SampleLevel(sampler_SkyboxTexture, float2(phi, theta), 0).xyz * DirectionalLight.w;
     }
 }
 
@@ -477,7 +478,7 @@ float3 ShadeWithImportanceSampling(inout Ray ray, RayHit hit)
         float phi = atan2(ray.direction.x, -ray.direction.z) / -PI * 0.5f;
     
         // Sample the skybox with the spherical coordinates to set output texture color
-        return SkyboxTexture.SampleLevel(sampler_SkyboxTexture, float2(phi, theta), 0).xyz;
+        return SkyboxTexture.SampleLevel(sampler_SkyboxTexture, float2(phi, theta), 0).xyz * DirectionalLight.w;
     }
 }
 
@@ -536,7 +537,7 @@ float3 ShadeWithSmoothnessEmissive(inout Ray ray, RayHit hit)
         float phi = atan2(ray.direction.x, -ray.direction.z) / -PI * 0.5f;
     
         // Sample the skybox with the spherical coordinates to set output texture color
-        return SkyboxTexture.SampleLevel(sampler_SkyboxTexture, float2(phi, theta), 0).xyz;
+        return SkyboxTexture.SampleLevel(sampler_SkyboxTexture, float2(phi, theta), 0).xyz * DirectionalLight.w;
     }
 }
 
@@ -733,6 +734,38 @@ void CS_ImportanceSampling (uint3 id : SV_DispatchThreadID)
     {
         RayHit hit = Trace(ray);
         result += ray.energy * ShadeWithImportanceSampling(ray, hit);
+        
+        if (!any(ray.energy)) break;
+    }
+
+    Result[id.xy] = float4(result, 1.0f);
+}
+
+//
+// SmoothnessEmission: Add a smoothness and emission parameter to control the rendering
+//
+[numthreads(8,8,1)]
+void CS_SmoothnessEmission (uint3 id : SV_DispatchThreadID)
+{
+    // Set Pixel value for random
+    PixelSeed = id.xy;
+    
+    // Get RenderTexture dimensions
+    uint width, height;
+    Result.GetDimensions(width, height);
+    
+    // Calculate uv position and remap to [-1,1] range
+    float2 uv = float2((id.xy + PixelOffset) / float2(width, height)); // Calculate uv position
+    uv = uv * 2.0f - 1.0f; // Remap uv to [-1,1] range
+    
+    Ray ray = CreateCameraRay(uv);
+    
+    // Trace and Shade
+    float3 result = float3(0,0,0);
+    for (int i = 0; i < Bounces; i++) // 8 = max number of bounce
+    {
+        RayHit hit = Trace(ray);
+        result += ray.energy * ShadeWithSmoothnessEmissive(ray, hit);
         
         if (!any(ray.energy)) break;
     }
