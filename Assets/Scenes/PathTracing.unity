@@ -18663,7 +18663,7 @@ MonoBehaviour:
   skybox: {fileID: 2800000, guid: 4c62bdd92fd36204280078a97210f246, type: 3}
   directionalLight: {fileID: 482406648}
   reflectionBounces: 8
-  groundColor: {r: 0.8, g: 0.8, b: 0.8, a: 1}
+  groundColor: {r: 0.4, g: 0.4, b: 0.4, a: 1}
   defaultSpecular: 0.04
   phongAlpha: 300
   useRandomSpheres: 1

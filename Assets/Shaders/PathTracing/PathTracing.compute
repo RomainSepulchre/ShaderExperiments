@@ -29,6 +29,8 @@ struct SphereData
     float scale;
     float3 albedo;
     float3 specular;
+    float smoothness;
+    float3 emission;
 };
 StructuredBuffer<SphereData> Spheres;
 
@@ -70,6 +72,8 @@ struct RayHit
     float3 normal;
     float3 albedo;
     float3 specular;
+    float smoothness;
+    float3 emission;
 };
 
 RayHit CreateRayHit()
@@ -80,6 +84,8 @@ RayHit CreateRayHit()
     hit.normal = float3(0.0f, 0.0f, 0.0f);
     hit.albedo = float3(0.0f, 0.0f, 0.0f);
     hit.specular = float3(0.0f, 0.0f, 0.0f);
+    hit.smoothness = 0.0f;
+    hit.emission = float3(0.0f, 0.0f, 0.0f);
     return hit;
 }
 
@@ -112,6 +118,13 @@ float sdot(float3 x, float3 y, float f = 1.0f)
 float energy(float3 color)
 {
     return dot(color, 1.0f / 3.0f);
+}
+
+// SmoothnessToPhongAlpha()
+// -> Conversion from smoothness value to phong alpha exponent value
+float SmoothnessToPhongAlpha(float s)
+{
+    return pow(1000.0f, s * s);
 }
 
 //
@@ -151,7 +164,7 @@ float3x3 GetTangentSpace(float3 normal)
 
 //
 // SampleHemisphere()
-// -> return random directions with an uniform sample distribution on the hemisphere
+// -> return random directions with a uniform sample distribution on the hemisphere
 //
 float3 SampleHemisphere(float3 normal)
 {
@@ -197,6 +210,8 @@ void IntersectGroundPlane(Ray ray, inout RayHit bestHit)
         
         bestHit.albedo = GroundColor;
         bestHit.specular = DefaultSpecular;
+        bestHit.smoothness = 0.2f;
+        bestHit.emission = float3(0.0f, 0.0f, 0.0f);
     }
 }
 
@@ -223,6 +238,8 @@ void IntersectSphere(Ray ray, inout RayHit bestHit, SphereData sphere)
         bestHit.normal = normalize(bestHit.position - sphere.position);
         bestHit.albedo = sphere.albedo;
         bestHit.specular = sphere.specular;
+        bestHit.smoothness = sphere.smoothness;
+        bestHit.emission = sphere.emission;
     }
 }
 
@@ -464,6 +481,59 @@ float3 ShadeWithImportanceSampling(inout Ray ray, RayHit hit)
     }
 }
 
+//
+// ShadeWithSmoothnessEmissive()
+// -> 
+//
+float3 ShadeWithSmoothnessEmissive(inout Ray ray, RayHit hit)
+{
+    if (hit.distance < 1.#INF)
+    {    
+        // calculate chances for diffuse or specular reflection
+        hit.albedo = min(1.0f - hit.specular, hit.albedo);
+        float specChance = energy(hit.specular);
+        float diffChance = energy(hit.albedo);
+        float sum = specChance + diffChance;
+        specChance /= sum;
+        diffChance /= sum;
+        
+        // randomize the selection for specular/diffuse path
+        float chance = rand();
+        if (chance < specChance)
+        {
+            // specular reflection
+            float alpha = SmoothnessToPhongAlpha(hit.smoothness);
+            ray.origin = hit.position + hit.normal * 0.001f;
+            ray.direction = SampleHemisphereCosine(reflect(ray.direction, hit.normal), alpha);
+            float f = (alpha + 2) / (alpha + 1);
+            ray.energy *= (1.0f / specChance) * hit.specular * sdot(hit.normal, ray.direction, f);
+        }
+        else
+        {
+            // Diffuse reflection
+            ray.origin = hit.position + hit.normal * 0.001f;
+            ray.direction = SampleHemisphereCosine(hit.normal, 1.0f);
+            ray.energy *= (1.0f / diffChance) * 2 * hit.albedo;
+        }
+        
+        return hit.emission;
+    }
+    else // No hit, render skybox
+    {
+        ray.energy = 0.0f; // Erase energy, sky doesn't reflect
+        
+        // Sample skybox and write it
+        
+        // Transform our cartesian direction vector to spherical coordinates
+        // -> See https://en.wikipedia.org/wiki/Spherical_coordinate_system#Coordinate_system_conversions
+        float theta = acos(ray.direction.y) / -PI;
+        float phi = atan2(ray.direction.x, -ray.direction.z) / -PI * 0.5f;
+    
+        // Sample the skybox with the spherical coordinates to set output texture color
+        return SkyboxTexture.SampleLevel(sampler_SkyboxTexture, float2(phi, theta), 0).xyz;
+    }
+}
+
 // ********************
 // Kernel main function
 // ********************
@@ -488,7 +558,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     for (int i = 0; i < Bounces; i++) // 8 = max number of bounce
     {
         RayHit hit = Trace(ray);
-        result += ray.energy * ShadeWithImportanceSampling(ray, hit);
+        result += ray.energy * ShadeWithSmoothnessEmissive(ray, hit);
         
         if (!any(ray.energy)) break;
     }

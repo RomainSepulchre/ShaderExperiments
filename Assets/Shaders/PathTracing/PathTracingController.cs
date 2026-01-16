@@ -15,7 +15,8 @@ public class PathTracingController : MonoBehaviour
         Lambert = 2,
         Phong = 3,
         BetterSampling = 4,
-        ImportanceSampling = 5
+        ImportanceSampling = 5,
+        SmoothnessEmission = 6
     }
     [SerializeField] private Mode RenderMode = Mode.CSMain;
     public ComputeShader shader;
@@ -51,9 +52,13 @@ public class PathTracingController : MonoBehaviour
         public float scale;
         public Vector3 albedo;
         public Vector3 specular;
+        public float smoothness;
+        public Vector3 emission;
     }
     SphereData[] spheresDatas;
     ComputeBuffer spheresBuffer;
+
+    private bool UseSmoothnessAndEmission => RenderMode == Mode.CSMain || RenderMode == Mode.SmoothnessEmission;
 
     private void Awake()
     {
@@ -186,13 +191,28 @@ public class PathTracingController : MonoBehaviour
                     if (Vector3.SqrMagnitude(sphere.position - other.position) < minDist * minDist)
                         goto SkipSphere;
                 }
-
+                
                 // Albedo and specular color
                 Color color = Random.ColorHSV();
                 bool metal = RenderMode == Mode.Lambert ? false : Random.value < 0.5f;
                 sphere.albedo = metal ? Vector3.zero : new Vector3(color.r, color.g, color.b);
                 sphere.specular = metal ? new Vector3(color.r, color.g, color.b) : Vector3.one * 0.04f;
-
+                sphere.smoothness = Random.value;
+                
+                // Set ~20% of emissive sphere
+                // float chanceOfEmissive = Random.value;
+                // if (UseSmoothnessAndEmission && chanceOfEmissive > 0.8f)
+                // {
+                //     // Reset albedo, specular and smoothness
+                //     sphere.albedo = Vector3.zero;
+                //     sphere.specular = Vector3.zero;
+                //     sphere.smoothness = 0.0f;
+                //         
+                //     // Set emissive
+                //     Color emission = Random.ColorHSV(0, 1, 0, 1, 3.0f, 8.0f);
+                //     sphere.emission = new Vector3(emission.r, emission.g, emission.b);
+                // }
+                
                 // Add the sphere to the list
                 spheresAdded.Add(sphere);
 
@@ -217,12 +237,28 @@ public class PathTracingController : MonoBehaviour
                 bool metal = RenderMode == Mode.Lambert ? false : Random.value < 0.5f;
                 sphereData.albedo = metal ? Vector3.zero : new Vector3(color.r, color.g, color.b);
                 sphereData.specular = metal ? new Vector3(color.r, color.g, color.b) :  Vector3.one * defaultSpecular;
+                sphereData.smoothness = Random.value;
+                
+                // Set ~20% of emissive sphere
+                // float chanceOfEmissive = Random.value;
+                // if (UseSmoothnessAndEmission && chanceOfEmissive > 0.8f)
+                // {
+                //     // Reset albedo, specular and smoothness
+                //     sphereData.albedo = Vector3.zero;
+                //     sphereData.specular = Vector3.zero;
+                //     sphereData.smoothness = 0.0f;
+                //         
+                //     // Set emissive
+                //     Color emission = Random.ColorHSV(0, 1, 0, 1, 3.0f, 8.0f);
+                //     sphereData.emission = new Vector3(emission.r, emission.g, emission.b);
+                // }
+                
                 spheresDatas[i] = sphereData;
             }
         }
         
         // Set compute buffer
-        int stride = (3 * (sizeof(float) * 3)) + sizeof(float); // 3 * vector3 + float
+        int stride = (4 * (sizeof(float) * 3)) +  (2 * sizeof(float)); // 4 * vector3 + 2 * float
         spheresBuffer = new ComputeBuffer(spheresDatas.Length, stride);
         spheresBuffer.SetData(spheresDatas);
     }
