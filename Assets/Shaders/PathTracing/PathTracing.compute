@@ -493,9 +493,10 @@ float3 ShadeWithSmoothnessEmissive(inout Ray ray, RayHit hit)
         hit.albedo = min(1.0f - hit.specular, hit.albedo);
         float specChance = energy(hit.specular);
         float diffChance = energy(hit.albedo);
-        float sum = specChance + diffChance;
-        specChance /= sum;
-        diffChance /= sum;
+        // Commented - Line added in the explanation but not part of final project
+        //float sum = specChance + diffChance;
+        //specChance /= sum;
+        //diffChance /= sum;
         
         // randomize the selection for specular/diffuse path
         float chance = rand();
@@ -508,12 +509,17 @@ float3 ShadeWithSmoothnessEmissive(inout Ray ray, RayHit hit)
             float f = (alpha + 2) / (alpha + 1);
             ray.energy *= (1.0f / specChance) * hit.specular * sdot(hit.normal, ray.direction, f);
         }
-        else
+        else if (diffChance > 0 && chance < specChance + diffChance) // TODO: ??? -> Not explained in article, need to understand better
         {
             // Diffuse reflection
             ray.origin = hit.position + hit.normal * 0.001f;
             ray.direction = SampleHemisphereCosine(hit.normal, 1.0f);
             ray.energy *= (1.0f / diffChance) * 2 * hit.albedo;
+        }
+        else
+        {
+            // Terminate ray
+            ray.energy = 0.0f;
         }
         
         return hit.emission;

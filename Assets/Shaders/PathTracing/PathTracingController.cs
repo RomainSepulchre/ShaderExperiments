@@ -200,18 +200,18 @@ public class PathTracingController : MonoBehaviour
                 sphere.smoothness = Random.value;
                 
                 // Set ~20% of emissive sphere
-                // float chanceOfEmissive = Random.value;
-                // if (UseSmoothnessAndEmission && chanceOfEmissive > 0.8f)
-                // {
-                //     // Reset albedo, specular and smoothness
-                //     sphere.albedo = Vector3.zero;
-                //     sphere.specular = Vector3.zero;
-                //     sphere.smoothness = 0.0f;
-                //         
-                //     // Set emissive
-                //     Color emission = Random.ColorHSV(0, 1, 0, 1, 3.0f, 8.0f);
-                //     sphere.emission = new Vector3(emission.r, emission.g, emission.b);
-                // }
+                float chanceOfEmissive = Random.value;
+                if (UseSmoothnessAndEmission && chanceOfEmissive > 0.8f)
+                {
+                    // Reset albedo, specular and smoothness
+                    sphere.albedo = Vector3.zero;
+                    sphere.specular = Vector3.zero;
+                    sphere.smoothness = 0.0f;
+                        
+                    // Set emissive
+                    Color emission = Random.ColorHSV(0, 1, 0, 1, 3.0f, 8.0f);
+                    sphere.emission = new Vector3(emission.r, emission.g, emission.b);
+                }
                 
                 // Add the sphere to the list
                 spheresAdded.Add(sphere);
