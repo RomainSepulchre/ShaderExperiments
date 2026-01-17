@@ -6,8 +6,14 @@ using Random = UnityEngine.Random;
 
 public class PathTracingController : MonoBehaviour
 {
+    [Header("Resources")]
+    public ComputeShader shader;
+    public Texture skybox;
+    public Light directionalLight;
+    
     [Header("General settings")]
     public int randomSeed;
+    
     private enum Mode
     {
         CSMain = 0,
@@ -18,23 +24,25 @@ public class PathTracingController : MonoBehaviour
         ImportanceSampling = 5,
         SmoothnessEmission = 6
     }
+    [Header("Rendering")]
     [SerializeField] private Mode RenderMode = Mode.CSMain;
-    public ComputeShader shader;
-    public Texture skybox;
-    public Light directionalLight;
     [Range(0, 8)] public int reflectionBounces = 8;
-    public Color groundColor = new Color(0.8f, 0.8f, 0.8f);
     [Range(0, 1)] public float defaultSpecular = 0.6f;
     public float phongAlpha = 15f;
     
-    [Header("Random spheres placement settings")]
+    [Header("Ground")]
+    public bool renderGround = true;
+    public Color groundColor = new Color(0.8f, 0.8f, 0.8f);
+    
+    [Header("Spheres")]
+    public bool renderSpheres = true;
+    public List<Transform> spheresTransforms = new List<Transform>();
+    
+    [Space(10)]
     public bool useRandomSpheres;
     public int randomSpheresMaxCount = 100;
     public Vector2 randomSpheresMinMaxScale = new Vector2(3.0f, 8.0f);
     public float randomSpheresPlacementRadius = 100f;
-    
-    [Header("Spheres linked to transform settings")]
-    public List<Transform> spheresTransforms = new List<Transform>();
     
     // Antialiasing
     private uint currentSample;
@@ -163,6 +171,8 @@ public class PathTracingController : MonoBehaviour
         shader.SetVector("GroundColor", new Vector3(groundColor.r, groundColor.g, groundColor.b));
         shader.SetFloat("Seed", Random.value); // This little fucker make me lose a full afternoon, value must be 0.1 so we use Random.value, I was using randomSeed by mistake   
         shader.SetFloat("Alpha", phongAlpha);
+        shader.SetBool("TraceGround", renderGround);
+        shader.SetBool("TraceSpheres", renderSpheres);
         
         Vector3 lightDir = directionalLight.transform.forward;
         shader.SetVector("DirectionalLight", new Vector4(lightDir.x, lightDir.y, lightDir.z, directionalLight.intensity));
@@ -174,71 +184,12 @@ public class PathTracingController : MonoBehaviour
 
     private void SetSpheresComputeBuffer()
     {
-        // Init random seed
+        // Init random seed (to keep same random value every play as long as we keep same seed)
         Random.InitState(randomSeed);
 
         if (useRandomSpheres) // Use a random sphere placement
         {
-            List<SphereData> spheresAdded = new List<SphereData>();
-            spheresTransforms = new List<Transform>();
-            GameObject spheresParent = new GameObject("Random spheres");
-
-            // Add a number of random spheres
-            for (int i = 0; i < randomSpheresMaxCount; i++)
-            {
-                SphereData sphere = new SphereData();
-
-                // Radius and radius
-                sphere.scale = randomSpheresMinMaxScale.x + Random.value * (randomSpheresMinMaxScale.y - randomSpheresMinMaxScale.x);
-                float sphereRadius = sphere.scale / 2;
-                Vector2 randomPos = Random.insideUnitCircle * randomSpheresPlacementRadius;
-                sphere.position = new Vector3(randomPos.x, sphereRadius, randomPos.y);
-
-                // Reject spheres that are intersecting others
-                foreach (SphereData other in spheresAdded)
-                {
-                    float otherRadius = other.scale / 2;
-                    float minDist = sphereRadius + otherRadius;
-                    if (Vector3.SqrMagnitude(sphere.position - other.position) < minDist * minDist)
-                        goto SkipSphere;
-                }
-                
-                GameObject spheresObj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                spheresObj.name = $"Sphere_{i}";
-                spheresObj.transform.parent = spheresParent.transform;
-                spheresObj.transform.position = sphere.position;
-                spheresObj.transform.localScale = Vector3.one * sphere.scale;
-                
-                // Albedo and specular color
-                Color color = Random.ColorHSV();
-                bool metal = RenderMode == Mode.Lambert ? false : Random.value < 0.5f;
-                sphere.albedo = metal ? Vector3.zero : new Vector3(color.r, color.g, color.b);
-                sphere.specular = metal ? new Vector3(color.r, color.g, color.b) : Vector3.one * 0.04f;
-                sphere.smoothness = Random.value;
-                
-                // Set ~20% of emissive sphere
-                float chanceOfEmissive = Random.value;
-                if (UseSmoothnessAndEmission && chanceOfEmissive > 0.8f)
-                {
-                    // Reset albedo, specular and smoothness
-                    sphere.albedo = Vector3.zero;
-                    sphere.specular = Vector3.zero;
-                    sphere.smoothness = 0.0f;
-                        
-                    // Set emissive
-                    Color emission = Random.ColorHSV(0, 1, 0, 1, 3.0f, 8.0f);
-                    sphere.emission = new Vector3(emission.r, emission.g, emission.b);
-                }
-                
-                // Add the sphere to the list
-                spheresAdded.Add(sphere);
-                spheresTransforms.Add(spheresObj.transform);
-
-                SkipSphere:
-                continue;
-            }
-            
-            spheresDatas = spheresAdded.ToArray();
+            SpawnRandomSpheres();
         }
         else // Use array of transform to place spheres
         {
@@ -249,8 +200,6 @@ public class PathTracingController : MonoBehaviour
                 SphereData sphereData = new SphereData();
                 sphereData.position = spheresTransforms[i].position;
                 sphereData.scale = spheresTransforms[i].localScale.x;
-                // sphereData.albedo = new Vector3(albedoColor.r, albedoColor.g, albedoColor.b);
-                // sphereData.specular = new Vector3(specularValue, specularValue, specularValue);
                 Color color = Random.ColorHSV();
                 bool metal = RenderMode == Mode.Lambert ? false : Random.value < 0.5f;
                 sphereData.albedo = metal ? Vector3.zero : new Vector3(color.r, color.g, color.b);
@@ -300,6 +249,70 @@ public class PathTracingController : MonoBehaviour
         int stride = (4 * (sizeof(float) * 3)) +  (2 * sizeof(float)); // 4 * vector3 + 2 * float
         spheresBuffer = new ComputeBuffer(spheresDatas.Length, stride);
         spheresBuffer.SetData(spheresDatas);
+    }
+
+    private void SpawnRandomSpheres()
+    {
+        List<SphereData> spheresAdded = new List<SphereData>();
+        spheresTransforms = new List<Transform>();
+        GameObject spheresParent = new GameObject("Random spheres");
+
+        // Add a number of random spheres
+        for (int i = 0; i < randomSpheresMaxCount; i++)
+        {
+            SphereData sphere = new SphereData();
+
+            // Radius and radius
+            sphere.scale = randomSpheresMinMaxScale.x + Random.value * (randomSpheresMinMaxScale.y - randomSpheresMinMaxScale.x);
+            float sphereRadius = sphere.scale / 2;
+            Vector2 randomPos = Random.insideUnitCircle * randomSpheresPlacementRadius;
+            sphere.position = new Vector3(randomPos.x, sphereRadius, randomPos.y);
+
+            // Reject spheres that are intersecting others
+            foreach (SphereData other in spheresAdded)
+            {
+                float otherRadius = other.scale / 2;
+                float minDist = sphereRadius + otherRadius;
+                if (Vector3.SqrMagnitude(sphere.position - other.position) < minDist * minDist)
+                    goto SkipSphere;
+            }
+            
+            GameObject spheresObj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            spheresObj.name = $"Sphere_{i}";
+            spheresObj.transform.parent = spheresParent.transform;
+            spheresObj.transform.position = sphere.position;
+            spheresObj.transform.localScale = Vector3.one * sphere.scale;
+            
+            // Albedo and specular color
+            Color color = Random.ColorHSV();
+            bool metal = RenderMode == Mode.Lambert ? false : Random.value < 0.5f;
+            sphere.albedo = metal ? Vector3.zero : new Vector3(color.r, color.g, color.b);
+            sphere.specular = metal ? new Vector3(color.r, color.g, color.b) : Vector3.one * 0.04f;
+            sphere.smoothness = Random.value;
+            
+            // Set ~20% of emissive sphere
+            float chanceOfEmissive = Random.value;
+            if (UseSmoothnessAndEmission && chanceOfEmissive > 0.8f)
+            {
+                // Reset albedo, specular and smoothness
+                sphere.albedo = Vector3.zero;
+                sphere.specular = Vector3.zero;
+                sphere.smoothness = 0.0f;
+                    
+                // Set emissive
+                Color emission = Random.ColorHSV(0, 1, 0, 1, 3.0f, 8.0f);
+                sphere.emission = new Vector3(emission.r, emission.g, emission.b);
+            }
+            
+            // Add the sphere to the list
+            spheresAdded.Add(sphere);
+            spheresTransforms.Add(spheresObj.transform);
+
+            SkipSphere:
+            continue;
+        }
+        
+        spheresDatas = spheresAdded.ToArray();
     }
     
 }

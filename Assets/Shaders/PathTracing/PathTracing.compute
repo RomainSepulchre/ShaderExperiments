@@ -48,6 +48,10 @@ float3 DefaultSpecular;
 // Alpha
 float Alpha;
 
+// Bool to enable sphere and ground
+bool TraceGround;
+bool TraceSpheres;
+
 // Ray
 struct Ray
 {
@@ -248,16 +252,16 @@ void IntersectSphere(Ray ray, inout RayHit bestHit, SphereData sphere)
 // Trace()
 // -> Trace the ray and check for intersection
 //
-RayHit Trace(Ray ray, bool traceGround = true, bool traceSphere = true)
+RayHit Trace(Ray ray)
 {
     RayHit bestHit = CreateRayHit();
     
-    if (traceGround)
+    if (TraceGround)
     {
         IntersectGroundPlane(ray, bestHit);
     }
     
-    if (traceSphere)
+    if (TraceSpheres)
     {
         uint count, stride;
         Spheres.GetDimensions(count, stride);

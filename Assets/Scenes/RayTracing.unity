@@ -18638,8 +18638,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1530321713}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.75, z: -10}
+  m_LocalRotation: {x: -0.18943882, y: 0.007535553, z: -0.00145388, w: -0.98186255}
+  m_LocalPosition: {x: 0.14311083, y: 5.77144, z: -16.379847}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -18657,14 +18657,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b0d377dd14782d46a639952e9c0a1a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RayTracingController
-  RenderMode: 7
-  useAntialiasing: 0
   shader: {fileID: 7200000, guid: 1da57f817429d1240ad3570473f8c307, type: 3}
   skybox: {fileID: 2800000, guid: 09b5c8f00293b2648a1ff732cad64cf3, type: 3}
   directionalLight: {fileID: 482406648}
+  randomSeed: 1964651489
+  RenderMode: 0
+  useAntialiasing: 1
   reflectionBounces: 8
-  groundColor: {r: 0.8, g: 0.8, b: 0.8, a: 1}
   defaultSpecular: 0.04
+  renderGround: 1
+  groundColor: {r: 0.8, g: 0.8, b: 0.8, a: 1}
+  renderSpheres: 1
   spheresTransforms:
   - {fileID: 275641891}
   - {fileID: 1050252498}
@@ -18766,6 +18769,10 @@ MonoBehaviour:
   - {fileID: 1604496343}
   - {fileID: 1438845295}
   - {fileID: 2032584505}
+  useRandomSpheres: 1
+  randomSpheresMaxCount: 1000
+  randomSpheresMinMaxScale: {x: 0.5, y: 3}
+  randomSpheresPlacementRadius: 10
 --- !u!114 &1530321718
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18773,7 +18780,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1530321713}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 618b0e3f6c65dd247a4a016150006c57, type: 3}
   m_Name: 
@@ -19570,7 +19577,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1651736466}
   m_Layer: 0
-  m_Name: Spheres Random
+  m_Name: SpheresCloud
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -23188,7 +23195,7 @@ Transform:
   m_GameObject: {fileID: 1904643393}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -9, y: 0.1, z: 0}
+  m_LocalPosition: {x: -9, y: 0.1, z: -8}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:

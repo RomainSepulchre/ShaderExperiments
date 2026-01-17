@@ -2697,7 +2697,7 @@ Transform:
   m_GameObject: {fileID: 308823445}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -4.5, y: 0.1, z: 0}
+  m_LocalPosition: {x: -4.5, y: 0.1, z: -8}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -18638,8 +18638,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1530321713}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.23438095, y: 0.09451504, z: -0.022902137, w: -0.9672683}
-  m_LocalPosition: {x: 27.270855, y: 54.093426, z: -140.93407}
+  m_LocalRotation: {x: -0.18913984, y: 0.004476099, z: -0.000862951, w: -0.9819396}
+  m_LocalPosition: {x: 0.3601327, y: 6.8576126, z: -17.925959}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -18657,19 +18657,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 52fbd05176812824bb8527d50213bcb7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PathTracingController
-  randomSeed: 2147483647
-  RenderMode: 0
   shader: {fileID: 7200000, guid: 3f8d02b2727f9ed4abf0d292941345d9, type: 3}
   skybox: {fileID: 2800000, guid: 4c62bdd92fd36204280078a97210f246, type: 3}
   directionalLight: {fileID: 482406648}
+  randomSeed: 2147483647
+  RenderMode: 0
   reflectionBounces: 8
-  groundColor: {r: 0, g: 0, b: 0, a: 1}
   defaultSpecular: 0.04
   phongAlpha: 300
-  useRandomSpheres: 1
-  randomSpheresMaxCount: 10000
-  randomSpheresMinMaxScale: {x: 5, y: 30}
-  randomSpheresPlacementRadius: 100
+  renderGround: 1
+  groundColor: {r: 0, g: 0, b: 0, a: 1}
+  renderSpheres: 1
   spheresTransforms:
   - {fileID: 275641891}
   - {fileID: 1050252498}
@@ -18771,6 +18769,10 @@ MonoBehaviour:
   - {fileID: 1604496343}
   - {fileID: 1438845295}
   - {fileID: 2032584505}
+  useRandomSpheres: 1
+  randomSpheresMaxCount: 1000
+  randomSpheresMinMaxScale: {x: 0.5, y: 3}
+  randomSpheresPlacementRadius: 10
 --- !u!114 &1530321720
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -19575,7 +19577,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1651736466}
   m_Layer: 0
-  m_Name: Spheres Random
+  m_Name: Spheres Cloud
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -23193,7 +23195,7 @@ Transform:
   m_GameObject: {fileID: 1904643393}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -9, y: 0.1, z: 0}
+  m_LocalPosition: {x: -9, y: 0.1, z: -8}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:

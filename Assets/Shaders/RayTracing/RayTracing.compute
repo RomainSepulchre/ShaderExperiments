@@ -1,11 +1,9 @@
 #pragma kernel CSMain  // 0
 #pragma kernel CS_ColorfulSky // 1
 #pragma kernel CS_Skybox // 2
-#pragma kernel CS_GroundPlane // 3
-#pragma kernel CS_GroundAndSpheres // 4
-#pragma kernel CS_Spheres // 5
-#pragma kernel CS_Reflections // 6
-#pragma kernel CS_DiffuseReflections // 7
+#pragma kernel CS_Trace // 3
+#pragma kernel CS_Reflections // 4
+#pragma kernel CS_DiffuseReflections // 5
 
 // Constants
 static const float PI = 3.14159265f;
@@ -44,6 +42,10 @@ int Bounces;
 // Directional light (XYZ = direction, W = Intensity )
 float4 DirectionalLight;
 float3 DefaultSpecular;
+
+// Bool to enable sphere and ground
+bool TraceGround;
+bool TraceSpheres;
 
 // Ray
 struct Ray
@@ -150,16 +152,16 @@ void IntersectSphere(Ray ray, inout RayHit bestHit, SphereData sphere)
 // Trace()
 // -> Trace the ray and check for intersection
 //
-RayHit Trace(Ray ray, bool traceGround = true, bool traceSphere = true)
+RayHit Trace(Ray ray)
 {
     RayHit bestHit = CreateRayHit();
     
-    if (traceGround)
+    if (TraceGround)
     {
         IntersectGroundPlane(ray, bestHit);
     }
     
-    if (traceSphere)
+    if (TraceSpheres)
     {
         uint count, stride;
         Spheres.GetDimensions(count, stride);
@@ -362,7 +364,7 @@ void CS_Skybox (uint3 id : SV_DispatchThreadID)
 // GroundPlane: Render a ground with its normal as color where the ray intersect with 0 on y, render the skybox elsewhere
 //
 [numthreads(8,8,1)]
-void CS_GroundPlane (uint3 id : SV_DispatchThreadID)
+void CS_Trace (uint3 id : SV_DispatchThreadID)
 {
     // Get RenderTexture dimensions
     uint width, height;
@@ -376,55 +378,7 @@ void CS_GroundPlane (uint3 id : SV_DispatchThreadID)
     Ray ray = CreateCameraRay(uv);
     
     // Trace and Shade
-    RayHit hit = Trace(ray, true, false);
-    float3 result = ShadeWithNormal(ray, hit);
-
-    Result[id.xy] = float4(result, 1.0f);
-}
-
-//
-// GroundAndSpheres: Render a ground and spheres with their normal as color where the ray intersect with them, render the skybox elsewhere
-//
-[numthreads(8,8,1)]
-void CS_GroundAndSpheres (uint3 id : SV_DispatchThreadID)
-{
-    // Get RenderTexture dimensions
-    uint width, height;
-    Result.GetDimensions(width, height);
-    
-    // Calculate uv position and remap to [-1,1] range
-    float2 offset = UseAntialiasing ? PixelOffset : float2(0.5f, 0.5f); // uv pixel offset
-    float2 uv = float2((id.xy + offset) / float2(width, height)); // Calculate uv position
-    uv = uv * 2.0f - 1.0f; // Remap uv to [-1,1] range
-    
-    Ray ray = CreateCameraRay(uv);
-    
-    // Trace and Shade
-    RayHit hit = Trace(ray, true, true);
-    float3 result = ShadeWithNormal(ray, hit);
-
-    Result[id.xy] = float4(result, 1.0f);
-}
-
-//
-// Spheres: Render spheres with their normal as color where the ray intersect with them, render the skybox elsewhere
-//
-[numthreads(8,8,1)]
-void CS_Spheres (uint3 id : SV_DispatchThreadID)
-{
-    // Get RenderTexture dimensions
-    uint width, height;
-    Result.GetDimensions(width, height);
-    
-    // Calculate uv position and remap to [-1,1] range
-    float2 offset = UseAntialiasing ? PixelOffset : float2(0.5f, 0.5f); // uv pixel offset
-    float2 uv = float2((id.xy + offset) / float2(width, height)); // Calculate uv position
-    uv = uv * 2.0f - 1.0f; // Remap uv to [-1,1] range
-    
-    Ray ray = CreateCameraRay(uv);
-    
-    // Trace and Shade
-    RayHit hit = Trace(ray, false, true);
+    RayHit hit = Trace(ray);
     float3 result = ShadeWithNormal(ray, hit);
 
     Result[id.xy] = float4(result, 1.0f);
