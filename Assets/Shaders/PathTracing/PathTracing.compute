@@ -8,6 +8,7 @@
 
 // Constants
 static const float PI = 3.14159265f;
+static const float EPSILON = 1e-8;
 
 // Result output texture
 RWTexture2D<float4> Result;
@@ -35,6 +36,11 @@ struct SphereData
 };
 StructuredBuffer<SphereData> Spheres;
 
+// Triangle
+float3 TriangleVertex1;
+float3 TriangleVertex2;
+float3 TriangleVertex3;
+
 // Ground
 float3 GroundColor;
 
@@ -51,6 +57,7 @@ float Alpha;
 // Bool to enable sphere and ground
 bool TraceGround;
 bool TraceSpheres;
+bool TraceTriangles;
 
 // Ray
 struct Ray
@@ -249,6 +256,44 @@ void IntersectSphere(Ray ray, inout RayHit bestHit, SphereData sphere)
 }
 
 //
+// IntersectTriangle()
+// -> Check if the ray intersect with a triangle
+//
+bool IntersectTriangle(Ray ray, float3 vert0, float3 vert1,  float3 vert2, inout float t, inout float u, inout float v)
+{
+    // Get vectors for the two edge that share vert0 
+    float3 edge1 = vert1 - vert0;
+    float3 edge2 = vert2 - vert0;
+    
+    // Calculate determinant
+    float3 pvec = cross(ray.direction, edge2); // pvec is used for determinant and U parameter calculation
+    float det = dot(edge1, pvec); // if det is near 0, ray lies in plane of triangle
+    
+    // Handle backface culling
+    if ( det < EPSILON) return false;
+    float inv_det = 1.0f / det;
+    
+    // Distance from vert0 to ray origin
+    float3 tvec = ray.origin - vert0;
+    
+    // Calculate U parameter and test bounds
+    u = dot(tvec, pvec) * inv_det;
+    if (u < 0.0 || u > 1.0f) return false;
+    
+    // Prepare to test V parameter
+    float3 qvec = cross(tvec, edge1);
+    
+    // Calculate V parameter and test bounds
+    v = dot(ray.direction, qvec) * inv_det;
+    if ( v < 0.0 || u + v > 1.0f) return false;
+    
+    // Calculate t, ray intersects triangle
+    t = dot(edge2, qvec) * inv_det;
+    
+    return true;
+}
+
+//
 // Trace()
 // -> Trace the ray and check for intersection
 //
@@ -268,6 +313,24 @@ RayHit Trace(Ray ray)
         for (uint i = 0; i < count; i++)
         {
             IntersectSphere(ray, bestHit, Spheres[i]);
+        }
+    }
+    
+    if (TraceTriangles)
+    {
+        float t, u, v;
+        if (IntersectTriangle(ray, TriangleVertex1, TriangleVertex2, TriangleVertex3, t, u, v))
+        {
+            if (t > 0 && t < bestHit.distance)
+            {
+                bestHit.distance = t;
+                bestHit.position = ray.origin + t * ray.direction;
+                bestHit.normal = normalize(cross(TriangleVertex2 - TriangleVertex1, TriangleVertex3 - TriangleVertex1));
+                bestHit.albedo = 0.0f;
+                bestHit.specular = 0.65f * float3(1, 0.4f, 0.2f);
+                bestHit.smoothness = 0.9f;
+                bestHit.emission = 0.0f;
+            }
         }
     }
     

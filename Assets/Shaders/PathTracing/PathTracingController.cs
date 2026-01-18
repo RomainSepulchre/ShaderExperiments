@@ -43,6 +43,10 @@ public class PathTracingController : MonoBehaviour
     public int randomSpheresMaxCount = 100;
     public Vector2 randomSpheresMinMaxScale = new Vector2(3.0f, 8.0f);
     public float randomSpheresPlacementRadius = 100f;
+
+    [Header("Triangle")]
+    public bool renderTriangle = true;
+    public Transform[] triangleVertices = new Transform[3];
     
     // Antialiasing
     private uint currentSample;
@@ -95,8 +99,22 @@ public class PathTracingController : MonoBehaviour
                 tf.hasChanged = false;
             }
         }
+
+        foreach (Transform tf in triangleVertices)
+        {
+            if (tf.hasChanged)
+            {
+                currentSample = 0;
+                tf.hasChanged = false;
+            }
+        }
         
         UpdateSpheresComputeBuffer();
+        
+        // Draw triangle line
+        Debug.DrawLine(triangleVertices[0].position, triangleVertices[1].position);
+        Debug.DrawLine(triangleVertices[1].position, triangleVertices[2].position);
+        Debug.DrawLine(triangleVertices[2].position, triangleVertices[0].position);
     }
 
     private void OnEnable()
@@ -173,6 +191,12 @@ public class PathTracingController : MonoBehaviour
         shader.SetFloat("Alpha", phongAlpha);
         shader.SetBool("TraceGround", renderGround);
         shader.SetBool("TraceSpheres", renderSpheres);
+        shader.SetBool("TraceTriangles", renderTriangle);
+        
+        // Triangle vertex
+        shader.SetVector("TriangleVertex1", triangleVertices[0].position);
+        shader.SetVector("TriangleVertex2", triangleVertices[1].position);
+        shader.SetVector("TriangleVertex3", triangleVertices[2].position);
         
         Vector3 lightDir = directionalLight.transform.forward;
         shader.SetVector("DirectionalLight", new Vector4(lightDir.x, lightDir.y, lightDir.z, directionalLight.intensity));
