@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
@@ -26,8 +28,8 @@ public class PathTracingController : MonoBehaviour
     }
     [Header("Rendering")]
     [SerializeField] private Mode RenderMode = Mode.CSMain;
-    [Range(0, 8)] public int reflectionBounces = 8;
-    [Range(0, 1)] public float defaultSpecular = 0.6f;
+    [UnityEngine.Range(0, 8)] public int reflectionBounces = 8;
+    [UnityEngine.Range(0, 1)] public float defaultSpecular = 0.6f;
     public float phongAlpha = 15f;
     
     [Header("Ground")]
@@ -69,6 +71,28 @@ public class PathTracingController : MonoBehaviour
     }
     SphereData[] spheresDatas;
     ComputeBuffer spheresBuffer;
+    
+    // Ray-traced object
+    private static bool meshObjectsNeedRebuilding = false;
+    private static List<PathTracedObject> rayTracedObjects = new List<PathTracedObject>();
+
+    struct MeshObject
+    {
+        public Matrix4x4 localToWorldMatrix;
+        public int indicesOffset;
+        public int indicesCount;
+        public Vector3 albedo;
+        public float specular;
+        public float smoothness;
+        public Vector3 emission;
+    }
+    
+    private static List<MeshObject> meshObjects = new List<MeshObject>();
+    private static List<Vector3> vertices = new List<Vector3>();
+    private static List<int> indices = new List<int>();
+    private ComputeBuffer meshObjectBuffer;
+    private ComputeBuffer vertexBuffer;
+    private ComputeBuffer indexBuffer;
 
     private bool UseSmoothnessAndEmission => RenderMode == Mode.CSMain || RenderMode == Mode.SmoothnessEmission;
 
@@ -126,11 +150,15 @@ public class PathTracingController : MonoBehaviour
     private void OnDisable()
     {
         if(spheresBuffer != null) spheresBuffer.Release();
+        if(meshObjectBuffer != null) meshObjectBuffer.Release();
+        if (vertexBuffer != null) vertexBuffer.Release();
+        if (indexBuffer != null) indexBuffer.Release();
     }
 
     // Called when camera has finished to render
     private void OnRenderImage(RenderTexture source, RenderTexture destination)
     {
+        RebuildMeshObjectBuffers();
         SetShaderParameters();
         Render(destination);
     }
@@ -202,7 +230,12 @@ public class PathTracingController : MonoBehaviour
         shader.SetVector("DirectionalLight", new Vector4(lightDir.x, lightDir.y, lightDir.z, directionalLight.intensity));
         
         //SetSpheresComputeBuffer();
-        shader.SetBuffer((int)RenderMode, "Spheres", spheresBuffer);
+        SetComputeBuffer("Spheres", spheresBuffer);
+        
+        // Mesh object buffers
+        SetComputeBuffer("Meshes", meshObjectBuffer);
+        SetComputeBuffer("Vertices", vertexBuffer);
+        SetComputeBuffer("Indices", indexBuffer);
     }
 
 
@@ -338,5 +371,92 @@ public class PathTracingController : MonoBehaviour
         
         spheresDatas = spheresAdded.ToArray();
     }
-    
+
+    public static void RegisterObject(PathTracedObject obj)
+    {
+        rayTracedObjects.Add(obj);
+        meshObjectsNeedRebuilding = true;
+    }
+
+    public static void UnregisterObject(PathTracedObject obj)
+    {
+        rayTracedObjects.Remove(obj);
+        meshObjectsNeedRebuilding = true;
+    }
+
+    private void RebuildMeshObjectBuffers()
+    {
+        if (!meshObjectsNeedRebuilding)
+        {
+            return;
+        }
+        
+        meshObjectsNeedRebuilding = false;
+        currentSample = 0;
+        
+        meshObjects.Clear();
+        vertices.Clear();
+        indices.Clear();
+
+        foreach (PathTracedObject obj in rayTracedObjects)
+        {
+            
+            Mesh mesh = obj.GetComponent<MeshFilter>().sharedMesh;
+            
+            int firstVertex = vertices.Count;
+            vertices.AddRange(mesh.vertices);
+            
+            int firstIndex = indices.Count;
+            int[] objIndices = mesh.GetIndices(0);
+            indices.AddRange(objIndices.Select(index => index + firstVertex));
+            
+            meshObjects.Add(new MeshObject()
+            {
+                localToWorldMatrix =  obj.transform.localToWorldMatrix,
+                indicesOffset = firstIndex,
+                indicesCount =  objIndices.Length,
+                albedo = new Vector3(obj.albedo.r, obj.albedo.g, obj.albedo.b),
+                specular = obj.specular,
+                smoothness = obj.smoothness,
+                emission = new Vector3(obj.emission.r, obj.emission.g, obj.emission.b)
+            });
+            Debug.Log($"Build mesh object: {obj.name} - indicesOffset = {firstIndex}, indicesCount = {objIndices.Length}");
+            Debug.Log($"Vertices: count = {mesh.vertices.Length} --> {mesh.vertices.MergeAsString()}");
+            Debug.Log($"Indices: count = {objIndices.Select(index => index + firstIndex).ToArray().Length} --> {objIndices.Select(index => index + firstIndex).ToList().MergeAsString()}");
+        }
+
+        int meshObjStride = 104; // Matrix4x4 = 4 * 4 * sizeof(float) + int = sizeof(int) + int = sizeof(int) + 2 * Vector3 = 2 * 3 * sizeof(float) + 2 float = 2 * sizeof(float)
+        CreateComputeBuffer(ref meshObjectBuffer, meshObjects, meshObjStride);
+        int vertStride = 12; // Vector3 = 3 * sizeof(float)
+        CreateComputeBuffer(ref vertexBuffer, vertices, vertStride);
+        int indexStride = 4; // int = sizeof(int)
+        CreateComputeBuffer(ref indexBuffer, indices, indexStride);
+    }
+
+    private static void CreateComputeBuffer<T>(ref ComputeBuffer buffer, List<T> data, int stride) where T : struct
+    {
+        if (buffer != null)
+        {
+            if (data.Count == 0 || buffer.count != data.Count || buffer.stride != stride)
+            {
+                buffer.Release();
+                buffer = null;
+            }
+        }
+
+        if (data.Count != 0)
+        {
+            if (buffer == null)
+            {
+                buffer = new ComputeBuffer(data.Count, stride);
+            }
+            
+            buffer.SetData(data);
+        }
+    }
+
+    private void SetComputeBuffer(string name, ComputeBuffer buffer)
+    {
+        if(buffer != null) shader.SetBuffer((int)RenderMode, name, buffer);
+    }
 }

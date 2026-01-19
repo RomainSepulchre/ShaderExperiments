@@ -36,6 +36,21 @@ struct SphereData
 };
 StructuredBuffer<SphereData> Spheres;
 
+// MeshObject structured buffer
+struct MeshObject
+{
+    float4x4 localToWorldMatrix;
+    int indicesOffset;
+    int indicesCount;
+    float3 albedo;
+    float specular;
+    float smoothness;
+    float3 emission;
+};
+StructuredBuffer<MeshObject> Meshes;
+StructuredBuffer<float3> Vertices;
+StructuredBuffer<int> Indices;
+
 // Triangle
 float3 TriangleVertex1;
 float3 TriangleVertex2;
@@ -293,6 +308,38 @@ bool IntersectTriangle(Ray ray, float3 vert0, float3 vert1,  float3 vert2, inout
     return true;
 }
 
+void IntersectMeshObject(Ray ray, inout RayHit bestHit, MeshObject meshObject)
+{
+    uint offset = meshObject.indicesOffset;
+    uint count = offset + meshObject.indicesCount;
+    
+    for (uint i = offset; i < count; i += 3) // increment 3 by 3 because a triangle is composed of 3 vertex
+    {
+        float3 v0 = (mul(meshObject.localToWorldMatrix, float4(Vertices[Indices[i]], 1))).xyz;
+        float3 v1 = (mul(meshObject.localToWorldMatrix, float4(Vertices[Indices[i + 1]], 1))).xyz;
+        float3 v2 = (mul(meshObject.localToWorldMatrix, float4(Vertices[Indices[i + 2]], 1))).xyz;
+        
+        float t, u, v;
+        if (IntersectTriangle(ray, v0,v1,v2, t, u, v))
+        {
+            if (t >0 && t < bestHit.distance)
+            {
+                bestHit.distance = t;
+                bestHit.position = ray.origin + t * ray.direction;
+                bestHit.normal = normalize(cross(v1 - v0, v2 - v0));
+                // bestHit.albedo = 0.0f;
+                // bestHit.specular = 0.65f;
+                // bestHit.smoothness = 0.99f;
+                // bestHit.emission = 0.0f;
+                bestHit.albedo = meshObject.albedo;
+                bestHit.specular = meshObject.specular;
+                bestHit.smoothness = meshObject.smoothness;
+                bestHit.emission = meshObject.emission;
+            }
+        }
+    }
+}
+
 //
 // Trace()
 // -> Trace the ray and check for intersection
@@ -332,6 +379,13 @@ RayHit Trace(Ray ray)
                 bestHit.emission = 0.0f;
             }
         }
+    }
+    
+    uint count, stride;
+    Meshes.GetDimensions(count, stride);
+    for (uint i = 0; i < count; i++)
+    {
+        IntersectMeshObject(ray, bestHit, Meshes[i]);
     }
     
     return bestHit;
