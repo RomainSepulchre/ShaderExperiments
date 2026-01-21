@@ -3,19 +3,19 @@ Shader "LearnShader/Sphere Tracing/SphereTracing"
     Properties
     {
         _MainTex ("Texture", 2D) = "white" {}
-        _Edge ("Edge", Range(-0.5, 0.5)) = 0.0 // 0.5 correspond to the radius of the sphere
+        _Edge ("Edge", Range(-0.5, 0.5)) = 0.0 // 0.5 correspond to the radius of the sphere on Y axis (-0.5 is the bottom of the sphere, 0 the middle and 0.5 the top)
     }
     SubShader
     {
         Tags { "RenderType"="Opaque" }
         LOD 100
+        Cull Off // Disable culling to render both face 
 
         Pass
         {
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-            // make fog work
             #pragma multi_compile_fog
 
             #include "UnityCG.cginc"
@@ -79,13 +79,26 @@ Shader "LearnShader/Sphere Tracing/SphereTracing"
                 return o;
             }
 
-            fixed4 frag (v2f i) : SV_Target
+            fixed4 frag (v2f i, bool face : SV_IsFrontFace) : SV_Target // use SV_IsFrontFace semantic to have a different render for front and back face
             {
                 fixed4 col = tex2D(_MainTex, i.uv);
                 UNITY_APPLY_FOG(i.fogCoord, col);
                 
+                // Get camera position in Object-space
+                float3 rayOrigin = mul(unity_WorldToObject, float4(_WorldSpaceCameraPos, 1));
+                
+                // Calculate ray direction
+                float3 rayDirection = normalize(i.hitPos - rayOrigin);
+                
+                // Calculate position of the plane
+                float t = sphereCasting(rayOrigin, rayDirection);
+                
+                // Calculate spatial point of the plane
+                float3 p = rayOrigin + rayDirection * t;
+                
                 if (i.hitPos.y > _Edge) discard; // discard is a command that allows to delete the pixel on the rendering
-                return col;
+                
+                return face ? col : float4(p, 1); // for back face return plane position as a color
             }
             ENDCG
         }
