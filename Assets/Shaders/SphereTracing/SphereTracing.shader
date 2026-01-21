@@ -2,8 +2,13 @@ Shader "LearnShader/Sphere Tracing/SphereTracing"
 {
     Properties
     {
-        _MainTex ("Texture", 2D) = "white" {}
+        _MainTex ("Main Texture", 2D) = "white" {}
+        _PlaneTex ("Plane Texture", 2D) = "white" {}
+        
+        _CircleColor ("Circle Color", Color) = (1,1,1,1)
+        
         _Edge ("Edge", Range(-0.5, 0.5)) = 0.0 // 0.5 correspond to the radius of the sphere on Y axis (-0.5 is the bottom of the sphere, 0 the middle and 0.5 the top)
+        _CircleRadius ("Circle Radius", Range(0.0 ,0.5)) = 0.45
     }
     SubShader
     {
@@ -36,8 +41,11 @@ Shader "LearnShader/Sphere Tracing/SphereTracing"
 
             sampler2D _MainTex;
             float4 _MainTex_ST;
+            sampler2D _PlaneTex;
+            float4 _CircleColor; 
             
             float _Edge;
+            float _CircleRadius;
             
             // Constant (#define allows to set constant variable)
             #define MAX_MARCHING_STEPS 50 // Max steps to determine surface intersection
@@ -93,12 +101,39 @@ Shader "LearnShader/Sphere Tracing/SphereTracing"
                 // Calculate position of the plane
                 float t = sphereCasting(rayOrigin, rayDirection);
                 
-                // Calculate spatial point of the plane
-                float3 p = rayOrigin + rayDirection * t;
+                // Project plane texture onto the plane positionby calculating uv for the plane
+                float4 planeCol = 0;
+                float4 circleCol = 0;
+                if (t < MAX_DISTANCE)
+                {
+                    // Calculate spatial point of the plane
+                    float3 p = rayOrigin + rayDirection * t;
+                    // Our plane is poiting toward positive Y axis, so the texture must be oriented in the opposite direction. We can get uV coordiantes inside the sphere casting area with p.xz
+                    float2 uv_p = p.xz;
+                    
+                    // Offset UV to center texture
+                    //uv_p -= 0.5; // center texture for 0 on Y
+                    
+                    // TODO: FIX ISSUE WITH TEXTURE SIZE SYNCHRONYZED WITH _Edge
+                    
+                    // Scale texture to keep the projection size synchronized with _Edge
+                    float l = pow(-abs(_Edge), 2) + pow(-abs(_Edge) - 1, 2);
+                    
+                    float c = length(uv_p);
+                    circleCol = (smoothstep(c - 0.01, c + 0.01, _CircleRadius - abs(pow(_Edge * (1 * 0.5), 2))));
+                    uv_p = (uv_p * (1 - abs(pow(_Edge * l, 2)))) - 0.5; // ??? Error with this 
+                    
+                    // Sample plane texture
+                    planeCol = tex2D(_PlaneTex, uv_p);
+                    
+                    // Apply circle radius color to plane texture
+                    planeCol *= circleCol; // delete texture border
+                    planeCol += (1 - circleCol) * _CircleColor; // Add circle and apply color
+                }
                 
                 if (i.hitPos.y > _Edge) discard; // discard is a command that allows to delete the pixel on the rendering
                 
-                return face ? col : float4(p, 1); // for back face return plane position as a color
+                return face ? col : planeCol; // for back face return plane position as a color
             }
             ENDCG
         }
