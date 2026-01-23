@@ -9,6 +9,8 @@ Shader "LearnShader/Sphere Tracing/SphereTracing"
         
         _Edge ("Edge", Range(-0.5, 0.5)) = 0.0 // 0.5 correspond to the radius of the sphere on Y axis (-0.5 is the bottom of the sphere, 0 the middle and 0.5 the top)
         _CircleRadius ("Circle Radius", Range(0.0 ,0.5)) = 0.45
+        
+        _TexScale ("Texture scale", Range(0.0,10)) = 1.0
     }
     SubShader
     {
@@ -46,6 +48,8 @@ Shader "LearnShader/Sphere Tracing/SphereTracing"
             
             float _Edge;
             float _CircleRadius;
+            
+            float _TexScale;
             
             // Constant (#define allows to set constant variable)
             #define MAX_MARCHING_STEPS 50 // Max steps to determine surface intersection
@@ -88,7 +92,7 @@ Shader "LearnShader/Sphere Tracing/SphereTracing"
             }
 
             fixed4 frag (v2f i, bool face : SV_IsFrontFace) : SV_Target // use SV_IsFrontFace semantic to have a different render for front and back face
-            {
+            {               
                 fixed4 col = tex2D(_MainTex, i.uv);
                 UNITY_APPLY_FOG(i.fogCoord, col);
                 
@@ -112,16 +116,21 @@ Shader "LearnShader/Sphere Tracing/SphereTracing"
                     float2 uv_p = p.xz;
                     
                     // Offset UV to center texture
-                    //uv_p -= 0.5; // center texture for 0 on Y
+                    //uv_p += 0.5; // center texture for 0 on Y
                     
                     // TODO: FIX ISSUE WITH TEXTURE SIZE SYNCHRONYZED WITH _Edge
-                    
+                    // -> https://mathworld.wolfram.com/SphericalCap.html
+                    // -> https://www.editions-petiteelisabeth.fr/calculs_aire_calotte_spherique.php
+                    // -> I tried a few things the past days by using the area of the sphere disc and the spherical cap but nothing really works so I keep the original code despite it's not working as expected
                     // Scale texture to keep the projection size synchronized with _Edge
                     float l = pow(-abs(_Edge), 2) + pow(-abs(_Edge) - 1, 2);
                     
                     float c = length(uv_p);
                     circleCol = (smoothstep(c - 0.01, c + 0.01, _CircleRadius - abs(pow(_Edge * (1 * 0.5), 2))));
-                    uv_p = (uv_p * (1 - abs(pow(_Edge * l, 2)))) - 0.5; // ??? Error with this 
+                    
+                    uv_p = (uv_p * (1 - abs(pow(_Edge * l, 2)))); // ??? Error with this
+                    uv_p *= _TexScale;
+                    uv_p += 0.5; // Center texture
                     
                     // Sample plane texture
                     planeCol = tex2D(_PlaneTex, uv_p);
@@ -136,6 +145,7 @@ Shader "LearnShader/Sphere Tracing/SphereTracing"
                 return face ? col : planeCol; // for back face return plane position as a color
             }
             ENDCG
+                    
         }
     }
 }

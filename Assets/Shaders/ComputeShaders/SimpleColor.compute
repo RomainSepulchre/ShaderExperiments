@@ -9,13 +9,28 @@
 // Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel CSMain
 
+#include "ShaderToHuman/s2h.hlsl"
+
 // Create a RenderTexture with enableRandomWrite flag and set it
 // with cs.SetTexture
-RWTexture2D<float4> Result;
+ RWTexture2D<float4> Result;
 
 [numthreads(8,8,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
+    uint width, height;
+    Result.GetDimensions(width, height);
+    
+    // Simple implementation of shader to human
+    ContextGather ui;
+    s2h_init(ui, id.xy+0.5);
+    s2h_setCursor(ui, float2(width/2, height/2));
+    s2h_setScale(ui, 1.0f);
+    s2h_printTxt(ui, _H, _e, _l, _l, _o);
+    s2h_printLF(ui);
+    s2h_printTxt(ui, _W, _o, _r, _l, _d);
+    s2h_printBox(ui, float4(1,0,0,0));
+    
     // all texels are blue
     //Result[id.xy] = float4(0,0,1,1);
     
@@ -24,5 +39,5 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     
     // Default calculation
     // -> create a graphical representation of the sierpinski triangle (https://en.wikipedia.org/wiki/Sierpi%C5%84ski_triangle)
-    Result[id.xy] = float4(id.x & id.y, (id.x & 15)/15.0, (id.y & 15)/15.0, 0.0);
+    Result[id.xy] = float4(id.x & id.y, (id.x & 15)/15.0, (id.y & 15)/15.0, 0.0) + ui.dstColor;
 }
