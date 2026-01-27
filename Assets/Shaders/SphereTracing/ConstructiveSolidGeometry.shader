@@ -19,9 +19,10 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
             #include "UnityCG.cginc"
             
             // Uniform variables we pass from c# script
-            uniform float4 _CamWorldSpace; // we could also use _WorldSpaceCameraPos
             uniform float4x4 _CamFrustumMatrix;
             uniform float4x4 _CamToWorldMatrix;
+            uniform float _MaxDistance;
+            uniform float4 _Sphere1;
 
             struct appdata
             {
@@ -54,14 +55,53 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 
                 return o;
             }
-
+            
             sampler2D _MainTex;
+            
+            float sdfSphere(float3 pos, float radius)
+            {
+                return length(pos) - radius;
+            }
+            
+            float distanceField(float3 p)
+            {
+                float sphere1 = sdfSphere(p - _Sphere1.xyz, _Sphere1.w);
+                return sphere1;
+            }
+            
+            fixed4 raymarching(float3 rayOrigin, float3 rayDirection)
+            {
+                fixed4 result = fixed4(1,1,1,1);
+                const int maxIteration = 64;
+                float dist = 0; // distance travelled along the ray direction
+
+                for (int i = 0; i < maxIteration; i++)
+                {
+                    if (dist > _MaxDistance) // Hit environment / skybox
+                    {
+                        result = fixed4(rayDirection, 1);
+                        break;
+                    }
+                    
+                    float3 rayPos = rayOrigin + rayDirection * dist;
+                    float sdf = distanceField(rayPos); // Signed distance field (< 0 = inside something, > 0 outside something)
+                    if (sdf < 0.01) // We hit something
+                    {
+                        // Shade object
+                        result = fixed4(1,1,1,1);
+                        break;
+                    }
+                    dist += sdf;
+                }
+                return result;
+            }
 
             fixed4 frag (v2f i) : SV_Target
             {
                 float3 rayDirection = normalize(i.ray.xyz);
-                float3 rayOrigin = _CamWorldSpace;
-                return fixed4(rayDirection, 1);
+                float3 rayOrigin = _WorldSpaceCameraPos;
+                fixed4 result = raymarching(rayOrigin, rayDirection);
+                return result;
             }
             ENDCG
         }

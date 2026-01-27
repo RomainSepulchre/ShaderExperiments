@@ -34,6 +34,10 @@ public class ConstructiveSolidGeometryController : MonoBehaviour
         }
     }
     private Camera _camera;
+    
+    public float maxDistance;
+
+    public Vector4 Sphere1;
 
     private void OnRenderImage(RenderTexture source, RenderTexture destination)
     {
@@ -45,7 +49,8 @@ public class ConstructiveSolidGeometryController : MonoBehaviour
         
         RaymarchMaterial.SetMatrix("_CamFrustumMatrix", GetCameraFrustum(Camera));
         RaymarchMaterial.SetMatrix("_CamToWorldMatrix", Camera.cameraToWorldMatrix);
-        RaymarchMaterial.SetVector("_CamWorldSpace", Camera.transform.position);
+        RaymarchMaterial.SetFloat("_MaxDistance", maxDistance);
+        RaymarchMaterial.SetVector("_Sphere1", Sphere1);
         
         RenderTexture.active = destination;
         GL.PushMatrix();

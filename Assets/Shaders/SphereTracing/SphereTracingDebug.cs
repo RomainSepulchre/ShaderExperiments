@@ -34,7 +34,7 @@ public class SphereTracingDebug : MonoBehaviour
     void Update()
     {
         // Sync edge with _Edge shader property
-        edge = meshRenderer.material.GetFloat("_Edge");
+        edge = meshRenderer.sharedMaterial.GetFloat("_Edge");
         
         // rayOrigin = camera pos in object space
         Vector3 rayOrigin = transform.InverseTransformPoint(cam.transform.position);
