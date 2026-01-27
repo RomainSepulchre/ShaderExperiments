@@ -63,10 +63,21 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 return length(pos) - radius;
             }
             
-            float distanceField(float3 p)
+            float distanceField(float3 pos)
             {
-                float sphere1 = sdfSphere(p - _Sphere1.xyz, _Sphere1.w);
+                float sphere1 = sdfSphere(pos - _Sphere1.xyz, _Sphere1.w);
                 return sphere1;
+            }
+            
+            float3 getNormal(float3 hitPos)
+            {
+                const float2 offset = float2(0.001, 0.0);
+                float3 normal = float3(
+                    distanceField(hitPos + offset.xyy) - distanceField(hitPos - offset.xyy),
+                    distanceField(hitPos + offset.yxy) - distanceField(hitPos - offset.yxy),
+                    distanceField(hitPos + offset.yyx) - distanceField(hitPos - offset.yyx));
+                
+                return normalize(normal);
             }
             
             fixed4 raymarching(float3 rayOrigin, float3 rayDirection)
@@ -88,7 +99,10 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                     if (sdf < 0.01) // We hit something
                     {
                         // Shade object
-                        result = fixed4(1,1,1,1);
+                        float3 normal =  getNormal(rayPos);
+                        float3 lightDir = _WorldSpaceLightPos0.xyz;
+                        float light = dot(lightDir, normal); // dot product to know if the normal point toward the light or no
+                        result = fixed4(1,1,1,1) * light;
                         break;
                     }
                     dist += sdf;
