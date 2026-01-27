@@ -4,6 +4,7 @@ using UnityEngine;
 using Random = UnityEngine.Random;
 
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
+[ExecuteInEditMode]
 public class SphereTracingDebug : MonoBehaviour
 {
     public Camera cam;
@@ -27,7 +28,7 @@ public class SphereTracingDebug : MonoBehaviour
     {
         mesh = GetComponent<MeshFilter>();
         meshRenderer = GetComponent<MeshRenderer>();
-        edge = meshRenderer.material.GetFloat("_Edge");
+        edge = meshRenderer.sharedMaterial.GetFloat("_Edge");
     }
 
     void Update()
