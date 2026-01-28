@@ -59,6 +59,7 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
             }
             
             sampler2D _MainTex;
+            sampler2D _CameraDepthTexture;
             
             float smoothMinimum(float a, float b, float t)
             {
@@ -92,7 +93,7 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 return normalize(normal);
             }
             
-            fixed4 raymarching(float3 rayOrigin, float3 rayDirection)
+            fixed4 raymarching(float3 rayOrigin, float3 rayDirection, float depth)
             {
                 fixed4 result = fixed4(1,1,1,1);
                 const int maxIteration = 64;
@@ -100,9 +101,9 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
 
                 for (int i = 0; i < maxIteration; i++)
                 {
-                    if (dist > _MaxDistance) // Hit environment / skybox
+                    if (dist > _MaxDistance || dist >= depth) // Hit environment / skybox
                     {
-                        result = fixed4(rayDirection, 1);
+                        result = fixed4(rayDirection, 0); // w = 0 to tell when to draw screen render texture
                         break;
                     }
                     
@@ -114,7 +115,7 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                         float3 normal =  getNormal(rayPos);
                         float3 lightDir = _WorldSpaceLightPos0.xyz;
                         float light = dot(lightDir, normal); // dot product to know if the normal point toward the light or no
-                        result = fixed4(1,1,1,1) * light;
+                        result = fixed4(fixed3(1,1,1) * light, 1) ;
                         break;
                     }
                     dist += sdf;
@@ -124,10 +125,16 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
 
             fixed4 frag (v2f i) : SV_Target
             {
+                float depth = LinearEyeDepth(tex2D(_CameraDepthTexture, i.uv));
+                depth *= length(i.ray);
+                
+                fixed3 texColor = tex2D(_MainTex, i.uv);
+                
                 float3 rayDirection = normalize(i.ray.xyz);
                 float3 rayOrigin = _WorldSpaceCameraPos;
-                fixed4 result = raymarching(rayOrigin, rayDirection);
-                return result;
+                fixed4 result = raymarching(rayOrigin, rayDirection, depth);
+                
+                return fixed4(texColor * (1.0 - result.w) + result.rgb * result.w  ,1.0); // Draw scene + rayMarched shapes
             }
             ENDCG
         }

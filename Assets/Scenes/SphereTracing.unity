@@ -456,7 +456,7 @@ MonoBehaviour:
   marchingSteps: 50
   maxDistance: 10
   surfaceDistance: 0.001
-  vertexSelection: 87
+  vertexSelection: 88
 --- !u!1 &1140579719
 GameObject:
   m_ObjectHideFlags: 0
@@ -583,7 +583,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ConstructiveSolidGeometryController
   shader: {fileID: 4800000, guid: 8562c427da3697749ba9bdef50c518b3, type: 3}
   maxDistance: 10
-  Sphere1: {x: 0, y: 0, z: 0, w: 0.5}
+  ShapesInterpolation: 0.341
+  Sphere1: {x: 0, y: 0, z: 0.88, w: 0.5}
+  Sphere2: {x: 0.72, y: 0.06, z: 0.97, w: 0.25}
 --- !u!81 &1306120750
 AudioListener:
   m_ObjectHideFlags: 0
@@ -745,7 +747,7 @@ Material:
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
-    - _Edge: 0
+    - _Edge: 0.047
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1

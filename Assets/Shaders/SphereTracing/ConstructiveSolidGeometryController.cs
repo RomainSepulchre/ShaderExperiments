@@ -3,7 +3,7 @@ using UnityEngine;
 
 [RequireComponent(typeof(Camera))]
 [ExecuteInEditMode]
-public class ConstructiveSolidGeometryController : MonoBehaviour
+public class ConstructiveSolidGeometryController : SceneViewFilter
 {
     public Shader shader;
     
@@ -57,6 +57,8 @@ public class ConstructiveSolidGeometryController : MonoBehaviour
         RaymarchMaterial.SetVector("_Sphere2", Sphere2);
         
         RenderTexture.active = destination;
+        RaymarchMaterial.SetTexture("_MainTex", source);
+        
         GL.PushMatrix();
         GL.LoadOrtho();
         RaymarchMaterial.SetPass(0);
