@@ -16,7 +16,10 @@ Shader "LearnShader/Sphere Tracing/SphereTracing"
     {
         Tags { "RenderType"="Opaque" }
         LOD 100
-        Cull Off // Disable culling to render both face 
+        Cull Off // Disable culling to render both face
+        
+        ZWrite On
+        UsePass "Legacy Shaders/VertexLit/ShadowCaster"
 
         Pass
         {

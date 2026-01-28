@@ -10,7 +10,10 @@ Shader "LearnShader/Sphere Tracing/Smooth minimum"
     {
         Tags { "RenderType"="Opaque" }
         LOD 100
-
+        
+        ZWrite On
+        UsePass "Legacy Shaders/VertexLit/ShadowCaster"
+        
         Pass
         {
             CGPROGRAM
