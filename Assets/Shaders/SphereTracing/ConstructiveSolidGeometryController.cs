@@ -37,7 +37,9 @@ public class ConstructiveSolidGeometryController : MonoBehaviour
     
     public float maxDistance;
 
+    [Range(0f,1f)]public float ShapesInterpolation = 0.5f;
     public Vector4 Sphere1;
+    public Vector4 Sphere2;
 
     private void OnRenderImage(RenderTexture source, RenderTexture destination)
     {
@@ -50,7 +52,9 @@ public class ConstructiveSolidGeometryController : MonoBehaviour
         RaymarchMaterial.SetMatrix("_CamFrustumMatrix", GetCameraFrustum(Camera));
         RaymarchMaterial.SetMatrix("_CamToWorldMatrix", Camera.cameraToWorldMatrix);
         RaymarchMaterial.SetFloat("_MaxDistance", maxDistance);
+        RaymarchMaterial.SetFloat("_ShapesInterpolation", ShapesInterpolation);
         RaymarchMaterial.SetVector("_Sphere1", Sphere1);
+        RaymarchMaterial.SetVector("_Sphere2", Sphere2);
         
         RenderTexture.active = destination;
         GL.PushMatrix();

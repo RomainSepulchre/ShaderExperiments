@@ -22,7 +22,9 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
             uniform float4x4 _CamFrustumMatrix;
             uniform float4x4 _CamToWorldMatrix;
             uniform float _MaxDistance;
+            uniform float _ShapesInterpolation;
             uniform float4 _Sphere1;
+            uniform float4 _Sphere2;
 
             struct appdata
             {
@@ -58,6 +60,12 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
             
             sampler2D _MainTex;
             
+            float smoothMinimum(float a, float b, float t)
+            {
+                float h = clamp(0.5 + 0.5 * (b - a) / t, 0.0, 1.0);
+                return lerp(b, a, h) - t * h * (1.0 - h);
+            }
+            
             float sdfSphere(float3 pos, float radius)
             {
                 return length(pos) - radius;
@@ -66,7 +74,11 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
             float distanceField(float3 pos)
             {
                 float sphere1 = sdfSphere(pos - _Sphere1.xyz, _Sphere1.w);
-                return sphere1;
+                float sphere2 = sdfSphere(pos - _Sphere2.xyz, _Sphere2.w);
+                
+                float mergedShapes = smoothMinimum(sphere1, sphere2, _ShapesInterpolation);
+                
+                return mergedShapes;
             }
             
             float3 getNormal(float3 hitPos)
