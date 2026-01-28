@@ -18,6 +18,9 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
 
             #include "UnityCG.cginc"
             
+            sampler2D _MainTex;
+            uniform sampler2D _CameraDepthTexture;
+            
             // Uniform variables we pass from c# script
             uniform float4x4 _CamFrustumMatrix;
             uniform float4x4 _CamToWorldMatrix;
@@ -57,9 +60,6 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 
                 return o;
             }
-            
-            sampler2D _MainTex;
-            sampler2D _CameraDepthTexture;
             
             float smoothMinimum(float a, float b, float t)
             {
@@ -124,8 +124,8 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
             }
 
             fixed4 frag (v2f i) : SV_Target
-            {
-                float depth = LinearEyeDepth(tex2D(_CameraDepthTexture, i.uv));
+            {                
+                float depth = LinearEyeDepth(tex2D(_CameraDepthTexture, i.uv).r); // Depth texture is all black
                 depth *= length(i.ray);
                 
                 fixed3 texColor = tex2D(_MainTex, i.uv);

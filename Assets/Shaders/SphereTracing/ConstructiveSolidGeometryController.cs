@@ -41,6 +41,11 @@ public class ConstructiveSolidGeometryController : SceneViewFilter
     public Vector4 Sphere1;
     public Vector4 Sphere2;
 
+    private void OnEnable()
+    {
+        Camera.depthTextureMode = DepthTextureMode.Depth;
+    }
+
     private void OnRenderImage(RenderTexture source, RenderTexture destination)
     {
         if (!RaymarchMaterial)
@@ -103,5 +108,12 @@ public class ConstructiveSolidGeometryController : SceneViewFilter
         frustum.SetRow(3, BottomLeft);
         
         return frustum;
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawSphere(new Vector3(Sphere1.x, Sphere1.y, Sphere1.z), Sphere1.w);
+        Gizmos.DrawSphere(new Vector3(Sphere2.x, Sphere2.y, Sphere2.z), Sphere2.w);
     }
 }

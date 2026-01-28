@@ -62,7 +62,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     uint circleCount, strides;
     CircleBuffer.GetDimensions(circleCount, strides);
     
-    for (int i = 0; i < circleCount; i++)
+    for (uint i = 0; i < circleCount; i++)
     {
         float center = CircleBuffer[i].center;
         float radius = CircleBuffer[i].radius;
