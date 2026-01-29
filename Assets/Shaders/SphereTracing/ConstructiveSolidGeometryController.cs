@@ -37,7 +37,9 @@ public class ConstructiveSolidGeometryController : SceneViewFilter
     
     public float maxDistance;
 
+    public Color ShapesColor = Color.white;
     [Range(0f,1f)]public float ShapesInterpolation = 0.5f;
+    public Vector3 RepeatInterval = new Vector3(1f, 1f, 1f);
     public Vector4 Sphere1;
     public Vector4 Sphere2;
     public Vector3 BoxPosition;
@@ -59,11 +61,14 @@ public class ConstructiveSolidGeometryController : SceneViewFilter
         RaymarchMaterial.SetMatrix("_CamFrustumMatrix", GetCameraFrustum(Camera));
         RaymarchMaterial.SetMatrix("_CamToWorldMatrix", Camera.cameraToWorldMatrix);
         RaymarchMaterial.SetFloat("_MaxDistance", maxDistance);
+        RaymarchMaterial.SetColor("_ShapesColor", ShapesColor);
         RaymarchMaterial.SetFloat("_ShapesInterpolation", ShapesInterpolation);
+        RaymarchMaterial.SetVector("_RepeatInterval", RepeatInterval);
         RaymarchMaterial.SetVector("_Sphere1", Sphere1);
         RaymarchMaterial.SetVector("_Sphere2", Sphere2);
         RaymarchMaterial.SetVector("_BoxPosition", BoxPosition);
         RaymarchMaterial.SetVector("_BoxSize", BoxSize);
+        
         
         RenderTexture.active = destination;
         RaymarchMaterial.SetTexture("_MainTex", source);

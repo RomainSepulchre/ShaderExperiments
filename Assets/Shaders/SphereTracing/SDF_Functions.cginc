@@ -117,7 +117,7 @@ inline float opXor( float shapeA, float shapeB)
 /// @return 
 inline float pMod1(inout float pos, float size)
 {
-    float halfSize = size / 0.5;
+    float halfSize = size * 0.5;
     float c = floor((pos + halfSize) / size);
     pos = fmod(pos + halfSize, size) - halfSize;
     pos = fmod(-pos + halfSize, size) - halfSize;

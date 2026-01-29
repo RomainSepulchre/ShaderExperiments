@@ -26,7 +26,9 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
             uniform float4x4 _CamFrustumMatrix;
             uniform float4x4 _CamToWorldMatrix;
             uniform float _MaxDistance;
+            uniform fixed4 _ShapesColor;
             uniform float _ShapesInterpolation;
+            uniform float3 _RepeatInterval;
             uniform float4 _Sphere1;
             uniform float4 _Sphere2;
             uniform float3 _BoxPosition;
@@ -72,12 +74,18 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
             
             float distanceField(float3 pos)
             {
+                // Repeat shapes
+                float modX = pMod1(pos.x, _RepeatInterval.x);
+                float modY = pMod1(pos.y, _RepeatInterval.y);
+                float modZ = pMod1(pos.z, _RepeatInterval.z);
+                
+                // Shapes to draw
                 float sphere1 = sdfSphere(pos - _Sphere1.xyz, _Sphere1.w);
                 float sphere2 = sdfSphere(pos - _Sphere2.xyz, _Sphere2.w);
                 float box = sdfBox(pos - _BoxPosition, _BoxSize);
                 
-                float mergedShapes = opSmoothedUnion(sphere1, sphere2, _ShapesInterpolation);
-                mergedShapes = opSmoothedUnion(mergedShapes, box, _ShapesInterpolation);
+                //float mergedShapes = opSmoothedUnion(sphere1, sphere2, _ShapesInterpolation);
+                float mergedShapes = opSubtraction(sphere1, box);
                 
                 return mergedShapes;
             }
@@ -115,7 +123,7 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                         float3 normal =  getNormal(rayPos);
                         float3 lightDir = _WorldSpaceLightPos0.xyz;
                         float light = dot(lightDir, normal); // dot product to know if the normal point toward the light or no
-                        result = fixed4(fixed3(1,1,1) * light, 1) ;
+                        result = fixed4(_ShapesColor.rgb * light, 1) ;
                         break;
                     }
                     dist += sdf;
