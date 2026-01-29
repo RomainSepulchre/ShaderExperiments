@@ -17,6 +17,7 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
             #pragma target 3.0 // Specify compile target, see https://docs.unity3d.com/2020.1/Documentation/Manual/SL-ShaderCompileTargets.html
 
             #include "UnityCG.cginc"
+            #include "Assets/Shaders/SphereTracing/SDF_Functions.cginc" // Cginc file that include all the SDF functions
             
             sampler2D _MainTex;
             uniform sampler2D _CameraDepthTexture;
@@ -28,6 +29,8 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
             uniform float _ShapesInterpolation;
             uniform float4 _Sphere1;
             uniform float4 _Sphere2;
+            uniform float3 _BoxPosition;
+            uniform float3 _BoxSize;
 
             struct appdata
             {
@@ -61,23 +64,20 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 return o;
             }
             
-            float smoothMinimum(float a, float b, float t)
+            float smoothMinimum(float a, float b, float t) // Moved into SDF_Functions.cginc as opSmoothedUnion()
             {
                 float h = clamp(0.5 + 0.5 * (b - a) / t, 0.0, 1.0);
                 return lerp(b, a, h) - t * h * (1.0 - h);
-            }
-            
-            float sdfSphere(float3 pos, float radius)
-            {
-                return length(pos) - radius;
             }
             
             float distanceField(float3 pos)
             {
                 float sphere1 = sdfSphere(pos - _Sphere1.xyz, _Sphere1.w);
                 float sphere2 = sdfSphere(pos - _Sphere2.xyz, _Sphere2.w);
+                float box = sdfBox(pos - _BoxPosition, _BoxSize);
                 
-                float mergedShapes = smoothMinimum(sphere1, sphere2, _ShapesInterpolation);
+                float mergedShapes = opSmoothedUnion(sphere1, sphere2, _ShapesInterpolation);
+                mergedShapes = opSmoothedUnion(mergedShapes, box, _ShapesInterpolation);
                 
                 return mergedShapes;
             }

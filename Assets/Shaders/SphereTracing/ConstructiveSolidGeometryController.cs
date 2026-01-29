@@ -40,6 +40,8 @@ public class ConstructiveSolidGeometryController : SceneViewFilter
     [Range(0f,1f)]public float ShapesInterpolation = 0.5f;
     public Vector4 Sphere1;
     public Vector4 Sphere2;
+    public Vector3 BoxPosition;
+    public Vector3 BoxSize;
 
     private void OnEnable()
     {
@@ -60,6 +62,8 @@ public class ConstructiveSolidGeometryController : SceneViewFilter
         RaymarchMaterial.SetFloat("_ShapesInterpolation", ShapesInterpolation);
         RaymarchMaterial.SetVector("_Sphere1", Sphere1);
         RaymarchMaterial.SetVector("_Sphere2", Sphere2);
+        RaymarchMaterial.SetVector("_BoxPosition", BoxPosition);
+        RaymarchMaterial.SetVector("_BoxSize", BoxSize);
         
         RenderTexture.active = destination;
         RaymarchMaterial.SetTexture("_MainTex", source);
@@ -112,8 +116,15 @@ public class ConstructiveSolidGeometryController : SceneViewFilter
 
     private void OnDrawGizmos()
     {
+        Gizmos.color = Color.green;
+        Gizmos.DrawCube(new Vector3(BoxPosition.x, BoxPosition.y, BoxPosition.z), BoxSize * 2);
+        Gizmos.DrawWireCube(new Vector3(BoxPosition.x, BoxPosition.y, BoxPosition.z), BoxSize * 2);
         Gizmos.color = Color.red;
         Gizmos.DrawSphere(new Vector3(Sphere1.x, Sphere1.y, Sphere1.z), Sphere1.w);
+        Gizmos.DrawWireSphere(new Vector3(Sphere1.x, Sphere1.y, Sphere1.z), Sphere1.w);
+        Gizmos.color = Color.blue;
         Gizmos.DrawSphere(new Vector3(Sphere2.x, Sphere2.y, Sphere2.z), Sphere2.w);
+        Gizmos.DrawWireSphere(new Vector3(Sphere2.x, Sphere2.y, Sphere2.z), Sphere2.w);
+        
     }
 }
