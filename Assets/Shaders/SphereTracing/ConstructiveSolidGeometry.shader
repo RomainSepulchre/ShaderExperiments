@@ -72,22 +72,27 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 return lerp(b, a, h) - t * h * (1.0 - h);
             }
             
-            float distanceField(float3 pos)
+            float distanceField(float3 rayPos)
             {
                 // Repeat shapes
-                float modX = pMod1(pos.x, _RepeatInterval.x);
-                float modY = pMod1(pos.y, _RepeatInterval.y);
-                float modZ = pMod1(pos.z, _RepeatInterval.z);
+                //float modX = pMod1(rayPos.x, _RepeatInterval.x);
+                //float modY = pMod1(rayPos.y, _RepeatInterval.y);
+                //float modZ = pMod1(rayPos.z, _RepeatInterval.z);
                 
                 // Shapes to draw
-                float sphere1 = sdfSphere(pos - _Sphere1.xyz, _Sphere1.w);
-                float sphere2 = sdfSphere(pos - _Sphere2.xyz, _Sphere2.w);
-                float box = sdfBox(pos - _BoxPosition, _BoxSize);
+                float sphere1 = sdfSphere(rayPos - _Sphere1.xyz, _Sphere1.w);
+                float sphere2 = sdfSphere(rayPos - _Sphere2.xyz, _Sphere2.w);
+                float box = sdfBox(rayPos - _BoxPosition, _BoxSize);
+                //float torrus = sdfTorus(rayPos - float3(0,0,0), 0.5, 0.1);
+                //float cappedTorrus = sdfCappedTorus(rayPos - float3(0,0,0), 1, 0.3, 0.5);
+                //float link = sdfLink(rayPos - float3(0,0,0), _Sphere1.xy, _Sphere1.z);
+                float cylinder = sdfInfiniteCylinderX(rayPos - float3(_Sphere2.x, _Sphere2.y, 0), _Sphere2.z);
+                //float plane = sdfPlane(rayPos - _Sphere2, normalize(_Sphere1), _Sphere2.w);
                 
                 //float mergedShapes = opSmoothedUnion(sphere1, sphere2, _ShapesInterpolation);
                 float mergedShapes = opSubtraction(sphere1, box);
                 
-                return mergedShapes;
+                return cylinder;
             }
             
             float3 getNormal(float3 hitPos)

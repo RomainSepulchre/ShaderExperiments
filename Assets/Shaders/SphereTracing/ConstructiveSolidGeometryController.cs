@@ -44,6 +44,7 @@ public class ConstructiveSolidGeometryController : SceneViewFilter
     public Vector4 Sphere2;
     public Vector3 BoxPosition;
     public Vector3 BoxSize;
+    
 
     private void OnEnable()
     {

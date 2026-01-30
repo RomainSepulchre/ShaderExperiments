@@ -1,6 +1,8 @@
 // Functions to draw geometry with SDF
 // Based on https://iquilezles.org/articles/distfunctions/
 
+static const float PI = 3.14159265359f;
+
 // ------------------
 // ----- SHAPES -----
 // ------------------
@@ -50,6 +52,82 @@ inline float sdfBoxFrame(float3 pos, float3 boxSize, float frameThickness)
         length(max(float3(q.x, q.y, pos.z), 0.0)) + min(max(q.x, max(q.y,pos.z)), 0.0));
 }
 
+/// Plane
+/// @param pos Position of the shape
+/// @param normal Normal of the plane (must be a normalized vector)
+/// @param height Optional parameter to modify the height of the plane
+/// @return Plane SDF value
+float sdfPlane(float3 pos, float3 normal, float height = 0)
+{
+    // normal must be normalized
+    return dot(pos, normal) + height;
+}
+
+/// Torus
+/// @param pos Position of the shape
+/// @param radius Radius of the torus
+/// @param thickness Thickness of the torus
+/// @return Torus SDF value
+inline float sdfTorus( float3 pos, float radius, float thickness)
+{
+    float2 q = float2(length(pos.xz) - radius, pos.y);
+    return length(q) - thickness;
+}
+
+/// Capped Torus
+/// @param pos Position of the shape
+/// @param radius Radius of the torus
+/// @param thickness Thickness of the torus
+/// @param fill 0.0 to 1.0 value that define how the torus circle is filled
+/// @return Capped Torus SDF value
+inline float sdfCappedTorus( float3 pos, float radius, float thickness, float fill)
+{
+    float s = sin(lerp(0.0, PI, fill));
+    float c = cos(lerp(0.0, PI, fill));
+    float2 sc = float2(s, c);
+    pos.x = abs(pos.x);
+    float k = (sc.y * pos.x > sc.x * pos.y) ? dot(pos.xy, sc) : length(pos.xy);
+    return sqrt(dot(pos, pos) + radius * radius - 2.0 * radius * k) - thickness;
+}
+
+/// Link
+/// @param pos Position of the shape
+/// @param size Size of the link (height and width)
+/// @param thickness Thickness of the link
+/// @return Link SDF value
+float sdfLink( float3 pos, float2 size, float thickness )
+{
+    float3 q = float3( pos.x, max(abs(pos.y) - size.x, 0.0), pos.z );
+    return length(float2(length(q.xy) - size.y, q.z)) - thickness;
+}
+
+/// Infinite cylinder on X Axis
+/// @param pos Position of the shape
+/// @param radius Radius of the cylinder
+/// @param offset Optional parameter to offset the cylinder position
+/// @return Infinite cylinder SDF value
+float sdfInfiniteCylinderX( float3 pos, float radius, float2 offset = float2(0,0))
+{
+    return length(pos.yz - offset) - radius;
+}
+/// Infinite cylinder on Y Axis
+/// @param pos Position of the shape
+/// @param radius Radius of the cylinder
+/// @param offset Optional parameter to offset the cylinder position
+/// @return Infinite cylinder SDF value
+float sdfInfiniteCylinderY( float3 pos, float radius, float2 offset = float2(0,0))
+{
+    return length(pos.xz - offset) - radius;
+}
+/// Infinite cylinder on Z Axis
+/// @param pos Position of the shape
+/// @param radius Radius of the cylinder
+/// @param offset Optional parameter to offset the cylinder position
+/// @return Infinite cylinder SDF value
+float sdfInfiniteCylinderZ( float3 pos, float radius, float2 offset = float2(0,0))
+{
+    return length(pos.xy - offset) - radius;
+}
 
 // ------------------------
 // ----- COMBINATIONS -----
