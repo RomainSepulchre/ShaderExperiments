@@ -33,6 +33,9 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
             uniform float4 _Sphere2;
             uniform float3 _BoxPosition;
             uniform float3 _BoxSize;
+            uniform float3 _DebugPos;
+            uniform float4 _DebugParams;
+            uniform int _DebugAxis;
 
             struct appdata
             {
@@ -83,16 +86,21 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 float sphere1 = sdfSphere(rayPos - _Sphere1.xyz, _Sphere1.w);
                 float sphere2 = sdfSphere(rayPos - _Sphere2.xyz, _Sphere2.w);
                 float box = sdfBox(rayPos - _BoxPosition, _BoxSize);
-                //float torrus = sdfTorus(rayPos - float3(0,0,0), 1, 0.1, SDF_AXIS_Y);
-                //float cappedTorrus = sdfCappedTorus(rayPos - float3(0.2,0,0), 1, 0.3, 0.75, SDF_AXIS_Y);
-                float link = sdfLink(rayPos - float3(0,0,0), _Sphere1.x, _Sphere1.y, _Sphere1.z, SDF_AXIS_Z);
-                //float cylinder = sdfInfiniteCylinder(rayPos - float3(_Sphere2.x, _Sphere2.y, 0), _Sphere2.z, SDF_AXIS_Z);
-                //float plane = sdfPlane(rayPos - _Sphere2, normalize(_Sphere1), _Sphere2.w);
                 
-                //float mergedShapes = opSmoothedUnion(sphere1, sphere2, _ShapesInterpolation);
+                // Debug Shapes 
+                float torrus = sdfTorus(rayPos - _DebugPos, _DebugParams.x, _DebugParams.y, _DebugAxis);
+                float cappedTorrus = sdfCappedTorus(rayPos - _DebugPos, _DebugParams.x, _DebugParams.y, _DebugParams.z, _DebugAxis);
+                float link = sdfLink(rayPos - _DebugPos, _DebugParams.x, _DebugParams.y, _DebugParams.z, _DebugAxis);
+                float cylinder = sdfInfiniteCylinder(rayPos - _DebugPos, _DebugParams.x, _DebugAxis);
+                float plane = sdfPlane(rayPos - _DebugPos, normalize(_DebugParams.xyz), _DebugParams.w);
+                float cone = sdfCone(rayPos - _DebugPos, _DebugParams.x, _DebugParams.y);
+                float infiniteCone = sdfInfiniteCone(rayPos - _DebugPos, float2(sin(_DebugParams.x), cos(_DebugParams.x)));
+                
+                // Merged shapes
+                float smoothedShapes = opSmoothedUnion(sphere1, sphere2, _ShapesInterpolation);
                 float mergedShapes = opSubtraction(sphere1, box);
                 
-                return link;
+                return infiniteCone;
             }
             
             float3 getNormal(float3 hitPos)

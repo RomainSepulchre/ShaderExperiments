@@ -414,13 +414,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1359276835}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.2484495, y: -0.36858636, z: 0.102911144, w: 0.88984627}
-  m_LocalPosition: {x: 2.343, y: 2.222, z: -2.343}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: -0.5, z: -2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 31.2, y: -45, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1359276839
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -438,10 +438,13 @@ MonoBehaviour:
   ShapesColor: {r: 0.3962264, g: 0.25632724, b: 0.12522249, a: 1}
   ShapesInterpolation: 0.484
   RepeatInterval: {x: 1, y: 1, z: 1}
-  Sphere1: {x: 0, y: 0, z: 0, w: 0.39}
-  Sphere2: {x: 0.23, y: 0.6, z: 0.35, w: 1}
+  Sphere1: {x: 0, y: 0, z: 0, w: 0.67}
+  Sphere2: {x: 0, y: 0, z: 0, w: 0.25}
   BoxPosition: {x: 0, y: 0, z: 0}
   BoxSize: {x: 0.5, y: 0.5, z: 0.5}
+  DebugPos: {x: 0, y: 0, z: 0}
+  DebugParams: {x: 0.3, y: 1, z: 1.6, w: 2.46}
+  DebugAxis: 1
 --- !u!114 &1359276840
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -564,7 +567,7 @@ Transform:
   m_GameObject: {fileID: 1413796430}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.463, y: -0.325, z: 1.451}
+  m_LocalPosition: {x: 0, y: -0.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

@@ -44,6 +44,17 @@ public class ConstructiveSolidGeometryController : SceneViewFilter
     public Vector4 Sphere2;
     public Vector3 BoxPosition;
     public Vector3 BoxSize;
+    [Space(10)]
+    [Header("Debug")]
+    public Vector3 DebugPos;
+    public Vector4 DebugParams;
+    public enum SDFAxis
+    {
+        X = 0,
+        Y = 1,
+        Z = 2,
+    }
+    public SDFAxis DebugAxis = SDFAxis.Y;
     
 
     private void OnEnable()
@@ -69,6 +80,9 @@ public class ConstructiveSolidGeometryController : SceneViewFilter
         RaymarchMaterial.SetVector("_Sphere2", Sphere2);
         RaymarchMaterial.SetVector("_BoxPosition", BoxPosition);
         RaymarchMaterial.SetVector("_BoxSize", BoxSize);
+        RaymarchMaterial.SetVector("_DebugPos", DebugPos);
+        RaymarchMaterial.SetVector("_DebugParams", DebugParams);
+        RaymarchMaterial.SetInt("_DebugAxis", (int)DebugAxis);
         
         
         RenderTexture.active = destination;

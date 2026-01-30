@@ -22,7 +22,7 @@ static const float PI = 3.14159265359f;
 /// @param pos Position of the shape
 /// @param radius Radius of the sphere
 /// @return Sphere SDF value
-inline float sdfSphere( float3 pos, float radius)
+inline float sdfSphere(float3 pos, float radius)
 {
     return length(pos) - radius;
 }
@@ -31,7 +31,7 @@ inline float sdfSphere( float3 pos, float radius)
 /// @param pos Position of the shape
 /// @param boxSize Size of the box
 /// @return Box SDF value
-inline float sdfBox( float3 pos, float3 boxSize)
+inline float sdfBox(float3 pos, float3 boxSize)
 {
     float3 q = abs(pos) - boxSize;
     return length(max(q, 0.0)) + min(max(q.x, max(q.y,q.z)), 0.0);
@@ -42,7 +42,7 @@ inline float sdfBox( float3 pos, float3 boxSize)
 /// @param boxSize Size of the box
 /// @param round 0.0 to 1.0 value that define how rounded is the box
 /// @return Rounded box SDF value
-inline float sdfRoundBox( float3 pos, float3 boxSize, float round)
+inline float sdfRoundBox(float3 pos, float3 boxSize, float round)
 {
     float3 q = abs(pos) - boxSize + round;
     return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0) - round;
@@ -80,7 +80,7 @@ float sdfPlane(float3 pos, float3 normal, float height = 0)
 /// @param thickness Thickness of the torus
 /// @param axis Axis to use to draw shape: use SDF_AXIS_X (0), SDF_AXIS_Y (1) or SDF_AXIS_Z (2)
 /// @return Torus SDF value
-inline float sdfTorus( float3 pos, float radius, float thickness, int axis = SDF_AXIS_Y)
+inline float sdfTorus(float3 pos, float radius, float thickness, int axis = SDF_AXIS_Y)
 {
     float2 q;
     
@@ -106,49 +106,54 @@ inline float sdfTorus( float3 pos, float radius, float thickness, int axis = SDF
 /// @param thickness Thickness of the torus
 /// @param fill 0.0 to 1.0 value that define how the torus circle is filled
 /// @return Capped Torus SDF value
-inline float sdfCappedTorus( float3 pos, float radius, float thickness, float fill,  int axis = SDF_AXIS_Y)
+inline float sdfCappedTorus(float3 pos, float radius, float thickness, float fill,  int axis = SDF_AXIS_Y)
 {
     float s = sin(lerp(0.0, PI, fill));
     float c = cos(lerp(0.0, PI, fill));
     float2 sc = float2(s, c);
     
-    pos.x = abs(pos.x);
-    float k = (sc.y * pos.x > sc.x * pos.y) ? dot(pos.xy, sc) : length(pos.xy);
-    
-    // TODO: Add possibility to choose axis
-    // if (axis == SDF_AXIS_X)
-    // {
-    // }
-    // else if (axis == SDF_AXIS_Y)
-    // {
-    // }
-    // else // Default is SDF_AXIS_Z
-    // {
-    // }
+    float k;
+    if (axis == SDF_AXIS_X)
+    {
+        pos.y = abs(pos.y);
+        k = (sc.y * pos.y > sc.x * pos.z) ? dot(pos.yz, sc) : length(pos.yz);
+    }
+    else if (axis == SDF_AXIS_Y)
+    {
+        pos.x = abs(pos.x);
+        k = (sc.y * pos.x > sc.x * pos.z) ? dot(pos.xz, sc) : length(pos.xz);
+    }
+    else // Default is SDF_AXIS_Z
+    {
+        pos.x = abs(pos.x);
+        k = (sc.y * pos.x > sc.x * pos.y) ? dot(pos.xy, sc) : length(pos.xy);
+    }
     
     return sqrt(dot(pos, pos) + radius * radius - 2.0 * radius * k) - thickness;
 }
 
 /// Link
 /// @param pos Position of the shape
-/// @param size Size of the link (height and width)
+/// @param width Width of the link
+/// @param radius Radius of the link
 /// @param thickness Thickness of the link
+/// @param axis Axis to use to draw shape: use SDF_AXIS_X (0), SDF_AXIS_Y (1) or SDF_AXIS_Z (2)
 /// @return Link SDF value
-float sdfLink( float3 pos, float width, float radius, float thickness, int axis = SDF_AXIS_Z)
+inline float sdfLink(float3 pos, float width, float radius, float thickness, int axis = SDF_AXIS_Z)
 {
     if (axis == SDF_AXIS_X)
     {
-        float3 q = float3( pos.x, pos.y, max(abs(pos.z) - width, 0.0 ));
+        float3 q = float3(pos.x, pos.y, max(abs(pos.z) - width, 0.0));
         return length(float2(length(q.yz) - radius, q.x)) - thickness;
     }
     else if (axis == SDF_AXIS_Y)
     {
-        float3 q = float3( max(abs(pos.x) - width, 0.0), pos.y, pos.z );
+        float3 q = float3(max(abs(pos.x) - width, 0.0), pos.y, pos.z);
         return length(float2(length(q.xz) - radius, q.y)) - thickness;
     }
     else // Default is SDF_AXIS_Z
     {
-        float3 q = float3( pos.x, max(abs(pos.y) - width, 0.0), pos.z );
+        float3 q = float3(pos.x, max(abs(pos.y) - width, 0.0), pos.z);
         return length(float2(length(q.xy) - radius, q.z)) - thickness;
     }
 }
@@ -159,7 +164,7 @@ float sdfLink( float3 pos, float width, float radius, float thickness, int axis 
 /// @param axis Axis to use to draw shape: use SDF_AXIS_X (0), SDF_AXIS_Y (1) or SDF_AXIS_Z (2)
 /// @param offset Optional parameter to offset the cylinder position
 /// @return Infinite cylinder SDF value
-float sdfInfiniteCylinder( float3 pos, float radius, int axis = SDF_AXIS_Y , float2 offset = float2(0,0))
+inline float sdfInfiniteCylinder(float3 pos, float radius, int axis = SDF_AXIS_Y , float2 offset = float2(0,0))
 {
     if (axis == SDF_AXIS_X)
     {
@@ -174,6 +179,60 @@ float sdfInfiniteCylinder( float3 pos, float radius, int axis = SDF_AXIS_Y , flo
         return length(pos.xz - offset) - radius;
     }
 }
+
+/// Cone
+/// @param pos Position of the shape
+/// @param radius Radius of the cone
+/// @param height Height of the cone
+/// @return Cone SDF value
+inline float sdfCone(float3 pos, float radius, float height)
+{
+    float2 q = float2(radius, -height); // q is the point at the base in 2D
+
+    float2 w = float2(length(pos.xz), pos.y);
+    float2 a = w - q * clamp(dot(w, q) / dot(q, q), 0.0, 1.0 );
+    float2 b = w - q * float2(clamp( w.x / q.x, 0.0, 1.0), 1.0);
+    float k = sign(q.y);
+    float d = min(dot(a, a), dot(b, b));
+    float s = max(k * (w.x * q.y - w.y * q.x), k * (w.y - q.y));
+    
+    return sqrt(d) * sign(s);
+}
+/// @param pos Position of the shape
+/// @param sinCosAngle Sin and cos of the cone angle
+/// @param height Height of the cone
+/// @return Cone SDF value
+inline float sdfCone(float3 pos, float2 sinCosAngle, float height)
+{
+    // sc is the sin/cos of the angle, h is height
+    // Alternatively pass q instead of (c,h),
+    // which is the point at the base in 2D
+    float2 q = height * float2(sinCosAngle.x / sinCosAngle.y, -1.0);
+    
+    float2 w = float2(length(pos.xz), pos.y);
+    float2 a = w - q * clamp(dot(w, q) / dot(q, q), 0.0, 1.0 );
+    float2 b = w - q * float2(clamp( w.x / q.x, 0.0, 1.0), 1.0);
+    float k = sign(q.y);
+    float d = min(dot(a, a), dot(b, b));
+    float s = max(k * (w.x * q.y - w.y * q.x), k * (w.y - q.y));
+    
+    return sqrt(d) * sign(s);
+}
+
+/// Infinite Cone
+/// @param pos Position of the shape
+/// @param sinCosAngle Sin and cos of the cone angle
+/// @return Infinite Cone SDF value
+float sdfInfiniteCone(float3 pos, float2 sinCosAngle)
+{
+    // c is the sin/cos of the angle
+    float2 q = float2(length(pos.xz), -pos.y);
+    float d = length(q - sinCosAngle * max(dot(q, sinCosAngle), 0.0));
+    
+    return d * ((q.x * sinCosAngle.y - q.y * sinCosAngle.x  <0.0) ? -1.0 : 1.0);
+}
+
+
 
 // ------------------------
 // ----- COMBINATIONS -----
