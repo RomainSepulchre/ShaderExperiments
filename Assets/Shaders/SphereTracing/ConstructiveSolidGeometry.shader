@@ -87,20 +87,27 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 float sphere2 = sdfSphere(rayPos - _Sphere2.xyz, _Sphere2.w);
                 float box = sdfBox(rayPos - _BoxPosition, _BoxSize);
                 
-                // Debug Shapes 
-                float torrus = sdfTorus(rayPos - _DebugPos, _DebugParams.x, _DebugParams.y, _DebugAxis);
-                float cappedTorrus = sdfCappedTorus(rayPos - _DebugPos, _DebugParams.x, _DebugParams.y, _DebugParams.z, _DebugAxis);
-                float link = sdfLink(rayPos - _DebugPos, _DebugParams.x, _DebugParams.y, _DebugParams.z, _DebugAxis);
-                float cylinder = sdfInfiniteCylinder(rayPos - _DebugPos, _DebugParams.x, _DebugAxis);
-                float plane = sdfPlane(rayPos - _DebugPos, normalize(_DebugParams.xyz), _DebugParams.w);
-                float cone = sdfCone(rayPos - _DebugPos, _DebugParams.x, _DebugParams.y);
-                float infiniteCone = sdfInfiniteCone(rayPos - _DebugPos, float2(sin(_DebugParams.x), cos(_DebugParams.x)));
-                
                 // Merged shapes
                 float smoothedShapes = opSmoothedUnion(sphere1, sphere2, _ShapesInterpolation);
                 float mergedShapes = opSubtraction(sphere1, box);
                 
-                return infiniteCone;
+                // Debug Shapes 
+                float3 pos = rayPos - _DebugPos;
+                float torrus = sdfTorus(pos, _DebugParams.x, _DebugParams.y, _DebugAxis);
+                float cappedTorrus = sdfCappedTorus(pos, _DebugParams.x, _DebugParams.y, _DebugParams.z, _DebugAxis);
+                float link = sdfLink(pos, _DebugParams.x, _DebugParams.y, _DebugParams.z, _DebugAxis);
+                float infCylinder = sdfInfiniteCylinder(pos, _DebugParams.x, _DebugAxis);
+                float plane = sdfPlane(pos, normalize(_DebugParams.xyz), _DebugParams.w);
+                float cone = sdfCone(pos, _DebugParams.x, _DebugParams.y);
+                float infiniteCone = sdfInfiniteCone(pos, float2(sin(_DebugParams.x), cos(_DebugParams.x)));
+                float hexPrism = sdfHexPrism(pos, _DebugParams.x, _DebugParams.y);
+                float capsule = sdfCapsule(pos, float3(0,0,0), _DebugParams.xyz, _DebugParams.w);
+                float capsuleAxis = sdfCapsuleAxis(pos, _DebugParams.x, _DebugParams.y, _DebugAxis);
+                float cylinder = sdfCylinder(pos, float3(0,0,0), _DebugParams.xyz, _DebugParams.w);
+                float cylinderAxis = sdfCylinderAxis(pos, _DebugParams.x, _DebugParams.y, _DebugAxis);
+                float roundedCylinder = sdfRoundedCylinder(pos, _DebugParams.x, _DebugParams.y, _DebugParams.z, _DebugAxis);
+                
+                return roundedCylinder;
             }
             
             float3 getNormal(float3 hitPos)

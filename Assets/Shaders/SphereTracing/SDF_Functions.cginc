@@ -158,6 +158,81 @@ inline float sdfLink(float3 pos, float width, float radius, float thickness, int
     }
 }
 
+/// Cylinder
+/// @param pos Position of the shape
+/// @param start Offset from shape position to define cylinder start point
+/// @param end Offset from shape position to define cylinder end point
+/// @param radius Radius of the cylinder
+/// @return Cylinder SDF value
+float sdfCylinder( float3 pos, float3 start, float3 end, float radius)
+{
+    float3 ba = end - start;
+    float3 pa = pos - start;
+    float baba = dot(ba, ba);
+    float paba = dot(pa, ba);
+    float x = length(pa * baba - ba * paba) - radius * baba;
+    float y = abs(paba - baba * 0.5) - baba * 0.5;
+    float x2 = x * x;
+    float y2 = y * y * baba;
+    float d = (max(x, y) < 0.0) ? -min(x2, y2) : (((x > 0.0) ? x2 : 0.0) + ((y > 0.0) ? y2 : 0.0));
+    return sign(d) * sqrt(abs(d)) / baba;
+}
+
+/// Cylinder oriented in a specific axis
+/// @param pos Position of the shape
+/// @param size Size of the cylinder 
+/// @param radius Radius of the cylinder
+/// @param axis Axis to use to draw shape: use SDF_AXIS_X (0), SDF_AXIS_Y (1) or SDF_AXIS_Z (2)
+/// @return Cylinder oriented on a specific axis SDF value
+inline float sdfCylinderAxis(float3 pos, float size, float radius, int axis = SDF_AXIS_Y)
+{
+    size *= 0.5f; // Divide size by 2 so a size of 1 draw a cylinder of 1 meter
+    
+    float2 d;
+    if (axis == SDF_AXIS_X)
+    {
+        d = abs(float2(length(pos.yz), pos.x)) - float2(radius, size);
+    }
+    else if (axis == SDF_AXIS_Z)
+    {
+        d = abs(float2(length(pos.xy), pos.z)) - float2(radius, size);
+    }
+    else // Default is SDF_AXIS_Y
+    {
+        d = abs(float2(length(pos.xz), pos.y)) - float2(radius, size);
+    }
+    
+    return min(max(d.x, d.y), 0.0) + length(max(d, 0.0));
+}
+
+/// Rounded cylinder
+/// @param pos Position of the shape
+/// @param size Size of the cylinder 
+/// @param radius Radius of the cylinder
+/// @param round Value that define how rounded are the cylinder cap
+/// @param axis Axis to use to draw shape: use SDF_AXIS_X (0), SDF_AXIS_Y (1) or SDF_AXIS_Z (2)
+/// @return Rounded cylinder SDF value
+inline float sdfRoundedCylinder(float3 pos, float size, float radius, float round, int axis = SDF_AXIS_Y)
+{
+    size = size * 0.5; // Divide size by 2 so a size of 1 draw a cylinder of 1 meter
+    
+    float2 d;
+    if (axis == SDF_AXIS_X)
+    {
+        d = float2(length(pos.yz) - radius + round, abs(pos.x) - size + round);
+    }
+    else if (axis == SDF_AXIS_Z)
+    {
+        d = float2(length(pos.xy) - radius + round, abs(pos.z) - size + round);
+    }
+    else // Default is SDF_AXIS_Y
+    {
+        d = float2(length(pos.xz) - radius + round, abs(pos.y) - size + round);
+    }
+    
+    return min(max(d.x, d.y), 0.0) + length(max(d, 0.0)) - round;
+}
+
 /// Infinite cylinder on X Axis
 /// @param pos Position of the shape
 /// @param radius Radius of the cylinder
@@ -223,7 +298,7 @@ inline float sdfCone(float3 pos, float2 sinCosAngle, float height)
 /// @param pos Position of the shape
 /// @param sinCosAngle Sin and cos of the cone angle
 /// @return Infinite Cone SDF value
-float sdfInfiniteCone(float3 pos, float2 sinCosAngle)
+inline float sdfInfiniteCone(float3 pos, float2 sinCosAngle)
 {
     // c is the sin/cos of the angle
     float2 q = float2(length(pos.xz), -pos.y);
@@ -232,7 +307,59 @@ float sdfInfiniteCone(float3 pos, float2 sinCosAngle)
     return d * ((q.x * sinCosAngle.y - q.y * sinCosAngle.x  <0.0) ? -1.0 : 1.0);
 }
 
+/// Hexagonal prism
+/// @param pos Position of the shape
+/// @param radius Radius of the hexagonal prism
+/// @param depth Depth of the hexagonal prism
+/// @return Hexagonal prism SDF value
+inline float sdfHexPrism(float3 pos, float radius, float depth)
+{
+    const float3 k = float3(-0.8660254, 0.5, 0.57735);
+    pos = abs(pos);
+    pos.xy -= 2.0 * min(dot(k.xy, pos.xy), 0.0) * k.xy;
+    float2 d = float2(length(pos.xy - float2(clamp(pos.x, -k.z * radius, k.z * radius), radius)) * sign(pos.y - radius), pos.z - depth);
+    return min(max(d.x, d.y), 0.0) + length(max(d, 0.0));
+}
 
+/// Capsule
+/// @param pos Position of the shape
+/// @param start Offset from shape position to define capsule start point
+/// @param end Offset from shape position to define capsule end point
+/// @param radius Radius of the capsule
+/// @return Capsule SDF value
+inline float sdfCapsule(float3 pos, float3 start, float3 end, float radius)
+{
+    float3 pa = pos - start;
+    float3 ba = end - start;
+    float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0 );
+    return length(pa - ba * h) - radius;
+}
+
+/// Capsule oriented in a specific axis
+/// @param pos Position of the shape
+/// @param size Size of the capsule
+/// @param radius Radius of the capsule
+/// @param axis Axis to use to draw shape: use SDF_AXIS_X (0), SDF_AXIS_Y (1) or SDF_AXIS_Z (2)
+/// @return Capsule oriented on a specific axis SDF value
+inline float sdfCapsuleAxis(float3 pos, float size, float radius, int axis = SDF_AXIS_Y)
+{
+    size = (size * 0.5) - radius; // Divide size by 2 and take radius into account so a size of 1 draw a capsule of 1 meter
+    
+    if (axis == SDF_AXIS_X)
+    {
+        pos.x -= clamp(pos.x, 0.0, size);
+    }
+    else if (axis == SDF_AXIS_Z)
+    {
+        pos.z -= clamp(pos.z, 0.0, size);
+    }
+    else // Default is SDF_AXIS_Y
+    {
+        pos.y -= clamp(pos.y, 0.0, size);
+    }
+    
+    return length(pos) - radius;
+}
 
 // ------------------------
 // ----- COMBINATIONS -----
