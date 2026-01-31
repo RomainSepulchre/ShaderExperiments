@@ -415,7 +415,7 @@ Transform:
   m_GameObject: {fileID: 1359276835}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0.21616529, z: -0, w: 0.9763568}
-  m_LocalPosition: {x: 1.05, y: 0.94, z: -2.6}
+  m_LocalPosition: {x: 1.24, y: 0.5, z: -2.51}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -442,8 +442,8 @@ MonoBehaviour:
   Sphere2: {x: 0, y: 0, z: 0, w: 0.25}
   BoxPosition: {x: 0, y: 0, z: 0}
   BoxSize: {x: 0.5, y: 0.5, z: 0.5}
-  DebugPos: {x: 0, y: 0, z: 0}
-  DebugParams: {x: 1, y: 0.5, z: 0.16, w: 0.05}
+  DebugPos: {x: 0, y: 0.72, z: 0}
+  DebugParams: {x: 0.51, y: 0.97, z: 0.38, w: 0.05}
   DebugAxis: 1
 --- !u!114 &1359276840
 MonoBehaviour:

@@ -307,6 +307,62 @@ inline float sdfInfiniteCone(float3 pos, float2 sinCosAngle)
     return d * ((q.x * sinCosAngle.y - q.y * sinCosAngle.x  <0.0) ? -1.0 : 1.0);
 }
 
+/// Capped cone
+/// @param pos Position of the shape
+/// @param base Offset from shape position to define capped cone base point
+/// @param top Offset from shape position to define capped top point
+/// @param radiusBase Radius of the base cap of the capped cone
+/// @param radiusTop Radius of the top cap of the capped cone
+/// @return Capped Cone SDF value
+inline float sdfCappedCone(float3 pos, float3 base, float3 top, float radiusBase, float radiusTop)
+{
+    float rba  = radiusTop - radiusBase;
+    float baba = dot(top - base, top - base);
+    float papa = dot(pos - base, pos - base);
+    float paba = dot(pos - base, top - base) / baba;
+    float x = sqrt(papa - paba * paba * baba);
+    float cax = max(0.0, x - ((paba < 0.5) ? radiusBase : radiusTop));
+    float cay = abs(paba - 0.5) - 0.5;
+    float k = rba * rba + baba;
+    float f = clamp((rba * (x - radiusBase) + paba * baba) / k, 0.0, 1.0);
+    float cbx = x - radiusBase - f * rba;
+    float cby = paba - f;
+    float s = (cbx < 0.0 && cay < 0.0) ? -1.0 : 1.0;
+    return s * sqrt(min(cax * cax + cay * cay * baba, cbx * cbx + cby * cby * baba));
+}
+
+/// Capped Cone oriented in a specific axis
+/// @param pos Position of the shape
+/// @param size Size of the base cap
+/// @param radiusBase Radius of the base cap of the capped cone
+/// @param radiusTop Radius of the top cap of the capped cone
+/// @param axis Axis to use to draw shape: use SDF_AXIS_X (0), SDF_AXIS_Y (1) or SDF_AXIS_Z (2)
+/// @return Capped Cone oriented in a specific axis SDF value
+inline float sdfCappedConeAxis(float3 pos, float size, float radiusBase, float radiusTop, int axis = SDF_AXIS_Y)
+{
+    float2 q;
+    
+    if (axis == SDF_AXIS_X)
+    {
+        q = float2(length(pos.yz), pos.x);
+    }
+    else if (axis == SDF_AXIS_Z)
+    {
+        q = float2(length(pos.xy), pos.z);
+    }
+    else // Default is SDF_AXIS_Y
+    {
+        q = float2(length(pos.xz), pos.y);
+    }
+    
+    float2 k1 = float2(radiusTop, size);
+    float2 k2 = float2(radiusTop - radiusBase, 2.0 * size);
+    float2 ca = float2(q.x - min(q.x, (q.y < 0.0) ? radiusBase : radiusTop), abs(q.y) - size);
+    float2 cb = q - k1 + k2 * clamp(dot(k1 - q, k2) / dot(k2, k2), 0.0, 1.0);
+    float s = (cb.x < 0.0 && ca.y < 0.0) ? -1.0 : 1.0;
+    return s * sqrt(min(dot(ca, ca), dot(cb, cb)));
+}
+
 /// Hexagonal prism
 /// @param pos Position of the shape
 /// @param radius Radius of the hexagonal prism
