@@ -111,8 +111,19 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 float solidAngleA = sdfSolidAngle(pos, float2(sin(_DebugParams.x),cos(_DebugParams.x)), _DebugParams.z, _DebugAxis);
                 float solidAngleB = sdfSolidAngle(pos, _DebugParams.x, _DebugParams.z, _DebugAxis);
                 float cutSphere = sdfCutSphere(pos, _DebugParams.x, _DebugParams.y, _DebugAxis);
+                float cutHollowSphere = sdfCutHollowSphere(pos, _DebugParams.x, _DebugParams.y, _DebugParams.z, _DebugAxis);
+                float deathStar = sdfDeathStar(pos, _DebugParams.x, _DebugParams.y, _DebugParams.z, _DebugAxis);
+                float roundCone = sdfRoundCone(pos, float3(0,0,0), float3(_DebugParams.x,_DebugParams.y,0), _DebugParams.z, _DebugParams.w);
+                float roundConeAxis = sdfRoundConeAxis(pos, _DebugParams.x, _DebugParams.y, _DebugParams.z, _DebugAxis);
+                float vesica = sdfVesicaSegment(pos, float3(0,0,0), _DebugParams.xyz, _DebugParams.w);
+                float rhombus = sdfRhombus(pos, _DebugParams.x, _DebugParams.y, _DebugParams.z, _DebugParams.w);
+                float octahedron = sdfOctahedron(pos, _DebugParams.x);
+                float octahedronBound = sdfOctahedronBound(pos, _DebugParams.x);
+                float pyramid = sdfPyramid(pos, _DebugParams.x);
+                float triangleShape = sdfTriangle(pos, float3(-1,0,0), _DebugParams.xyz, float3(1,0,0));
+                float quad = sdfQuad(pos, float3(-1,0,0), float3(-1,1,1), float3(1,1,1), float3(1,0,0));
                 
-                return cutSphere;
+                return quad;
             }
             
             float3 getNormal(float3 hitPos)

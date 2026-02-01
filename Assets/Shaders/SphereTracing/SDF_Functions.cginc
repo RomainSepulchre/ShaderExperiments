@@ -13,6 +13,13 @@ static const float PI = 3.14159265359f;
 #define SDF_AXIS_X 0 // Use X axis to draw the shape
 #define SDF_AXIS_Y 1 // Use Y axis to draw the shape
 #define SDF_AXIS_Z 2 // Use Z axis to draw the shape
+#define SDF_AXIS_MINUS_X 3 // Use -X axis to draw the shape
+#define SDF_AXIS_MINUS_Y 4 // Use -Y axis to draw the shape
+#define SDF_AXIS_MINUS_Z 5 // Use -Z axis to draw the shape
+
+// TODO: find a way to implement -x, -y and -z axis
+// -> bool in functions argument ?
+// -> #define SDF_AXIS_MINUS_X, SDF_AXIS_MINUS_Y, SDF_AXIS_MINUS_Z ? -> add lots of code in every functions
 
 // ------------------
 // ----- SHAPES -----
@@ -57,6 +64,70 @@ inline float sdfCutSphere(float3 pos, float radius, float cutHeight, int axis)
     
     return (s < 0.0) ? length(q)-radius : (q.x < w) ? cutHeight - q.y : length(q - float2(w, cutHeight));
 }
+
+/// Cut hollow sphere
+/// @param pos Position of the shape
+/// @param radius Radius of the sphere
+/// @param cutHeight Height of the sphere cut
+/// @param thickness Thickness of the edge of the hollow sphere
+/// @param axis Axis to use to draw shape: use SDF_AXIS_X (0), SDF_AXIS_Y (1) or SDF_AXIS_Z (2)
+/// @return Cut hollow sphere SDF value
+float sdfCutHollowSphere(float3 pos, float radius, float cutHeight, float thickness, int axis = SDF_AXIS_Y)
+{
+    float w = sqrt(radius * radius - cutHeight * cutHeight);
+    
+    float2 q;
+    if (axis == SDF_AXIS_X)
+    {
+        q = float2(length(pos.yz), pos.x);
+    }
+    else  if (axis == SDF_AXIS_Z)
+    {
+        q = float2(length(pos.xy), pos.z);
+    }
+    else // Default is SDF_AXIS_Y
+    {
+        q = float2(length(pos.xz), pos.y);
+    }
+    
+    return ((cutHeight * q.x < w * q.y) ? length(q - float2(w, cutHeight)) : abs(length(q) - radius)) - thickness;
+}
+
+/// Death Star
+/// @param pos Position of the shape
+/// @param radius Radius of the sphere
+/// @param holeRadius Radius of the second sphere that subtract the hole
+/// @param dist Distance between the main sphere and the hole sphere
+/// @return Death Star SDF value
+inline float sdfDeathStar(float3 pos, float radius, float holeRadius, float dist, int axis = SDF_AXIS_X)
+{
+    float a = (radius * radius - holeRadius * holeRadius + dist * dist) / (2.0 * dist);
+    float b = sqrt(max(radius * radius - a * a, 0.0));
+    
+    float2 p;
+    if (axis == SDF_AXIS_Y)
+    {
+        p = float2(pos.y, length(pos.xz));   
+    }
+    else if (axis == SDF_AXIS_Z)
+    {
+        p = float2(pos.z, length(pos.xy));       
+    }
+    else // Default is SDF_AXIS_X
+    {
+        p = float2(pos.x, length(pos.yz));
+    }
+    
+    if(p.x * b - p.y * a > dist * max(b - p.y, 0.0))
+    {
+        return length(p - float2(a, b));
+    }
+    else
+    {
+        return max((length(p) - radius), -(length(p - float2(dist, 0.0)) - holeRadius));
+    }
+}
+
 
 // ............
 // Boxes
@@ -411,70 +482,66 @@ inline float sdfCappedConeAxis(float3 pos, float size, float radiusBase, float r
     return s * sqrt(min(dot(ca, ca), dot(cb, cb)));
 }
 
-// ............
-// Capsules
-
-/// Capsule
+/// Round Cone
 /// @param pos Position of the shape
-/// @param start Offset from shape position to define capsule start point
-/// @param end Offset from shape position to define capsule end point
-/// @param radius Radius of the capsule
-/// @return Capsule SDF value
-inline float sdfCapsule(float3 pos, float3 start, float3 end, float radius)
+/// @param base Offset from shape position to define round cone base point
+/// @param top Offset from shape position to define round cone top point
+/// @param baseRound Value that define how rounded is the base of the cone
+/// @param topRound Value that define how rounded is the top of the cone
+/// @return Round cone SDF value
+inline float sdfRoundCone(float3 pos, float3 base, float3 top, float baseRound, float topRound)
 {
-    float3 pa = pos - start;
-    float3 ba = end - start;
-    float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0 );
+    float3 ba = top - base;
+    float l2 = dot(ba, ba);
+    float rr = baseRound - topRound;
+    float a2 = l2 - rr * rr;
+    float il2 = 1.0/l2;
     
-    return length(pa - ba * h) - radius;
+    float3 pa = pos - base;
+    float y = dot(pa, ba);
+    float z = y - l2;
+    float x2 = dot(pa * l2 - ba * y, pa * l2 - ba * y);
+    float y2 = y * y * l2;
+    float z2 = z * z * l2;
+
+    // single square root!
+    float k = sign(rr) * rr * rr * x2;
+    if(sign(z) * a2 * z2 > k) return sqrt(x2 + z2) * il2 - topRound;
+    if(sign(y) * a2 * y2 < k) return sqrt(x2 + y2) * il2 - baseRound;
+    return (sqrt(x2 * a2 * il2) + y * rr) * il2 - baseRound;
 }
 
-/// Capsule oriented in a specific axis
+/// Round Cone oriented in a specific axis
 /// @param pos Position of the shape
-/// @param size Size of the capsule
-/// @param radius Radius of the capsule
+/// @param size Size of the cone
+/// @param baseRound Value that define how rounded is the base of the cone
+/// @param topRound Value that define how rounded is the top of the cone
 /// @param axis Axis to use to draw shape: use SDF_AXIS_X (0), SDF_AXIS_Y (1) or SDF_AXIS_Z (2)
-/// @return Capsule oriented on a specific axis SDF value
-inline float sdfCapsuleAxis(float3 pos, float size, float radius, int axis = SDF_AXIS_Y)
+/// @return Round Cone oriented in a specific axis SDF value
+inline float sdfRoundConeAxis(float3 pos, float size, float baseRound, float topRound, int axis = SDF_AXIS_Y)
 {
-    size = (size * 0.5) - radius; // Divide size by 2 and take radius into account so a size of 1 draw a capsule of 1 meter
-    
+    float b = (baseRound - topRound) / size;
+    float a = sqrt(1.0 - b * b);
+
+    float2 q;
     if (axis == SDF_AXIS_X)
     {
-        pos.x -= clamp(pos.x, 0.0, size);
+        q = float2(length(pos.yz), pos.x);
     }
     else if (axis == SDF_AXIS_Z)
     {
-        pos.z -= clamp(pos.z, 0.0, size);
+        q = float2(length(pos.xy), pos.z);
     }
     else // Default is SDF_AXIS_Y
     {
-        pos.y -= clamp(pos.y, 0.0, size);
+        q = float2(length(pos.xz), pos.y);
     }
     
-    return length(pos) - radius;
+    float k = dot(q, float2(-b, a));
+    if(k < 0.0) return length(q) - baseRound;
+    if(k > a * size) return length(q - float2(0.0, size)) - topRound;
+    return dot(q, float2(a,b)) - baseRound;
 }
-
-// ............
-// Prism
-
-/// Hexagonal prism
-/// @param pos Position of the shape
-/// @param radius Radius of the hexagonal prism
-/// @param depth Depth of the hexagonal prism
-/// @return Hexagonal prism SDF value
-inline float sdfHexPrism(float3 pos, float radius, float depth)
-{
-    const float3 k = float3(-0.8660254, 0.5, 0.57735);
-    pos = abs(pos);
-    pos.xy -= 2.0 * min(dot(k.xy, pos.xy), 0.0) * k.xy;
-    float2 d = float2(length(pos.xy - float2(clamp(pos.x, -k.z * radius, k.z * radius), radius)) * sign(pos.y - radius), pos.z - depth);
-    
-    return min(max(d.x, d.y), 0.0) + length(max(d, 0.0));
-}
-
-// ............
-// Solid angle
 
 /// Solid Angle
 /// @param pos Position of the shape
@@ -531,6 +598,213 @@ inline float sdfSolidAngle(float3 pos, float angle, float radius, int axis = SDF
     
     return max(l, m * sign(sc.y * q.x - sc.x * q.y));
 }
+
+// ............
+// Capsules
+
+/// Capsule
+/// @param pos Position of the shape
+/// @param start Offset from shape position to define capsule start point
+/// @param end Offset from shape position to define capsule end point
+/// @param radius Radius of the capsule
+/// @return Capsule SDF value
+inline float sdfCapsule(float3 pos, float3 start, float3 end, float radius)
+{
+    float3 pa = pos - start;
+    float3 ba = end - start;
+    float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0 );
+    
+    return length(pa - ba * h) - radius;
+}
+
+/// Capsule oriented in a specific axis
+/// @param pos Position of the shape
+/// @param size Size of the capsule
+/// @param radius Radius of the capsule
+/// @param axis Axis to use to draw shape: use SDF_AXIS_X (0), SDF_AXIS_Y (1) or SDF_AXIS_Z (2)
+/// @return Capsule oriented on a specific axis SDF value
+inline float sdfCapsuleAxis(float3 pos, float size, float radius, int axis = SDF_AXIS_Y)
+{
+    size = (size * 0.5) - radius; // Divide size by 2 and take radius into account so a size of 1 draw a capsule of 1 meter
+    
+    if (axis == SDF_AXIS_X)
+    {
+        pos.x -= clamp(pos.x, 0.0, size);
+    }
+    else if (axis == SDF_AXIS_Z)
+    {
+        pos.z -= clamp(pos.z, 0.0, size);
+    }
+    else // Default is SDF_AXIS_Y
+    {
+        pos.y -= clamp(pos.y, 0.0, size);
+    }
+    
+    return length(pos) - radius;
+}
+
+// ............
+// Polygonal Shapes
+
+/// Triangle
+/// @param pos Position of the shape
+/// @param aPoint Offset from shape position to define A point of the triangle
+/// @param bPoint Offset from shape position to define B point of the triangle
+/// @param cPoint Offset from shape position to define C point of the triangle
+/// @return Triangle SDF value
+float sdfTriangle(float3 pos, float3 aPoint, float3 bPoint, float3 cPoint)
+{
+    float3 ba = bPoint - aPoint; float3 pa = pos - aPoint;
+    float3 cb = cPoint - bPoint; float3 pb = pos - bPoint;
+    float3 ac = aPoint - cPoint; float3 pc = pos - cPoint;
+    float3 nor = cross(ba, ac);
+    
+    float signBA = sign(dot(cross(ba, nor), pa));
+    float signCB = sign(dot(cross(cb, nor), pb));
+    float signAC = sign(dot(cross(ac, nor), pc));
+    
+    float dot2BA = dot(ba * clamp(dot(ba, pa) / dot(ba, ba), 0.0, 1.0) - pa, ba * clamp(dot(ba, pa) / dot(ba, ba), 0.0, 1.0) - pa);
+    float dot2CA = dot(cb * clamp(dot(cb, pb) / dot(cb, cb), 0.0, 1.0) - pb, cb * clamp(dot(cb, pb) / dot(cb, cb), 0.0, 1.0) - pb);
+    float dot2AC = dot(ac * clamp(dot(ac, pc) / dot(ac, ac), 0.0, 1.0) - pc, ac * clamp(dot(ac, pc) / dot(ac, ac), 0.0, 1.0) - pc);
+
+    return sqrt((signBA + signCB + signAC < 2.0) ? min(min(dot2BA, dot2CA), dot2AC) : dot(nor, pa) * dot(nor, pa) / dot(nor, nor));
+}
+
+/// Quad
+/// @param pos Position of the shape
+/// @param aPoint Offset from shape position to define A point of the quad
+/// @param bPoint Offset from shape position to define B point of the quad
+/// @param cPoint Offset from shape position to define C point of the quad
+/// @param dPoint Offset from shape position to define D point of the quad
+/// @return Quad SDF value
+float sdfQuad(float3 pos, float3 aPoint, float3 bPoint, float3 cPoint, float3 dPoint)
+{
+    float3 ba = bPoint - aPoint; float3 pa = pos - aPoint;
+    float3 cb = cPoint - bPoint; float3 pb = pos - bPoint;
+    float3 dc = dPoint - cPoint; float3 pc = pos - cPoint;
+    float3 ad = aPoint - dPoint; float3 pd = pos - dPoint;
+    float3 nor = cross(ba, ad);
+    
+    float signBA = sign(dot(cross(ba, nor), pa));
+    float signCB = sign(dot(cross(cb, nor), pb));
+    float signDC = sign(dot(cross(dc, nor), pc));
+    float signAD = sign(dot(cross(ad, nor), pd));
+    
+    float dot2BA = dot(ba * clamp(dot(ba, pa) / dot(ba, ba), 0.0, 1.0) - pa, ba * clamp(dot(ba, pa) / dot(ba, ba), 0.0, 1.0) - pa);
+    float dot2CB = dot(cb * clamp(dot(cb, pb) / dot(cb, cb), 0.0, 1.0) - pb, cb * clamp(dot(cb, pb) / dot(cb, cb), 0.0, 1.0) - pb);
+    float dot2DC = dot(dc * clamp(dot(dc, pc) / dot(dc, dc), 0.0, 1.0) - pc, dc * clamp(dot(dc, pc) / dot(dc, dc), 0.0, 1.0) - pc);
+    float dot2AD = dot(ad * clamp(dot(ad, pd) / dot(ad, ad), 0.0, 1.0) - pd, ad * clamp(dot(ad, pd) / dot(ad, ad), 0.0, 1.0) - pd);
+
+    return sqrt((signBA + signCB + signDC + signAD <3.0) ?
+       min(min(min(dot2BA, dot2CB), dot2DC), dot2AD) : dot(nor,pa) * dot(nor, pa) / dot(nor, nor));
+}
+
+/// Pyramid
+/// @param pos Position of the shape
+/// @param height Height of the pyramid
+/// @return Pyramid SDF value
+inline float sdfPyramid(float3 pos, float height)
+{
+    float m2 = height * height + 0.25;
+    
+    pos.xz = abs(pos.xz);
+    pos.xz = (pos.z > pos.x) ? pos.zx : pos.xz;
+    pos.xz -= 0.5;
+
+    float3 q = float3(pos.z, height * pos.y - 0.5 * pos.x, height * pos.x + 0.5 * pos.y);
+    float s = max(-q.x, 0.0);
+    float t = clamp((q.y - 0.5 * pos.z) / (m2 + 0.25), 0.0, 1.0);
+    float a = m2 * (q.x + s) * (q.x + s) + q.y * q.y;
+    float b = m2 * (q.x + 0.5 * t) * (q.x + 0.5 * t) + (q.y - m2 * t) * (q.y - m2 * t);
+    
+    float d2 = min(q.y, -q.x * m2 - q.y * 0.5) > 0.0 ? 0.0 : min(a,b);
+    return sqrt((d2 + q.z * q.z) / m2) * sign(max(q.z, -pos.y));
+}
+
+/// Octahedron
+/// @param pos Position of the shape
+/// @param size Size of the Octahedron
+/// @return Octahedron SDF value
+inline float sdfOctahedron(float3 pos, float size)
+{
+    pos = abs(pos);
+    float m = pos.x + pos.y + pos.z - size;
+    float3 q;
+    
+    if(3.0 * pos.x < m) q = pos.xyz;
+    else if(3.0 * pos.y < m ) q = pos.yzx;
+    else if(3.0 * pos.z < m ) q = pos.zxy;
+    else return m * 0.57735027;
+    
+    float k = clamp(0.5 * (q.z - q.y + size), 0.0, size); 
+    return length(float3(q.x, q.y - size + k, q.z - k)); 
+}
+
+/// Octahedron bound (not exact)
+/// @param pos Position of the shape
+/// @param size Size of the Octahedron
+/// @return Octahedron bound SDF value
+inline float sdfOctahedronBound(float3 pos, float size)
+{
+    pos = abs(pos);
+    return (pos.x + pos.y + pos.z - size) * 0.57735027;
+}
+
+/// Hexagonal prism
+/// @param pos Position of the shape
+/// @param radius Radius of the hexagonal prism
+/// @param depth Depth of the hexagonal prism
+/// @return Hexagonal prism SDF value
+inline float sdfHexPrism(float3 pos, float radius, float depth)
+{
+    const float3 k = float3(-0.8660254, 0.5, 0.57735);
+    pos = abs(pos);
+    pos.xy -= 2.0 * min(dot(k.xy, pos.xy), 0.0) * k.xy;
+    float2 d = float2(length(pos.xy - float2(clamp(pos.x, -k.z * radius, k.z * radius), radius)) * sign(pos.y - radius), pos.z - depth);
+    
+    return min(max(d.x, d.y), 0.0) + length(max(d, 0.0));
+}
+
+/// Rhombus
+/// @param pos Position of the shape
+/// @param width Width of the Rhombus
+/// @param depth Depth of the Rhombus
+/// @param height Height of the Rhombus
+/// @param cornerRadius Radius of the corner of the rhombus
+/// @return Rhombus SDF value
+inline float sdfRhombus(float3 pos, float width, float height, float depth, float cornerRadius)
+{
+    pos = abs(pos);
+    float f = clamp((width * pos.x - depth * pos.z + depth * depth) / (width * width + depth * depth), 0.0, 1.0);
+    float2 w = pos.xz - float2(width, depth) * float2(f, 1.0 - f);
+    float2 q = float2(length(w) * sign(w.x) - cornerRadius, pos.y - height);
+    return min(max(q.x, q.y), 0.0) + length(max(q, 0.0));
+}
+
+// ............
+// Other Shapes
+
+/// Vesica Segment
+/// @param pos Position of the shape
+/// @param start Offset from shape position to define vesica segment start point
+/// @param end Offset from shape position to define vesica segment end point
+/// @param thickness Thickness of the vesica segment
+/// @return Vesica segment SDF value
+inline float sdfVesicaSegment(in float3 pos, in float3 start, in float3 end, in float thickness)
+{
+    float3 c = (start + end) * 0.5;
+    float l = length(end - start);
+    float3 v = (end - start) / l;
+    float y = dot(pos - c, v);
+    float2 q = float2(length(pos - c - y * v), abs(y));
+    
+    float r = 0.5 * l;
+    float d = 0.5 * (r * r - thickness * thickness) / thickness;
+    float3 h = (r * q.x < d * (q.y - r)) ? float3(0.0, r, 0.0) : float3(-d, 0.0, d + thickness);
+ 
+    return length(q - h.xy) - h.z;
+}
+
 
 // ------------------------
 // ----- COMBINATIONS -----

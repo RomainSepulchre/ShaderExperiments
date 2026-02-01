@@ -435,7 +435,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ConstructiveSolidGeometryController
   shader: {fileID: 4800000, guid: 8562c427da3697749ba9bdef50c518b3, type: 3}
   maxDistance: 100
-  ShapesColor: {r: 0.3962264, g: 0.25632724, b: 0.12522249, a: 1}
+  ShapesColor: {r: 0.754717, g: 0.754717, b: 0.754717, a: 1}
   ShapesInterpolation: 0.484
   RepeatInterval: {x: 1, y: 1, z: 1}
   Sphere1: {x: 0, y: 0, z: 0, w: 0.67}
@@ -443,8 +443,8 @@ MonoBehaviour:
   BoxPosition: {x: 0, y: 0, z: 0}
   BoxSize: {x: 0.5, y: 0.5, z: 0.5}
   DebugPos: {x: 0, y: 0, z: 0}
-  DebugParams: {x: 0.68, y: -0.33, z: 1.08, w: 0.05}
-  DebugAxis: 2
+  DebugParams: {x: -1, y: 1, z: 1, w: 0.23}
+  DebugAxis: 0
 --- !u!114 &1359276840
 MonoBehaviour:
   m_ObjectHideFlags: 0

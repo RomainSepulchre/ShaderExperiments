@@ -52,7 +52,10 @@ public class ConstructiveSolidGeometryController : SceneViewFilter
     {
         X = 0,
         Y = 1,
-        Z = 2,
+        Z = 2
+        //MinusX = 3,
+        //MinusY = 4,
+        //MinusZ = 5
     }
     public SDFAxis DebugAxis = SDFAxis.Y;
     
