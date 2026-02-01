@@ -108,8 +108,11 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 float roundedCylinder = sdfRoundedCylinder(pos, _DebugParams.x, _DebugParams.y, _DebugParams.z, _DebugAxis);
                 float cappedConeAxis = sdfCappedConeAxis(pos, _DebugParams.x, _DebugParams.y, _DebugParams.z, _DebugAxis);
                 float cappedCone = sdfCappedCone(pos, float3(0,0,0), _DebugParams.xyz, 1, _DebugParams.w);
+                float solidAngleA = sdfSolidAngle(pos, float2(sin(_DebugParams.x),cos(_DebugParams.x)), _DebugParams.z, _DebugAxis);
+                float solidAngleB = sdfSolidAngle(pos, _DebugParams.x, _DebugParams.z, _DebugAxis);
+                float cutSphere = sdfCutSphere(pos, _DebugParams.x, _DebugParams.y, _DebugAxis);
                 
-                return cappedConeAxis;
+                return cutSphere;
             }
             
             float3 getNormal(float3 hitPos)

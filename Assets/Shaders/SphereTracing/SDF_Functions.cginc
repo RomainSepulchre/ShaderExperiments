@@ -18,6 +18,9 @@ static const float PI = 3.14159265359f;
 // ----- SHAPES -----
 // ------------------
 
+// ............
+// Spheres
+
 /// Sphere
 /// @param pos Position of the shape
 /// @param radius Radius of the sphere
@@ -26,6 +29,37 @@ inline float sdfSphere(float3 pos, float radius)
 {
     return length(pos) - radius;
 }
+
+/// Cut sphere
+/// @param pos Position of the shape
+/// @param radius Radius of the sphere
+/// @param cutHeight Height of the sphere cut
+/// @return Cut sphere SDF value
+inline float sdfCutSphere(float3 pos, float radius, float cutHeight, int axis)
+{
+    float w = sqrt(radius * radius - cutHeight * cutHeight);
+
+    float2 q; 
+    if (axis == SDF_AXIS_X)
+    {
+        q = float2(length(pos.yz), pos.x);
+    }
+    else if (axis == SDF_AXIS_Z)
+    {
+        q = float2(length(pos.xy), pos.z);
+    }
+    else // Default is SDF_AXIS_Y
+    {
+        q = float2(length(pos.xz), pos.y);
+    }
+    
+    float s = max((cutHeight - radius) * q.x * q.x + w * w * (cutHeight + radius - 2.0 * q.y), cutHeight * q.x - w * q.y);
+    
+    return (s < 0.0) ? length(q)-radius : (q.x < w) ? cutHeight - q.y : length(q - float2(w, cutHeight));
+}
+
+// ............
+// Boxes
 
 /// Box
 /// @param pos Position of the shape
@@ -63,6 +97,9 @@ inline float sdfBoxFrame(float3 pos, float3 boxSize, float frameThickness)
         length(max(float3(q.x, q.y, pos.z), 0.0)) + min(max(q.x, max(q.y,pos.z)), 0.0));
 }
 
+// ............
+// Planes
+
 /// Plane
 /// @param pos Position of the shape
 /// @param normal Normal of the plane (must be a normalized vector)
@@ -73,6 +110,9 @@ float sdfPlane(float3 pos, float3 normal, float height = 0)
     // normal must be normalized
     return dot(pos, normal) + height;
 }
+
+// ............
+// Torus
 
 /// Torus
 /// @param pos Position of the shape
@@ -157,6 +197,9 @@ inline float sdfLink(float3 pos, float width, float radius, float thickness, int
         return length(float2(length(q.xy) - radius, q.z)) - thickness;
     }
 }
+
+// ............
+// Cylinders
 
 /// Cylinder
 /// @param pos Position of the shape
@@ -255,6 +298,9 @@ inline float sdfInfiniteCylinder(float3 pos, float radius, int axis = SDF_AXIS_Y
     }
 }
 
+// ............
+// Cones
+
 /// Cone
 /// @param pos Position of the shape
 /// @param radius Radius of the cone
@@ -328,6 +374,7 @@ inline float sdfCappedCone(float3 pos, float3 base, float3 top, float radiusBase
     float cbx = x - radiusBase - f * rba;
     float cby = paba - f;
     float s = (cbx < 0.0 && cay < 0.0) ? -1.0 : 1.0;
+    
     return s * sqrt(min(cax * cax + cay * cay * baba, cbx * cbx + cby * cby * baba));
 }
 
@@ -360,22 +407,12 @@ inline float sdfCappedConeAxis(float3 pos, float size, float radiusBase, float r
     float2 ca = float2(q.x - min(q.x, (q.y < 0.0) ? radiusBase : radiusTop), abs(q.y) - size);
     float2 cb = q - k1 + k2 * clamp(dot(k1 - q, k2) / dot(k2, k2), 0.0, 1.0);
     float s = (cb.x < 0.0 && ca.y < 0.0) ? -1.0 : 1.0;
+    
     return s * sqrt(min(dot(ca, ca), dot(cb, cb)));
 }
 
-/// Hexagonal prism
-/// @param pos Position of the shape
-/// @param radius Radius of the hexagonal prism
-/// @param depth Depth of the hexagonal prism
-/// @return Hexagonal prism SDF value
-inline float sdfHexPrism(float3 pos, float radius, float depth)
-{
-    const float3 k = float3(-0.8660254, 0.5, 0.57735);
-    pos = abs(pos);
-    pos.xy -= 2.0 * min(dot(k.xy, pos.xy), 0.0) * k.xy;
-    float2 d = float2(length(pos.xy - float2(clamp(pos.x, -k.z * radius, k.z * radius), radius)) * sign(pos.y - radius), pos.z - depth);
-    return min(max(d.x, d.y), 0.0) + length(max(d, 0.0));
-}
+// ............
+// Capsules
 
 /// Capsule
 /// @param pos Position of the shape
@@ -388,6 +425,7 @@ inline float sdfCapsule(float3 pos, float3 start, float3 end, float radius)
     float3 pa = pos - start;
     float3 ba = end - start;
     float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0 );
+    
     return length(pa - ba * h) - radius;
 }
 
@@ -415,6 +453,83 @@ inline float sdfCapsuleAxis(float3 pos, float size, float radius, int axis = SDF
     }
     
     return length(pos) - radius;
+}
+
+// ............
+// Prism
+
+/// Hexagonal prism
+/// @param pos Position of the shape
+/// @param radius Radius of the hexagonal prism
+/// @param depth Depth of the hexagonal prism
+/// @return Hexagonal prism SDF value
+inline float sdfHexPrism(float3 pos, float radius, float depth)
+{
+    const float3 k = float3(-0.8660254, 0.5, 0.57735);
+    pos = abs(pos);
+    pos.xy -= 2.0 * min(dot(k.xy, pos.xy), 0.0) * k.xy;
+    float2 d = float2(length(pos.xy - float2(clamp(pos.x, -k.z * radius, k.z * radius), radius)) * sign(pos.y - radius), pos.z - depth);
+    
+    return min(max(d.x, d.y), 0.0) + length(max(d, 0.0));
+}
+
+// ............
+// Solid angle
+
+/// Solid Angle
+/// @param pos Position of the shape
+/// @param sinCosAngle Sin and cos of the angle
+/// @param radius Radius of the solid angle
+/// @param axis Axis to use to draw shape: use SDF_AXIS_X (0), SDF_AXIS_Y (1) or SDF_AXIS_Z (2)
+/// @return Solid Angle SDF value
+inline float sdfSolidAngle(float3 pos, float2 sinCosAngle, float radius, int axis = SDF_AXIS_Y)
+{
+    // c is the sin/cos of the angle
+    float2 q;
+    if (axis == SDF_AXIS_X)
+    {
+        q = float2( length(pos.yz), pos.x);
+    }
+    else if (axis == SDF_AXIS_Z)
+    {
+        q = float2( length(pos.xy), pos.z);
+    }
+    else // Default is SDF_AXIS_Y
+    {
+        q = float2( length(pos.xz), pos.y);
+    }
+    
+    float l = length(q) - radius;
+    float m = length(q - sinCosAngle * clamp(dot(q, sinCosAngle), 0.0, radius));
+    
+    return max(l, m * sign(sinCosAngle.y * q.x - sinCosAngle.x * q.y));
+}
+/// @param pos Position of the shape
+/// @param angle Angle of the solid angle
+/// @param radius Radius of the solid angle
+/// @param axis Axis to use to draw shape: use SDF_AXIS_X (0), SDF_AXIS_Y (1) or SDF_AXIS_Z (2)
+/// @return Solid Angle SDF value
+inline float sdfSolidAngle(float3 pos, float angle, float radius, int axis = SDF_AXIS_Y)
+{
+    float2 q;
+    if (axis == SDF_AXIS_X)
+    {
+        q = float2( length(pos.yz), pos.x);
+    }
+    else if (axis == SDF_AXIS_Z)
+    {
+        q = float2( length(pos.xy), pos.z);
+    }
+    else // Default is SDF_AXIS_Y
+    {
+        q = float2( length(pos.xz), pos.y);
+    }
+    
+    float2 sc = float2(sin(angle), cos(angle));
+    float l = length(q) - radius;
+    float m = length(q - sc * clamp(dot(q, sc), 0.0, radius));
+    
+    return max(l, m * sign(sc.y * q.x - sc.x * q.y));
 }
 
 // ------------------------

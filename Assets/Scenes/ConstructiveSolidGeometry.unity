@@ -442,9 +442,9 @@ MonoBehaviour:
   Sphere2: {x: 0, y: 0, z: 0, w: 0.25}
   BoxPosition: {x: 0, y: 0, z: 0}
   BoxSize: {x: 0.5, y: 0.5, z: 0.5}
-  DebugPos: {x: 0, y: 0.72, z: 0}
-  DebugParams: {x: 0.51, y: 0.97, z: 0.38, w: 0.05}
-  DebugAxis: 1
+  DebugPos: {x: 0, y: 0, z: 0}
+  DebugParams: {x: 0.68, y: -0.33, z: 1.08, w: 0.05}
+  DebugAxis: 2
 --- !u!114 &1359276840
 MonoBehaviour:
   m_ObjectHideFlags: 0
