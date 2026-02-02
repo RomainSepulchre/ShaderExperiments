@@ -88,12 +88,13 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 float box = sdfBox(rayPos - _BoxPosition, _BoxSize);
                 
                 // Merged shapes
-                float smoothedShapes = opSmoothedUnion(sphere1, sphere2, _ShapesInterpolation);
-                float mergedShapes = opSubtraction(sphere1, box);
+                float smoothedShapes = opSmoothUnion(sphere1, sphere2, _ShapesInterpolation);
+                float smoothedIntersection = opSmoothIntersection(sphere1, box, _ShapesInterpolation);
+                float mergedShapes = opSmoothSubtraction(sphere1, box, _ShapesInterpolation);
                 
                 // Debug Shapes 
                 float3 pos = rayPos - _DebugPos;
-                float torrus = sdfTorus(pos, _DebugParams.x, _DebugParams.y, _DebugAxis);
+                float torrus = sdfTorus(opElongate(pos, _DebugParams.xyz), 1, 0.2, _DebugAxis);
                 float cappedTorrus = sdfCappedTorus(pos, _DebugParams.x, _DebugParams.y, _DebugParams.z, _DebugAxis);
                 float link = sdfLink(pos, _DebugParams.x, _DebugParams.y, _DebugParams.z, _DebugAxis);
                 float infCylinder = sdfInfiniteCylinder(pos, _DebugParams.x, _DebugAxis);
@@ -110,7 +111,7 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 float cappedCone = sdfCappedCone(pos, float3(0,0,0), _DebugParams.xyz, 1, _DebugParams.w);
                 float solidAngleA = sdfSolidAngle(pos, float2(sin(_DebugParams.x),cos(_DebugParams.x)), _DebugParams.z, _DebugAxis);
                 float solidAngleB = sdfSolidAngle(pos, _DebugParams.x, _DebugParams.z, _DebugAxis);
-                float cutSphere = sdfCutSphere(pos, _DebugParams.x, _DebugParams.y, _DebugAxis);
+                float cutSphere = sdfCutSphere(pos.yzx, _DebugParams.x, _DebugParams.y, _DebugAxis);
                 float cutHollowSphere = sdfCutHollowSphere(pos, _DebugParams.x, _DebugParams.y, _DebugParams.z, _DebugAxis);
                 float deathStar = sdfDeathStar(pos, _DebugParams.x, _DebugParams.y, _DebugParams.z, _DebugAxis);
                 float roundCone = sdfRoundCone(pos, float3(0,0,0), float3(_DebugParams.x,_DebugParams.y,0), _DebugParams.z, _DebugParams.w);
@@ -124,8 +125,9 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 float quad = sdfQuad(pos, float3(-1,0,0), float3(-1,1,1), float3(1,1,1), float3(1,0,0));
                 float trianglePrism = sdfTrianglePrism(pos, _DebugParams.x, _DebugParams.y);
                 float ellipsoid = sdfEllipsoid(pos, _DebugParams.xyz);
+                float onionSphere = max(opOnion(opOnion(sphere1, _DebugParams.x), _DebugParams.y), pos.y); // max(sdf, pos.y) to be able to see sdf interior
                 
-                return ellipsoid;
+                return onionSphere;
             }
             
             float3 getNormal(float3 hitPos)

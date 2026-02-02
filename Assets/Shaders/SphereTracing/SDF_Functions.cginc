@@ -1,6 +1,11 @@
 // Functions to draw geometry with SDF
 // Based on https://iquilezles.org/articles/distfunctions/
 
+// TODO: find a way to implement -x, -y and -z axis
+// -> bool in functions argument ?
+// -> #define SDF_AXIS_MINUS_X, SDF_AXIS_MINUS_Y, SDF_AXIS_MINUS_Z ? -> add lots of code in every functions
+
+// TODO: Make a HLSL version of this
 
 // ............
 // Static const
@@ -16,10 +21,6 @@ static const float PI = 3.14159265359f;
 #define SDF_AXIS_MINUS_X 3 // Use -X axis to draw the shape
 #define SDF_AXIS_MINUS_Y 4 // Use -Y axis to draw the shape
 #define SDF_AXIS_MINUS_Z 5 // Use -Z axis to draw the shape
-
-// TODO: find a way to implement -x, -y and -z axis
-// -> bool in functions argument ?
-// -> #define SDF_AXIS_MINUS_X, SDF_AXIS_MINUS_Y, SDF_AXIS_MINUS_Z ? -> add lots of code in every functions
 
 
 
@@ -850,10 +851,21 @@ inline float opUnion( float shapeA, float shapeB)
 /// @param shapeB Second shape SDF value
 /// @param t Smooth interpolation value (0.0 to 1.0)
 /// @return SDF value of the shapes smoothed union
-inline float opSmoothedUnion(float shapeA, float shapeB, float t)
+inline float opSmoothUnion(float shapeA, float shapeB, float t)
 {
     float h = clamp(0.5 + 0.5 * (shapeB - shapeA) / t, 0.0, 1.0);
     return lerp(shapeB, shapeA, h) - t * h * (1.0 - h);
+}
+/// @param shapeA First shape SDF value
+/// @param shapeB Second shape SDF value
+/// @param t Smooth interpolation value (0.0 to 1.0)
+/// @return SDF value of the shapes smoothed union
+inline float opSmoothUnionX4(float shapeA, float shapeB, float t)
+{
+    // Different way of getting smoothed min, t is also multiplied by 4 
+    t *= 4.0;
+    float h = max(t - abs(shapeA - shapeB), 0.0);
+    return min(shapeA, shapeB) - h * h * 0.25 / t;
 }
 
 /// Substraction
@@ -866,14 +878,34 @@ inline float opSubtraction( float shapeToSubtract, float subtractedShape)
     return max(-shapeToSubtract, subtractedShape);
 }
 
+/// Smooth Substraction
+/// @param shapeA First shape SDF value
+/// @param shapeB Second shape SDF value
+/// @param t Smooth interpolation value (0.0 to 1.0)
+/// @return SDF value of the shapes smoothed subtraction
+float opSmoothSubtraction(float shapeA, float shapeB, float t)
+{
+    return -opSmoothUnion(shapeA, -shapeB, t);
+}
+
 /// Intersection
 /// - Note: produce only exterior sdf
 /// @param shapeA First shape SDF value
 /// @param shapeB Second shape SDF value
 /// @return SDF value of the shapes intersection
-inline float opIntersection( float shapeA, float shapeB)
+inline float opIntersection(float shapeA, float shapeB)
 {
     return max(shapeA, shapeB);
+}
+
+/// Smooth Intersection
+/// @param shapeA First shape SDF value
+/// @param shapeB Second shape SDF value
+/// @param t Smooth interpolation value (0.0 to 1.0)
+/// @return SDF value of the shapes smoothed intersection
+float opSmoothIntersection(float shapeA, float shapeB, float t)
+{
+    return -opSmoothUnion(-shapeA, -shapeB, t);
 }
 
 /// XOR (Exclusive OR)
@@ -881,9 +913,52 @@ inline float opIntersection( float shapeA, float shapeB)
 /// @param shapeA First shape SDF value
 /// @param shapeB Second shape SDF value
 /// @return SDF value of the shapes XOR operation
-inline float opXor( float shapeA, float shapeB)
+inline float opXor(float shapeA, float shapeB)
 {
     return max(min(shapeA, shapeB), -max(shapeA, shapeB));
+}
+
+
+
+// -------------------------
+// ----- MODIFY 3D SDF -----
+// -------------------------
+
+/// Round
+/// @param sdf SDF value of the 3D shape we want to round
+/// @param radius Radius of the rounding
+/// @return SDF value of the rounded shape
+inline float opRound(in float sdf, in float radius)
+{
+    return sdf - radius;
+}
+
+/// Elongate shape: apply to position before creating the shape (work best for 1D elongation, with 2D/3D elongations exterior and interior distance are not exact)
+/// @param pos Position of the shape
+/// @param xyzElongation Elongation value on XYZ axis
+/// @return Position of the elongated shape
+inline float3 opElongate1D(in float3 pos, in float3 xyzElongation)
+{
+    return pos - clamp( pos, -xyzElongation, xyzElongation );
+}
+
+/// Elongate shape: apply to position before creating the shape (give exact exterior and interior distance even with 2D/3D elongations)
+/// @param pos Position of the shape
+/// @param xyzElongation Elongation value on XYZ axis
+/// @return XYZ: position of the elongated shape, W: must be added to the SDF value of the elongated shape
+float4 opElongate( in float3 pos, in float3 xyzElongation)
+{
+    float3 q = abs(pos)-xyzElongation;
+    return float4(max(q, 0.0), min(max(q.x, max(q.y, q.z)), 0.0));
+}
+
+/// Onion: Create onion-like edge pattern inside the object
+/// @param sdf SDF value of the 3D shape we want to onion
+/// @param thickness Thickness of the onion layer
+/// @return SDF value of the onioned shape
+inline float opOnion(in float sdf, in float thickness)
+{
+    return abs(sdf) - thickness;
 }
 
 

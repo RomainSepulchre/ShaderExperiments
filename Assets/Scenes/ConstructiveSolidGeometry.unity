@@ -436,14 +436,14 @@ MonoBehaviour:
   shader: {fileID: 4800000, guid: 8562c427da3697749ba9bdef50c518b3, type: 3}
   maxDistance: 100
   ShapesColor: {r: 0.754717, g: 0.754717, b: 0.754717, a: 1}
-  ShapesInterpolation: 0.484
+  ShapesInterpolation: 0
   RepeatInterval: {x: 1, y: 1, z: 1}
-  Sphere1: {x: 0, y: 0, z: 0, w: 0.67}
-  Sphere2: {x: 0, y: 0, z: 0, w: 0.25}
+  Sphere1: {x: 0.59, y: 0, z: 0, w: 0.65}
+  Sphere2: {x: 0, y: 1.19, z: 0, w: 0.25}
   BoxPosition: {x: 0, y: 0, z: 0}
   BoxSize: {x: 0.5, y: 0.5, z: 0.5}
   DebugPos: {x: 0, y: 0, z: 0}
-  DebugParams: {x: 0.33, y: 0.48, z: 0.99, w: -0.55}
+  DebugParams: {x: 0.32, y: 1.52, z: 0, w: 0}
   DebugAxis: 1
 --- !u!114 &1359276840
 MonoBehaviour:
