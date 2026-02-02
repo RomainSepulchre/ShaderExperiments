@@ -443,8 +443,8 @@ MonoBehaviour:
   BoxPosition: {x: 0, y: 0, z: 0}
   BoxSize: {x: 0.5, y: 0.5, z: 0.5}
   DebugPos: {x: 0, y: 0, z: 0}
-  DebugParams: {x: -1, y: 1, z: 1, w: 0.23}
-  DebugAxis: 0
+  DebugParams: {x: 0.33, y: 0.48, z: 0.99, w: -0.55}
+  DebugAxis: 1
 --- !u!114 &1359276840
 MonoBehaviour:
   m_ObjectHideFlags: 0

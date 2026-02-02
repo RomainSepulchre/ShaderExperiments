@@ -21,6 +21,8 @@ static const float PI = 3.14159265359f;
 // -> bool in functions argument ?
 // -> #define SDF_AXIS_MINUS_X, SDF_AXIS_MINUS_Y, SDF_AXIS_MINUS_Z ? -> add lots of code in every functions
 
+
+
 // ------------------
 // ----- SHAPES -----
 // ------------------
@@ -750,6 +752,17 @@ inline float sdfOctahedronBound(float3 pos, float size)
     return (pos.x + pos.y + pos.z - size) * 0.57735027;
 }
 
+/// Triangular prism (Approximate SDF value)
+/// @param pos Position of the shape
+/// @param height Height of the triangular prism
+/// @param depth Depth of the triangular prism
+/// @return Triangular prism SDF value
+inline float sdfTrianglePrism(float3 pos, float height, float depth)
+{
+    float3 q = abs(pos);
+    return max(q.z - depth, max(q.x * 0.866025 + pos.y * 0.5, -pos.y) - height * 0.5);
+}
+
 /// Hexagonal prism
 /// @param pos Position of the shape
 /// @param radius Radius of the hexagonal prism
@@ -804,6 +817,18 @@ inline float sdfVesicaSegment(in float3 pos, in float3 start, in float3 end, in 
  
     return length(q - h.xy) - h.z;
 }
+
+/// Ellipsoid (Approximate SDF value)
+/// @param pos Position of the shape
+/// @param xyzRadius Radius of the ellipsoid XYZ axis
+/// @return Ellipsoid SDF value
+inline float sdfEllipsoid(float3 pos, float3 xyzRadius)
+{
+    float k0 = length(pos / xyzRadius);
+    float k1 = length(pos /( xyzRadius * xyzRadius));
+    return k0 * (k0 - 1.0) / k1;
+}
+
 
 
 // ------------------------
@@ -860,6 +885,7 @@ inline float opXor( float shapeA, float shapeB)
 {
     return max(min(shapeA, shapeB), -max(shapeA, shapeB));
 }
+
 
 
 // ---------------------

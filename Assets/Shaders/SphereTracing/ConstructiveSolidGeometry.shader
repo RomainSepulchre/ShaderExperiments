@@ -122,8 +122,10 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 float pyramid = sdfPyramid(pos, _DebugParams.x);
                 float triangleShape = sdfTriangle(pos, float3(-1,0,0), _DebugParams.xyz, float3(1,0,0));
                 float quad = sdfQuad(pos, float3(-1,0,0), float3(-1,1,1), float3(1,1,1), float3(1,0,0));
+                float trianglePrism = sdfTrianglePrism(pos, _DebugParams.x, _DebugParams.y);
+                float ellipsoid = sdfEllipsoid(pos, _DebugParams.xyz);
                 
-                return quad;
+                return ellipsoid;
             }
             
             float3 getNormal(float3 hitPos)
