@@ -36,6 +36,7 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
             uniform float3 _DebugPos;
             uniform float4 _DebugParams;
             uniform int _DebugAxis;
+            uniform float3 _DebugRot;
 
             struct appdata
             {
@@ -92,14 +93,11 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 float smoothedIntersection = opSmoothIntersection(sphere1, box, _ShapesInterpolation);
                 float mergedShapes = opSmoothSubtraction(sphere1, box, _ShapesInterpolation);
                 
-                // Debug Shapes 
-                float3 pos = rayPos - _DebugPos;
+                // Test the shapes
+                //float3 pos = rayPos - _DebugPos;
+                float3 pos = opMove(rayPos, _DebugPos);
                 
-                
-                
-                float4 scaledPos = opScale(pos, _DebugParams.w);
-                
-                float sphere3 = sdfSphere(scaledPos.xyz, _Sphere2.w) * scaledPos.w;
+                // Shapes
                 float torrus = sdfTorus(opElongate(pos, _DebugParams.xyz), 1, 0.2, _DebugAxis);
                 float cappedTorrus = sdfCappedTorus(pos, _DebugParams.x, _DebugParams.y, _DebugParams.z, _DebugAxis);
                 float link = sdfLink(pos, _DebugParams.x, _DebugParams.y, _DebugParams.z, _DebugAxis);
@@ -131,9 +129,30 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 float quad = sdfQuad(pos, float3(-1,0,0), float3(-1,1,1), float3(1,1,1), float3(1,0,0));
                 float trianglePrism = sdfTrianglePrism(pos, _DebugParams.x, _DebugParams.y);
                 float ellipsoid = sdfEllipsoid(pos, _DebugParams.xyz);
-                float onionSphere = max(opOnion(opOnion(sphere3, _DebugParams.x), _DebugParams.y), pos.y); // max(sdf, pos.y) to be able to see sdf interior
                 
-                return onionSphere;
+                // Scale
+                float4 scaledPos = opScale(pos, _DebugParams.w);
+                float scaledSphere = sdfSphere(scaledPos.xyz, 0.5) * scaledPos.w;
+                
+                // Rotation
+                float3 rotPos = opRotateInDegree(pos, _DebugRot);
+                float rotBox = sdfBox(rotPos, float3(1,1,1));
+                float rotSphere = sdfSphere(rotPos, 0.5);
+                
+                // Repeat
+                float3 repeatedPos = opRepetition(rotPos, _RepeatInterval, float3(1,1,1));
+                float repeatSphere = sdfSphere(repeatedPos, 0.25);
+                
+                // Simple Onion sphere
+                //float onionSphere = max(opOnion(opOnion(scaledSphere, _DebugParams.x), _DebugParams.y), pos.y); // max(sdf, pos.y) to be able to see sdf interior
+                
+                // Rotated onion
+                float rotOnionSphere = max(opOnion(opOnion(opOnion(rotSphere, _DebugParams.x), _DebugParams.y), _DebugParams.z), rotPos.y);
+                
+                // Repeated onion
+                float repeatOnionSphere = max(opOnion(opOnion(opOnion(repeatSphere, _DebugParams.x), _DebugParams.y), _DebugParams.z), repeatedPos.y);
+                
+                return repeatOnionSphere;
             }
             
             float3 getNormal(float3 hitPos)

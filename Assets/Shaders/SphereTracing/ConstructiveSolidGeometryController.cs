@@ -47,6 +47,7 @@ public class ConstructiveSolidGeometryController : SceneViewFilter
     [Space(10)]
     [Header("Debug")]
     public Vector3 DebugPos;
+    public Vector3 DebugRot;
     public Vector4 DebugParams;
     public enum SDFAxis
     {
@@ -86,6 +87,7 @@ public class ConstructiveSolidGeometryController : SceneViewFilter
         RaymarchMaterial.SetVector("_DebugPos", DebugPos);
         RaymarchMaterial.SetVector("_DebugParams", DebugParams);
         RaymarchMaterial.SetInt("_DebugAxis", (int)DebugAxis);
+        RaymarchMaterial.SetVector("_DebugRot", DebugRot);
         
         
         RenderTexture.active = destination;

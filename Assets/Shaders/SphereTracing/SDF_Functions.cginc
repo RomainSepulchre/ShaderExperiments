@@ -920,9 +920,106 @@ inline float opXor(float shapeA, float shapeB)
 
 
 
+// ---------------------
+// ----- TRANSFORM -----
+// ---------------------
+
+inline float3 opMove(float3 rayPos, float3 newPos)
+{
+    return rayPos - newPos;
+}
+
+/// Rotate with XYZ angle value in radians
+/// @param pos Position of the shape
+/// @param rotation XYZ Rotations angle in radians
+/// @return Position of the rotated shape
+inline float3 opRotate(float3 pos, float3 rotation)
+{
+    float cx = cos(rotation.x);
+    float sx = sin(rotation.x);
+    float cy = cos(rotation.y);
+    float sy = sin(rotation.y);
+    float cz = cos(rotation.z);
+    float sz = sin(rotation.z);
+    
+    float3x3 rotMatrix = float3x3(
+        cy * cz,                 cy * sz,                 -sy,
+        sx * sy * cz - cx * sz,  sx * sy * sz + cx * cz,  sx * cy,
+        cx * sy * cz + sx * sz,  cx * sy * sz - sx * cz,  cx * cy
+    );
+    
+    return mul(rotMatrix, pos);
+}
+
+/// Rotate with XYZ angle value in degrees
+/// @param pos Position of the shape
+/// @param rotation XYZ Rotations angle in degrees
+/// @return Position of the rotated shape
+inline float3 opRotateInDegree(float3 pos, float3 rotation)
+{
+    float xRot = radians(rotation.x);
+    float yRot = radians(rotation.y);
+    float zRot = radians(rotation.z);
+    
+    return opRotate(pos, float3(xRot, yRot, zRot));
+}
+
+/// Rotate with a 3x3 matrix representing a rotation matrix
+/// @param pos Position of the shape
+/// @param rotationMatrix Rotation matrix to use to rotate object
+/// @return Position of the rotated shape
+inline float3 opRotateWithMatrix(float3 pos, float3x3 rotationMatrix)
+{
+    return mul(rotationMatrix, pos);
+}
+
+/// Scale
+/// @param pos Position of the shape
+/// @param scaleFactor Scale factor to increase/decrease object size
+/// @return XYZ: input position to create scaled shape, W: must multiply the SDF value of the scaled shape (shape(opScale.xyz) * opScale.w)
+inline float4 opScale( in float3 pos, in float scaleFactor)
+{
+    return float4(pos/scaleFactor, scaleFactor);
+}
+
+
+
 // -------------------------
 // ----- MODIFY 3D SDF -----
 // -------------------------
+
+/// Infinite Repetition
+/// @param pos Position of the shape we want to repeat
+/// @param repeatInterval Interval between every repetition of the SDF  
+/// @return Position of the repeated shape
+inline float3 opRepetition(in float3 pos, in float3 repeatInterval)
+{
+    return pos - repeatInterval * round(pos / repeatInterval);
+}
+
+/// Limited Repetition
+/// @param pos Position of the shape we want to repeat
+/// @param repeatInterval Interval between every repetition of the SDF  
+/// @param repeatCount Number of shapes to repeat on every axis
+/// @return Position of the repeated shape
+float3 opRepetition(in float3 pos, in float repeatInterval, in float3 repeatCount)
+{
+    return pos - repeatInterval * clamp(round(pos / repeatInterval), -repeatCount, repeatCount);
+}
+
+/// Repetition along an axis: allow to repeat sdf along an axis
+/// @param pos Position of the shape on the axis where we want to repeat the shape
+/// @param repeatInterval Interval between every repetition of the SDF  
+/// @return Modify input position to repeat the shape on an axis
+inline float opRepetitionOnOneAxis(inout float pos, float repeatInterval)
+{
+    float halfSize = repeatInterval * 0.5;
+    float c = floor((pos + halfSize) / repeatInterval);
+    pos = fmod(pos + halfSize, repeatInterval) - halfSize;
+    pos = fmod(-pos + halfSize, repeatInterval) - halfSize;
+    
+    return c;
+}
 
 /// Round
 /// @param sdf SDF value of the 3D shape we want to round
@@ -945,8 +1042,8 @@ inline float3 opElongate1D(in float3 pos, in float3 xyzElongation)
 /// Elongate shape: apply to position before creating the shape (give exact exterior and interior distance even with 2D/3D elongations)
 /// @param pos Position of the shape
 /// @param xyzElongation Elongation value on XYZ axis
-/// @return XYZ: position of the elongated shape, W: must be added to the SDF value of the elongated shape
-float4 opElongate( in float3 pos, in float3 xyzElongation)
+/// @return XYZ: input position to create elongated shape, W: must be added to the SDF value of the elongated shape (shape(opElongate.xyz) + opElongate.w)
+inline float4 opElongate( in float3 pos, in float3 xyzElongation)
 {
     float3 q = abs(pos)-xyzElongation;
     return float4(max(q, 0.0), min(max(q.x, max(q.y, q.z)), 0.0));
@@ -962,31 +1059,4 @@ inline float opOnion(in float sdf, in float thickness)
 }
 
 
-
-// ---------------------
-// ----- TRANSFORM -----
-// ---------------------
-
-/// Scale
-/// @param pos Position of the shape
-/// @param scaleFactor Scale factor to increase/decrease object size
-/// @return XYZ: position of the scaled shape, W: must multiply the SDF value of the scaled shape
-float4 opScale( in float3 pos, in float scaleFactor)
-{
-    return float4(pos/scaleFactor, scaleFactor);
-}
-
-/// Mod position axis: Allow to repeat distance field along an axis
-/// @param pos
-/// @param size
-/// @return 
-inline float pMod1(inout float pos, float size)
-{
-    float halfSize = size * 0.5;
-    float c = floor((pos + halfSize) / size);
-    pos = fmod(pos + halfSize, size) - halfSize;
-    pos = fmod(-pos + halfSize, size) - halfSize;
-    
-    return c;
-}
 
