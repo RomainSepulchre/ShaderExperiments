@@ -964,12 +964,21 @@ inline float opOnion(in float sdf, in float thickness)
 
 
 // ---------------------
-// ----- POSITIONS -----
+// ----- TRANSFORM -----
 // ---------------------
 
+/// Scale
+/// @param pos Position of the shape
+/// @param scaleFactor Scale factor to increase/decrease object size
+/// @return XYZ: position of the scaled shape, W: must multiply the SDF value of the scaled shape
+float4 opScale( in float3 pos, in float scaleFactor)
+{
+    return float4(pos/scaleFactor, scaleFactor);
+}
+
 /// Mod position axis: Allow to repeat distance field along an axis
-/// @param pos 
-/// @param size 
+/// @param pos
+/// @param size
 /// @return 
 inline float pMod1(inout float pos, float size)
 {
