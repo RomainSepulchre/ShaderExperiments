@@ -1021,6 +1021,42 @@ inline float opRepetitionOnOneAxis(inout float pos, float repeatInterval)
     return c;
 }
 
+/// Symmetry
+/// @param pos Position of the shape
+/// @param axis Symmetry axis
+/// @return Position of the symmetrized shape
+inline float3 opSymmetry(in float3 pos, int axis = SDF_AXIS_X)
+{
+    if (axis == SDF_AXIS_Y) pos.y = abs(pos.y);
+    else if (axis == SDF_AXIS_Z) pos.z = abs(pos.z);
+    else pos.x = abs(pos.x); // default is X axis
+    
+    return pos;
+}
+
+/// Symmetry on 2 axis
+/// @param pos Position of the shape
+/// @param axisA Symmetry plane first axis
+/// @param axisB Symmetry plane second axis
+/// @return Position of the symmetrized shape
+inline float3 opSymmetryPlane(in float3 pos, int axisA = SDF_AXIS_X, int axisB = SDF_AXIS_Z)
+{
+    if ((axisA == SDF_AXIS_Y && axisB == SDF_AXIS_Z) || (axisA == SDF_AXIS_Z && axisB == SDF_AXIS_Y))
+    {
+        pos.yz = abs(pos.yz);
+    }
+    else if ((axisA == SDF_AXIS_X && axisB == SDF_AXIS_Y) || (axisA == SDF_AXIS_Y && axisB == SDF_AXIS_X))
+    {
+        pos.xy = abs(pos.xy);
+    }
+    else // default is XZ axis
+    {
+        pos.xz = abs(pos.xz);
+    }
+    
+    return pos;
+}
+
 /// Round
 /// @param sdf SDF value of the 3D shape we want to round
 /// @param radius Radius of the rounding
@@ -1056,6 +1092,30 @@ inline float4 opElongate( in float3 pos, in float3 xyzElongation)
 inline float opOnion(in float sdf, in float thickness)
 {
     return abs(sdf) - thickness;
+}
+
+
+float3 opTwist(in float3 pos, float twistForce = 10.0)
+{
+    float c = cos(twistForce * pos.y);
+    float s = sin(twistForce * pos.y);
+    float2x2  twistMatrix = float2x2(c, -s, s, c);
+    float3 twistedPos = float3(mul(twistMatrix, pos.xz), pos.y);
+    return twistedPos;
+}
+
+float3 opCheapBend(in float3 pos, float bendForce = 10.0)
+{
+    float c = cos(bendForce * pos.x);
+    float s = sin(bendForce * pos.x);
+    float2x2  bendMatrix = float2x2(c,-s,s,c);
+    float3 bendPos = float3(mul(bendMatrix, pos.xy), pos.z);
+    return bendPos;
+}
+
+float opDisp(float3 pos, float sdf, float3 dispForce = 20)
+{
+    return sdf + sin(dispForce.x * pos.x) * sin(dispForce.y * pos.y) * sin(dispForce.z * pos.z);
 }
 
 

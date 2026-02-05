@@ -143,6 +143,14 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 float3 repeatedPos = opRepetition(rotPos, _RepeatInterval, float3(1,1,1));
                 float repeatSphere = sdfSphere(repeatedPos, 0.25);
                 
+                // 
+                float3 bendPos = opCheapBend(pos, _DebugParams.w);
+                float3 twistPos = opTwist(pos, _DebugParams.w);
+                float3 twistTorrus = sdfTorus(twistPos, 1,0.1, _DebugAxis);
+                
+                
+                float dispTorrus = sdfTorus(pos, 1, 0.1, SDF_AXIS_Y);
+                
                 // Simple Onion sphere
                 //float onionSphere = max(opOnion(opOnion(scaledSphere, _DebugParams.x), _DebugParams.y), pos.y); // max(sdf, pos.y) to be able to see sdf interior
                 
@@ -152,7 +160,7 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 // Repeated onion
                 float repeatOnionSphere = max(opOnion(opOnion(opOnion(repeatSphere, _DebugParams.x), _DebugParams.y), _DebugParams.z), repeatedPos.y);
                 
-                return repeatOnionSphere;
+                return opDisp(pos, dispTorrus, _DebugParams.w);
             }
             
             float3 getNormal(float3 hitPos)
