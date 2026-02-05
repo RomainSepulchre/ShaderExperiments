@@ -43,10 +43,11 @@ inline float sdfSphere(float3 pos, float radius)
 /// Cut sphere
 /// @param pos Position of the shape
 /// @param radius Radius of the sphere
-/// @param cutHeight Height of the sphere cut
+/// @param cut 0.0 to 1.0 value that define the cut position
 /// @return Cut sphere SDF value
-inline float sdfCutSphere(float3 pos, float radius, float cutHeight, int axis)
+inline float sdfCutSphere(float3 pos, float radius, float cut, int axis = SDF_AXIS_Y)
 {
+    float cutHeight = lerp(-radius, radius, cut);
     float w = sqrt(radius * radius - cutHeight * cutHeight);
 
     float2 q; 
@@ -71,12 +72,13 @@ inline float sdfCutSphere(float3 pos, float radius, float cutHeight, int axis)
 /// Cut hollow sphere
 /// @param pos Position of the shape
 /// @param radius Radius of the sphere
-/// @param cutHeight Height of the sphere cut
+/// @param cut 0.0 to 1.0 value that define the cut position
 /// @param thickness Thickness of the edge of the hollow sphere
 /// @param axis Axis to use to draw shape: use SDF_AXIS_X (0), SDF_AXIS_Y (1) or SDF_AXIS_Z (2)
 /// @return Cut hollow sphere SDF value
-float sdfCutHollowSphere(float3 pos, float radius, float cutHeight, float thickness, int axis = SDF_AXIS_Y)
+float sdfCutHollowSphere(float3 pos, float radius, float cut, float thickness, int axis = SDF_AXIS_Y)
 {
+    float cutHeight = lerp(radius, -radius, cut);
     float w = sqrt(radius * radius - cutHeight * cutHeight);
     
     float2 q;
@@ -182,7 +184,7 @@ inline float sdfBoxFrame(float3 pos, float3 boxSize, float frameThickness)
 float sdfPlane(float3 pos, float3 normal, float height = 0)
 {
     // normal must be normalized
-    return dot(pos, normal) + height;
+    return dot(pos, normal) - height;
 }
 
 // ............
@@ -297,14 +299,12 @@ float sdfCylinder( float3 pos, float3 start, float3 end, float radius)
 
 /// Cylinder oriented in a specific axis
 /// @param pos Position of the shape
-/// @param size Size of the cylinder 
+/// @param size Distance between the center and the base/top cap of the cylinder 
 /// @param radius Radius of the cylinder
 /// @param axis Axis to use to draw shape: use SDF_AXIS_X (0), SDF_AXIS_Y (1) or SDF_AXIS_Z (2)
 /// @return Cylinder oriented on a specific axis SDF value
 inline float sdfCylinderAxis(float3 pos, float size, float radius, int axis = SDF_AXIS_Y)
-{
-    size *= 0.5f; // Divide size by 2 so a size of 1 draw a cylinder of 1 meter
-    
+{    
     float2 d;
     if (axis == SDF_AXIS_X)
     {
@@ -324,15 +324,13 @@ inline float sdfCylinderAxis(float3 pos, float size, float radius, int axis = SD
 
 /// Rounded cylinder
 /// @param pos Position of the shape
-/// @param size Size of the cylinder 
+/// @param size Distance between the center and the base/top cap of the cylinder
 /// @param radius Radius of the cylinder
 /// @param round Value that define how rounded are the cylinder cap
 /// @param axis Axis to use to draw shape: use SDF_AXIS_X (0), SDF_AXIS_Y (1) or SDF_AXIS_Z (2)
 /// @return Rounded cylinder SDF value
 inline float sdfRoundedCylinder(float3 pos, float size, float radius, float round, int axis = SDF_AXIS_Y)
-{
-    size = size * 0.5; // Divide size by 2 so a size of 1 draw a cylinder of 1 meter
-    
+{    
     float2 d;
     if (axis == SDF_AXIS_X)
     {
@@ -394,7 +392,7 @@ inline float sdfCone(float3 pos, float radius, float height)
     return sqrt(d) * sign(s);
 }
 /// @param pos Position of the shape
-/// @param sinCosAngle Sin and cos of the cone angle
+/// @param sinCosAngle Sin and cos of the cone angle (in radians)
 /// @param height Height of the cone
 /// @return Cone SDF value
 inline float sdfCone(float3 pos, float2 sinCosAngle, float height)
@@ -416,7 +414,7 @@ inline float sdfCone(float3 pos, float2 sinCosAngle, float height)
 
 /// Infinite Cone
 /// @param pos Position of the shape
-/// @param sinCosAngle Sin and cos of the cone angle
+/// @param sinCosAngle Sin and cos of the cone angle (in radians)
 /// @return Infinite Cone SDF value
 inline float sdfInfiniteCone(float3 pos, float2 sinCosAngle)
 {
@@ -454,7 +452,7 @@ inline float sdfCappedCone(float3 pos, float3 base, float3 top, float radiusBase
 
 /// Capped Cone oriented in a specific axis
 /// @param pos Position of the shape
-/// @param size Size of the base cap
+/// @param size Distance between the center and the base/top cap of the cone
 /// @param radiusBase Radius of the base cap of the capped cone
 /// @param radiusTop Radius of the top cap of the capped cone
 /// @param axis Axis to use to draw shape: use SDF_AXIS_X (0), SDF_AXIS_Y (1) or SDF_AXIS_Z (2)
@@ -546,62 +544,6 @@ inline float sdfRoundConeAxis(float3 pos, float size, float baseRound, float top
     return dot(q, float2(a,b)) - baseRound;
 }
 
-/// Solid Angle
-/// @param pos Position of the shape
-/// @param sinCosAngle Sin and cos of the angle
-/// @param radius Radius of the solid angle
-/// @param axis Axis to use to draw shape: use SDF_AXIS_X (0), SDF_AXIS_Y (1) or SDF_AXIS_Z (2)
-/// @return Solid Angle SDF value
-inline float sdfSolidAngle(float3 pos, float2 sinCosAngle, float radius, int axis = SDF_AXIS_Y)
-{
-    // c is the sin/cos of the angle
-    float2 q;
-    if (axis == SDF_AXIS_X)
-    {
-        q = float2( length(pos.yz), pos.x);
-    }
-    else if (axis == SDF_AXIS_Z)
-    {
-        q = float2( length(pos.xy), pos.z);
-    }
-    else // Default is SDF_AXIS_Y
-    {
-        q = float2( length(pos.xz), pos.y);
-    }
-    
-    float l = length(q) - radius;
-    float m = length(q - sinCosAngle * clamp(dot(q, sinCosAngle), 0.0, radius));
-    
-    return max(l, m * sign(sinCosAngle.y * q.x - sinCosAngle.x * q.y));
-}
-/// @param pos Position of the shape
-/// @param angle Angle of the solid angle
-/// @param radius Radius of the solid angle
-/// @param axis Axis to use to draw shape: use SDF_AXIS_X (0), SDF_AXIS_Y (1) or SDF_AXIS_Z (2)
-/// @return Solid Angle SDF value
-inline float sdfSolidAngle(float3 pos, float angle, float radius, int axis = SDF_AXIS_Y)
-{
-    float2 q;
-    if (axis == SDF_AXIS_X)
-    {
-        q = float2( length(pos.yz), pos.x);
-    }
-    else if (axis == SDF_AXIS_Z)
-    {
-        q = float2( length(pos.xy), pos.z);
-    }
-    else // Default is SDF_AXIS_Y
-    {
-        q = float2( length(pos.xz), pos.y);
-    }
-    
-    float2 sc = float2(sin(angle), cos(angle));
-    float l = length(q) - radius;
-    float m = length(q - sc * clamp(dot(q, sc), 0.0, radius));
-    
-    return max(l, m * sign(sc.y * q.x - sc.x * q.y));
-}
-
 // ............
 // Capsules
 
@@ -622,14 +564,12 @@ inline float sdfCapsule(float3 pos, float3 start, float3 end, float radius)
 
 /// Capsule oriented in a specific axis
 /// @param pos Position of the shape
-/// @param size Size of the capsule
+/// @param size Distance between the center and the base/top cap of the capsule
 /// @param radius Radius of the capsule
 /// @param axis Axis to use to draw shape: use SDF_AXIS_X (0), SDF_AXIS_Y (1) or SDF_AXIS_Z (2)
 /// @return Capsule oriented on a specific axis SDF value
 inline float sdfCapsuleAxis(float3 pos, float size, float radius, int axis = SDF_AXIS_Y)
-{
-    size = (size * 0.5) - radius; // Divide size by 2 and take radius into account so a size of 1 draw a capsule of 1 meter
-    
+{    
     if (axis == SDF_AXIS_X)
     {
         pos.x -= clamp(pos.x, 0.0, size);
@@ -797,6 +737,62 @@ inline float sdfRhombus(float3 pos, float width, float height, float depth, floa
 
 // ............
 // Other Shapes
+
+/// Solid Angle
+/// @param pos Position of the shape
+/// @param sinCosAngle Sin and cos of the angle
+/// @param radius Radius of the solid angle
+/// @param axis Axis to use to draw shape: use SDF_AXIS_X (0), SDF_AXIS_Y (1) or SDF_AXIS_Z (2)
+/// @return Solid Angle SDF value
+inline float sdfSolidAngle(float3 pos, float2 sinCosAngle, float radius, int axis = SDF_AXIS_Y)
+{
+    // c is the sin/cos of the angle
+    float2 q;
+    if (axis == SDF_AXIS_X)
+    {
+        q = float2( length(pos.yz), pos.x);
+    }
+    else if (axis == SDF_AXIS_Z)
+    {
+        q = float2( length(pos.xy), pos.z);
+    }
+    else // Default is SDF_AXIS_Y
+    {
+        q = float2( length(pos.xz), pos.y);
+    }
+    
+    float l = length(q) - radius;
+    float m = length(q - sinCosAngle * clamp(dot(q, sinCosAngle), 0.0, radius));
+    
+    return max(l, m * sign(sinCosAngle.y * q.x - sinCosAngle.x * q.y));
+}
+/// @param pos Position of the shape
+/// @param angle Angle of the solid angle
+/// @param radius Radius of the solid angle
+/// @param axis Axis to use to draw shape: use SDF_AXIS_X (0), SDF_AXIS_Y (1) or SDF_AXIS_Z (2)
+/// @return Solid Angle SDF value
+inline float sdfSolidAngle(float3 pos, float angle, float radius, int axis = SDF_AXIS_Y)
+{
+    float2 q;
+    if (axis == SDF_AXIS_X)
+    {
+        q = float2( length(pos.yz), pos.x);
+    }
+    else if (axis == SDF_AXIS_Z)
+    {
+        q = float2( length(pos.xy), pos.z);
+    }
+    else // Default is SDF_AXIS_Y
+    {
+        q = float2( length(pos.xz), pos.y);
+    }
+    
+    float2 sc = float2(sin(angle), cos(angle));
+    float l = length(q) - radius;
+    float m = length(q - sc * clamp(dot(q, sc), 0.0, radius));
+    
+    return max(l, m * sign(sc.y * q.x - sc.x * q.y));
+}
 
 /// Vesica Segment
 /// @param pos Position of the shape

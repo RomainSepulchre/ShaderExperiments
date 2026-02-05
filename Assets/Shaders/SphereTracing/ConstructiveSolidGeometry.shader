@@ -84,52 +84,114 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 //float modZ = pMod1(rayPos.z, _RepeatInterval.z);
                 
                 // Shapes to draw
-                float sphere1 = sdfSphere(rayPos - _Sphere1.xyz, _Sphere1.w);
-                float sphere2 = sdfSphere(rayPos - _Sphere2.xyz, _Sphere2.w);
-                float box = sdfBox(rayPos - _BoxPosition, _BoxSize);
+                // float sphere1 = sdfSphere(rayPos - _Sphere1.xyz, _Sphere1.w);
+                // float sphere2 = sdfSphere(rayPos - _Sphere2.xyz, _Sphere2.w);
+                // float box = sdfBox(rayPos - _BoxPosition, _BoxSize);
                 
                 // Merged shapes
-                float smoothedShapes = opSmoothUnion(sphere1, sphere2, _ShapesInterpolation);
-                float smoothedIntersection = opSmoothIntersection(sphere1, box, _ShapesInterpolation);
-                float mergedShapes = opSmoothSubtraction(sphere1, box, _ShapesInterpolation);
+                // float smoothedShapes = opSmoothUnion(sphere1, sphere2, _ShapesInterpolation);
+                // float smoothedIntersection = opSmoothIntersection(sphere1, box, _ShapesInterpolation);
+                // float mergedShapes = opSmoothSubtraction(sphere1, box, _ShapesInterpolation);
                 
                 // Test the shapes
-                //float3 pos = rayPos - _DebugPos;
                 float3 pos = opMove(rayPos, _DebugPos);
                 
-                // Shapes
-                float torrus = sdfTorus(opElongate(pos, _DebugParams.xyz), 1, 0.2, _DebugAxis);
-                float cappedTorrus = sdfCappedTorus(pos, _DebugParams.x, _DebugParams.y, _DebugParams.z, _DebugAxis);
-                float link = sdfLink(pos, _DebugParams.x, _DebugParams.y, _DebugParams.z, _DebugAxis);
-                float infCylinder = sdfInfiniteCylinder(pos, _DebugParams.x, _DebugAxis);
-                float plane = sdfPlane(pos, normalize(_DebugParams.xyz), _DebugParams.w);
-                float cone = sdfCone(pos, _DebugParams.x, _DebugParams.y);
-                float infiniteCone = sdfInfiniteCone(pos, float2(sin(_DebugParams.x), cos(_DebugParams.x)));
-                float hexPrism = sdfHexPrism(pos, _DebugParams.x, _DebugParams.y);
-                float capsule = sdfCapsule(pos, float3(0,0,0), _DebugParams.xyz, _DebugParams.w);
-                float capsuleAxis = sdfCapsuleAxis(pos, _DebugParams.x, _DebugParams.y, _DebugAxis);
-                float cylinder = sdfCylinder(pos, float3(0,0,0), _DebugParams.xyz, _DebugParams.w);
-                float cylinderAxis = sdfCylinderAxis(pos, _DebugParams.x, _DebugParams.y, _DebugAxis);
-                float roundedCylinder = sdfRoundedCylinder(pos, _DebugParams.x, _DebugParams.y, _DebugParams.z, _DebugAxis);
-                float cappedConeAxis = sdfCappedConeAxis(pos, _DebugParams.x, _DebugParams.y, _DebugParams.z, _DebugAxis);
-                float cappedCone = sdfCappedCone(pos, float3(0,0,0), _DebugParams.xyz, 1, _DebugParams.w);
-                float solidAngleA = sdfSolidAngle(pos, float2(sin(_DebugParams.x),cos(_DebugParams.x)), _DebugParams.z, _DebugAxis);
-                float solidAngleB = sdfSolidAngle(pos, _DebugParams.x, _DebugParams.z, _DebugAxis);
-                float cutSphere = sdfCutSphere(pos.yzx, _DebugParams.x, _DebugParams.y, _DebugAxis);
-                float cutHollowSphere = sdfCutHollowSphere(pos, _DebugParams.x, _DebugParams.y, _DebugParams.z, _DebugAxis);
-                float deathStar = sdfDeathStar(pos, _DebugParams.x, _DebugParams.y, _DebugParams.z, _DebugAxis);
-                float roundCone = sdfRoundCone(pos, float3(0,0,0), float3(_DebugParams.x,_DebugParams.y,0), _DebugParams.z, _DebugParams.w);
-                float roundConeAxis = sdfRoundConeAxis(pos, _DebugParams.x, _DebugParams.y, _DebugParams.z, _DebugAxis);
-                float vesica = sdfVesicaSegment(pos, float3(0,0,0), _DebugParams.xyz, _DebugParams.w);
-                float rhombus = sdfRhombus(pos, _DebugParams.x, _DebugParams.y, _DebugParams.z, _DebugParams.w);
-                float octahedron = sdfOctahedron(pos, _DebugParams.x);
-                float octahedronBound = sdfOctahedronBound(pos, _DebugParams.x);
-                float pyramid = sdfPyramid(pos, _DebugParams.x);
-                float triangleShape = sdfTriangle(pos, float3(-1,0,0), _DebugParams.xyz, float3(1,0,0));
-                float quad = sdfQuad(pos, float3(-1,0,0), float3(-1,1,1), float3(1,1,1), float3(1,0,0));
-                float trianglePrism = sdfTrianglePrism(pos, _DebugParams.x, _DebugParams.y);
-                float ellipsoid = sdfEllipsoid(pos, _DebugParams.xyz);
+                // Spheres
+                float sphere = sdfSphere(rayPos - float3(0,0.5,0), 0.5);
+                float cutSphere = sdfCutSphere(opRotateInDegree(rayPos - float3(0,0.5,2), float3(180,0,0)), 0.5, 0.5);
+                float cutHollowSphere = sdfCutHollowSphere(rayPos - float3(0,0.5,4), 0.5, 0.25, 0.01);
+                float deathStar = sdfDeathStar(opRotateInDegree(rayPos - float3(0,0.5,6), float3(0,45,0)), 0.5, 0.25, 0.5);
                 
+                float spheres = opUnion(sphere, cutSphere);
+                spheres = opUnion(spheres, cutHollowSphere);
+                spheres = opUnion(spheres, deathStar);
+                
+                // Boxes
+                float box = sdfBox(rayPos - float3(2,0.5,0), float3(0.5,0.5,0.5));
+                float roundBox = sdfRoundBox(rayPos - float3(2,0.5,2), float3(0.5,0.5,0.5), 0.2);
+                float boxFrame = sdfBoxFrame(rayPos - float3(2,0.5,4), float3(0.5,0.5,0.5), 0.05);
+                
+                float boxes = opUnion(box, roundBox);
+                boxes = opUnion(boxes, boxFrame);
+                
+                // Plane
+                float plane = sdfPlane(rayPos - float3(0,0,0), float3(0,1,0)); 
+                
+                // Tori
+                float torus = sdfTorus(rayPos - float3(4,0.5,0), 0.5, 0.1);
+                float cappedTorus = sdfCappedTorus(rayPos - float3(4,0.5,2), 0.5, 0.1, 0.75);
+                float link = sdfLink(rayPos - float3(4,0.5,4), 0.5, 0.5, 0.1, _DebugAxis);
+                
+                float tori = opUnion(torus, cappedTorus);
+                tori = opUnion(tori, link);
+                
+                // Cylinder
+                float cylinderAxis = sdfCylinderAxis(rayPos - float3(6,0.5,0), 0.5, 0.25);
+                float cylinder = sdfCylinder(rayPos - float3(6,0.5,2), float3(-0.225,-0.445,0), float3(0.225,0.445,0), 0.25);
+                float roundedCylinder = sdfRoundedCylinder(rayPos - float3(6,0.5,4), 0.5, 0.25, 0.1);
+                float infCylinder = sdfInfiniteCylinder(rayPos - float3(6,0.5,6), 0.25);
+                
+                float cylinders = opUnion(cylinder, cylinderAxis);
+                cylinders = opUnion(cylinders, roundedCylinder);
+                cylinders = opUnion(cylinders, infCylinder);
+                
+                // Cones
+                float cone = sdfCone(rayPos - float3(8,1,0), 0.5, 1); // Y offset is 1 instead of 0.5 because origin is the tip of the cone
+                float cappedConeAxis = sdfCappedConeAxis(rayPos - float3(8,0.5,2), 0.5, 0.5, 0.1);
+                float cappedCone = sdfCappedCone(rayPos - float3(8,0.5,4), float3(-0.225,-0.445,0), float3(0.225,0.445,0), 0.5, 0.1); // start/end offset: => normalize(float3(0.25,0.5,0)) * 0.5
+                float roundConeAxis = sdfRoundConeAxis(rayPos - float3(8,0.25,6), 0.65, 0.25, 0.1); // Y offset is 0.25 because we subtract the base radius
+                float roundCone = sdfRoundCone(rayPos - float3(8,0.25,8), float3(0,0,0), float3(0,0.75,-0.75), 0.25, 0.1); // Y offset is 0.25 because we subtract the base radius
+                float infiniteCone = sdfInfiniteCone(rayPos - float3(8,10,10), float2(sin(radians(2.5)), cos(radians(2.5))));
+                
+                float cones = opUnion(cone, cappedConeAxis);
+                cones = opUnion(cones, cappedCone);
+                cones = opUnion(cones, roundConeAxis);
+                cones = opUnion(cones, roundCone);
+                cones = opUnion(cones, infiniteCone);
+                
+                // Capsules
+                float capsuleAxis = sdfCapsuleAxis(rayPos - float3(10,0.25,0), 0.5, 0.25); // Y offset is 0.25 because we subtract the base radius
+                float capsule = sdfCapsule(rayPos - float3(10,0.5,2), float3(-0.1125,-0.2225, 0), float3(0.1125,0.2225, 0), 0.25); // start/end offset: normalize(float3(0.25,0.5,0)) * 0.25 (0.25 because we add 0.25 of radius after)
+                
+                float capsules = opUnion(capsuleAxis, capsule);
+                
+                // Polygonal Shapes
+                float triangleSdf = sdfTriangle(rayPos - float3(12,0.5,0), float3(-0.5,-0.5,0), float3(0,0.5,0.5), float3(0.5,-0.5,0));
+                float quad = sdfQuad(rayPos - float3(12,0.5,2), float3(-0.5,-0.5,0), float3(-0.5,0.5,0.5), float3(0.5,0.5,0.5), float3(0.5,-0.5,0));
+                float pyramid = sdfPyramid(rayPos - float3(12,0,4), 1); // origin is a the bottom of the pyramid so no need to offset to place on the floor
+                float octahedron = sdfOctahedron(rayPos - float3(11.4,0.5,6), 0.5);
+                float octahedronBound = sdfOctahedronBound(rayPos - float3(12.6,0.5,6), 0.5);
+                float rhombus = sdfRhombus(opRotateInDegree(rayPos - float3(12,0.6,8), float3(90,0,0)), 0.5, 0.2, 0.25, 0.2);
+                float trianglePrism = sdfTrianglePrism(rayPos - float3(12,0.5,10), 0.75, 0.25);
+                float hexPrism = sdfHexPrism(rayPos - float3(12,0.75,12), 0.75, 0.25); // Y offset is 0.75 to place the hexagon on the plane because radius is 0.75
+                
+                float polygons = opUnion(triangleSdf, quad);
+                polygons = opUnion(polygons, pyramid);
+                polygons = opUnion(polygons, octahedron);
+                polygons = opUnion(polygons, octahedronBound);
+                polygons = opUnion(polygons, rhombus);
+                polygons = opUnion(polygons, trianglePrism);
+                polygons = opUnion(polygons, hexPrism);
+                
+                // Other shapes
+                float solidAngle = sdfSolidAngle(rayPos - float3(14,0,0), radians(45), 0.5);
+                float vesica = sdfVesicaSegment(rayPos - float3(14,0.5,2), float3(-0.5,0,0), float3(0.5,0,0), 0.25);
+                float ellipsoid = sdfEllipsoid(rayPos - float3(14,0.5,4), float3(0.5, 0.25, 0.25));
+                
+                float otherShapes = opUnion(solidAngle, vesica);
+                otherShapes = opUnion(otherShapes, ellipsoid);
+                
+                // FINAL SHAPES COMBINATION
+                float shapes = opUnion(spheres, boxes);
+                //shapes = opUnion(shapes, plane);
+                shapes = opUnion(shapes, tori);
+                shapes = opUnion(shapes, cylinders);
+                shapes = opUnion(shapes, cones);
+                shapes = opUnion(shapes, capsules);
+                shapes = opUnion(shapes, polygons);
+                shapes = opUnion(shapes, otherShapes);
+                
+
                 // Scale
                 float4 scaledPos = opScale(pos, _DebugParams.w);
                 float scaledSphere = sdfSphere(scaledPos.xyz, 0.5) * scaledPos.w;
@@ -160,7 +222,7 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 // Repeated onion
                 float repeatOnionSphere = max(opOnion(opOnion(opOnion(repeatSphere, _DebugParams.x), _DebugParams.y), _DebugParams.z), repeatedPos.y);
                 
-                return opDisp(pos, dispTorrus, _DebugParams.w);
+                return shapes;
             }
             
             float3 getNormal(float3 hitPos)
