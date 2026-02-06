@@ -544,7 +544,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 7, y: 0.05, z: 18.1338}
-  m_LocalScale: {x: 16, y: 0.1, z: -7.7683086}
+  m_LocalScale: {x: 16, y: 0.1, z: 7.768309}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -668,7 +668,7 @@ MonoBehaviour:
   DemoRotation: {x: 45, y: 45, z: 0}
   DemoScale: 0.25
   DemoSmooth: 0.118
-  DebugParams: {x: 3, y: 0.5, z: 10, w: 0.25}
+  DebugParams: {x: 0.1, y: 0.05, z: 0.002, w: 0.25}
   DebugAxis: 1
 --- !u!114 &1359276840
 MonoBehaviour:

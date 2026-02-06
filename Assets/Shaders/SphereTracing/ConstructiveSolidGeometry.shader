@@ -239,17 +239,48 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 combinedShapes = opUnion(combinedShapes, xOR);
                 combinedShapes = opUnion(combinedShapes, noXOR);
                 
-                // Shapes modification
-                float3 repeatPos = opRepetition(rayPos - float3(1,1.05,16), 0.8, 1);
-                float repeatBox = sdfBox(repeatPos, 0.25);
+                // Repeat Shapes
+                float3 repeatPos1 = opRepetition(rayPos - float3(1,1.05,16), 0.8, 1);
+                //float3 repeatPos1 = opRepetition(rayPos - float3(1,1.05,16), 0.8); // Infinite repetition
+                float repeatBox = sdfBox(repeatPos1, 0.25);
                 
-                float cube1 = sdfBox(repeatPos, float3(0.2,0.15,0.1));
-                float cube2 = sdfBox(repeatPos - float3(0,0.1,-0.05), 0.15);
-                float sphere1 = sdfSphere(repeatPos - float3(0,0,-0.125), 0.15);
+                float3 repeatPos2 = opMove(rayPos, float3(3.25,0.125,16));
+                opRepetitionOnOneAxis(repeatPos2.y, 0.75);
+                float repeatSphere = sdfSphere(repeatPos2, 0.25);
                 
-                float mdShapes = opSmoothUnion(cube1, cube2, 0.05);
-                mdShapes = opSmoothUnion(mdShapes, sphere1, 0.05);
+                float repeats = opUnion(repeatBox, repeatSphere);
                 
+                // Round shape
+                float roundOcta = sdfOctahedron(rayPos - float3(4.5,0.5,16), 0.35);
+                roundOcta = opRound(roundOcta, 0.15);
+                
+                // Elongate
+                float3 elongPos1 = opElongate1D(rayPos - float3(6,0.8,15.5), float3(0,0,0.25));
+                float elongTorus = sdfTorus(elongPos1, 0.35, 0.05, SDF_AXIS_Z);
+                float4 elongPos2 = opElongate(rayPos - float3(6,0.8,16.5), float3(0,0.5,0));
+                float elongOcta = sdfOctahedron(elongPos2.xyz, 0.35) + elongPos2.w;
+                
+                float elongatedShapes = opUnion(elongOcta, elongTorus);
+                
+                
+                // Onion
+                float3 onionPos1 = rayPos - float3(7,0.5,15.5);
+                float sphereToOnion = sdfSphere(onionPos1, 0.25);
+                float onionSphere = max(opOnion(opOnion(opOnion(sphereToOnion, 0.06), 0.03), 0.01), onionPos1.y); // max(sdf, pos.y) to be able to see sdf interior
+                float3 onionPos2 = rayPos - float3(7,0.5,16.5);
+                float boxToOnion = sdfBox(onionPos2, 0.25);
+                float onionBox = max(opOnion(opOnion(opOnion(boxToOnion, 0.06), 0.03), 0.01), onionPos2.y); // max(sdf, pos.y) to be able to see sdf interior
+                
+                float onions = opUnion(onionSphere, onionBox); 
+                
+                
+                // Other deformations to test correctly
+                // TODO : test symmetry
+                float3 bendPos = opCheapBend(pos, _DebugParams.w);
+                float3 twistPos = opTwist(pos, _DebugParams.w);
+                float3 twistTorrus = sdfTorus(twistPos, 1,0.1, _DebugAxis);
+                
+                float dispTorrus = sdfTorus(pos, 1, 0.1, SDF_AXIS_Y);       
                 
                 
                 // FINAL SHAPES COMBINATION
@@ -263,32 +294,10 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 shapes = opUnion(shapes, otherShapes);
                 shapes = opUnion(shapes, transformShapes);
                 shapes = opUnion(shapes, combinedShapes);
-                shapes = opUnion(shapes, repeatBox);
-                
-                
-                
-                
-                // Repeat
-                float3 repeatedPos = opRepetition(rotPos, _RepeatInterval, float3(1,1,1));
-                float repeatSphere = sdfSphere(repeatedPos, 0.25);
-                
-                // 
-                float3 bendPos = opCheapBend(pos, _DebugParams.w);
-                float3 twistPos = opTwist(pos, _DebugParams.w);
-                float3 twistTorrus = sdfTorus(twistPos, 1,0.1, _DebugAxis);
-                
-                
-                float dispTorrus = sdfTorus(pos, 1, 0.1, SDF_AXIS_Y);
-                
-                // Simple Onion sphere
-                //float onionSphere = max(opOnion(opOnion(scaledSphere, _DebugParams.x), _DebugParams.y), pos.y); // max(sdf, pos.y) to be able to see sdf interior
-                
-                // Rotated onion
-                float onionSphere = sdfSphere(rayPos, 0.5);
-                float rotOnionSphere = max(opOnion(opOnion(opOnion(onionSphere, _DebugParams.x), _DebugParams.y), _DebugParams.z), rotPos.y);
-                
-                // Repeated onion
-                float repeatOnionSphere = max(opOnion(opOnion(opOnion(repeatSphere, _DebugParams.x), _DebugParams.y), _DebugParams.z), repeatedPos.y);
+                shapes = opUnion(shapes, repeats);
+                shapes = opUnion(shapes, roundOcta);
+                shapes = opUnion(shapes, elongatedShapes);
+                shapes = opUnion(shapes, onions);
                 
                 return shapes;
             }
