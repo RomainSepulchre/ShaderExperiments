@@ -450,8 +450,9 @@ GameObject:
   - component: {fileID: 1334907496}
   - component: {fileID: 1334907495}
   - component: {fileID: 1334907494}
+  - component: {fileID: 1334907498}
   m_Layer: 0
-  m_Name: OtherEffects
+  m_Name: Pattern and deformations
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -543,12 +544,25 @@ Transform:
   m_GameObject: {fileID: 1334907493}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 7, y: 0.05, z: 18.1338}
-  m_LocalScale: {x: 16, y: 0.1, z: 7.768309}
+  m_LocalPosition: {x: 7, y: 0.05, z: 16.5607}
+  m_LocalScale: {x: 16, y: 0.1, z: 4.622088}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1334907498
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1334907493}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4638ba5343b7fea4e820d1352ea2a2c1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MaterialColor
+  color: {r: 0, g: 1, b: 0, a: 0.5019608}
 --- !u!1 &1359276835
 GameObject:
   m_ObjectHideFlags: 0
@@ -667,8 +681,13 @@ MonoBehaviour:
   DemoPosition: {x: 3, y: 0.5, z: -3}
   DemoRotation: {x: 45, y: 45, z: 0}
   DemoScale: 0.25
-  DemoSmooth: 0.118
-  DebugParams: {x: 0.1, y: 0.05, z: 0.002, w: 0.25}
+  DemoSmooth: 0.104
+  DemoCutOffset: -0.05
+  DemoSymmetryOffset: 0.25
+  DemoTwist: 2
+  DemoBend: 1
+  DemoDisplacement: 2.5
+  DebugParams: {x: 0.25, y: 0, z: 0, w: 0.25}
   DebugAxis: 1
 --- !u!114 &1359276841
 MonoBehaviour:
@@ -1114,6 +1133,7 @@ GameObject:
   - component: {fileID: 2147295077}
   - component: {fileID: 2147295076}
   - component: {fileID: 2147295075}
+  - component: {fileID: 2147295079}
   m_Layer: 0
   m_Name: Transform and combination
   m_TagString: Untagged
@@ -1213,6 +1233,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2147295079
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2147295074}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4638ba5343b7fea4e820d1352ea2a2c1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MaterialColor
+  color: {r: 1, g: 0, b: 0, a: 0.5019608}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

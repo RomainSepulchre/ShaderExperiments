@@ -4,6 +4,7 @@
 // TODO: find a way to implement -x, -y and -z axis
 // -> bool in functions argument ?
 // -> #define SDF_AXIS_MINUS_X, SDF_AXIS_MINUS_Y, SDF_AXIS_MINUS_Z ? -> add lots of code in every functions
+// -> use rotation for this ?
 
 // TODO: Make a HLSL version of this
 
@@ -18,9 +19,9 @@ static const float PI = 3.14159265359f;
 #define SDF_AXIS_X 0 // Use X axis to draw the shape
 #define SDF_AXIS_Y 1 // Use Y axis to draw the shape
 #define SDF_AXIS_Z 2 // Use Z axis to draw the shape
-#define SDF_AXIS_MINUS_X 3 // Use -X axis to draw the shape
-#define SDF_AXIS_MINUS_Y 4 // Use -Y axis to draw the shape
-#define SDF_AXIS_MINUS_Z 5 // Use -Z axis to draw the shape
+//#define SDF_AXIS_MINUS_X 3 // Use -X axis to draw the shape
+//#define SDF_AXIS_MINUS_Y 4 // Use -Y axis to draw the shape
+//#define SDF_AXIS_MINUS_Z 5 // Use -Z axis to draw the shape
 
 
 
@@ -76,7 +77,7 @@ inline float sdfCutSphere(float3 pos, float radius, float cut, int axis = SDF_AX
 /// @param thickness Thickness of the edge of the hollow sphere
 /// @param axis Axis to use to draw shape: use SDF_AXIS_X (0), SDF_AXIS_Y (1) or SDF_AXIS_Z (2)
 /// @return Cut hollow sphere SDF value
-float sdfCutHollowSphere(float3 pos, float radius, float cut, float thickness, int axis = SDF_AXIS_Y)
+inline float sdfCutHollowSphere(float3 pos, float radius, float cut, float thickness, int axis = SDF_AXIS_Y)
 {
     float cutHeight = lerp(radius, -radius, cut);
     float w = sqrt(radius * radius - cutHeight * cutHeight);
@@ -181,7 +182,7 @@ inline float sdfBoxFrame(float3 pos, float3 boxSize, float frameThickness)
 /// @param normal Normal of the plane (must be a normalized vector)
 /// @param height Optional parameter to modify the height of the plane
 /// @return Plane SDF value
-float sdfPlane(float3 pos, float3 normal, float height = 0)
+inline float sdfPlane(float3 pos, float3 normal, float height = 0)
 {
     // normal must be normalized
     return dot(pos, normal) - height;
@@ -283,7 +284,7 @@ inline float sdfLink(float3 pos, float width, float radius, float thickness, int
 /// @param end Offset from shape position to define cylinder end point
 /// @param radius Radius of the cylinder
 /// @return Cylinder SDF value
-float sdfCylinder( float3 pos, float3 start, float3 end, float radius)
+inline float sdfCylinder( float3 pos, float3 start, float3 end, float radius)
 {
     float3 ba = end - start;
     float3 pa = pos - start;
@@ -595,7 +596,7 @@ inline float sdfCapsuleAxis(float3 pos, float size, float radius, int axis = SDF
 /// @param bPoint Offset from shape position to define B point of the triangle
 /// @param cPoint Offset from shape position to define C point of the triangle
 /// @return Triangle SDF value
-float sdfTriangle(float3 pos, float3 aPoint, float3 bPoint, float3 cPoint)
+inline float sdfTriangle(float3 pos, float3 aPoint, float3 bPoint, float3 cPoint)
 {
     float3 ba = bPoint - aPoint; float3 pa = pos - aPoint;
     float3 cb = cPoint - bPoint; float3 pb = pos - bPoint;
@@ -620,7 +621,7 @@ float sdfTriangle(float3 pos, float3 aPoint, float3 bPoint, float3 cPoint)
 /// @param cPoint Offset from shape position to define C point of the quad
 /// @param dPoint Offset from shape position to define D point of the quad
 /// @return Quad SDF value
-float sdfQuad(float3 pos, float3 aPoint, float3 bPoint, float3 cPoint, float3 dPoint)
+inline float sdfQuad(float3 pos, float3 aPoint, float3 bPoint, float3 cPoint, float3 dPoint)
 {
     float3 ba = bPoint - aPoint; float3 pa = pos - aPoint;
     float3 cb = cPoint - bPoint; float3 pb = pos - bPoint;
@@ -879,7 +880,7 @@ inline float opSubtraction( float shapeToSubtract, float otherShape)
 /// @param otherShape Second shape SDF value
 /// @param t Smooth interpolation value (0.0 to 1.0)
 /// @return SDF value of the shapes smoothed subtraction
-float opSmoothSubtraction(float shapeToSubtract, float otherShape, float t)
+inline float opSmoothSubtraction(float shapeToSubtract, float otherShape, float t)
 {
     return -opSmoothUnion(shapeToSubtract, -otherShape, t);
 }
@@ -899,7 +900,7 @@ inline float opIntersection(float shapeA, float shapeB)
 /// @param shapeB Second shape SDF value
 /// @param t Smooth interpolation value (0.0 to 1.0)
 /// @return SDF value of the shapes smoothed intersection
-float opSmoothIntersection(float shapeA, float shapeB, float t)
+inline float opSmoothIntersection(float shapeA, float shapeB, float t)
 {
     return -opSmoothUnion(-shapeA, -shapeB, t);
 }
@@ -1020,7 +1021,7 @@ inline float opRepetitionOnOneAxis(inout float pos, float repeatInterval)
 /// Symmetry
 /// @param pos Position of the shape
 /// @param axis Symmetry axis
-/// @return Position of the symmetrized shape
+/// @return Position of the symmetrized shape: you must offset the shape from this position to see the symmetry
 inline float3 opSymmetry(in float3 pos, int axis = SDF_AXIS_X)
 {
     if (axis == SDF_AXIS_Y) pos.y = abs(pos.y);
@@ -1035,22 +1036,36 @@ inline float3 opSymmetry(in float3 pos, int axis = SDF_AXIS_X)
 /// @param axisA Symmetry plane first axis
 /// @param axisB Symmetry plane second axis
 /// @return Position of the symmetrized shape
-inline float3 opSymmetryPlane(in float3 pos, int axisA = SDF_AXIS_X, int axisB = SDF_AXIS_Z)
+inline float3 opSymmetry2Axis(in float3 pos, int axisA = SDF_AXIS_X, int axisB = SDF_AXIS_Z)
 {
-    if ((axisA == SDF_AXIS_Y && axisB == SDF_AXIS_Z) || (axisA == SDF_AXIS_Z && axisB == SDF_AXIS_Y))
-    {
-        pos.yz = abs(pos.yz);
-    }
-    else if ((axisA == SDF_AXIS_X && axisB == SDF_AXIS_Y) || (axisA == SDF_AXIS_Y && axisB == SDF_AXIS_X))
-    {
-        pos.xy = abs(pos.xy);
-    }
-    else // default is XZ axis
-    {
-        pos.xz = abs(pos.xz);
-    }
+    if (axisA == SDF_AXIS_X || axisB == SDF_AXIS_X) pos.x = abs(pos.x);
+    
+    if (axisA == SDF_AXIS_Y || axisB == SDF_AXIS_Y) pos.y = abs(pos.y);
+    
+    if (axisA == SDF_AXIS_Z || axisB == SDF_AXIS_Z) pos.z = abs(pos.z);
     
     return pos;
+}
+
+/// Cut
+/// @param sdf SDF value of the shape to cut
+/// @param cutPos Position of the axis we want to use for the cut (pos.x, pos.y, pos.z). Negate the value to inverse the cut direction.
+/// @param cutOffset Offset to move the cut along the object (min=-radius and max=radius)
+/// @return SDF value of the cut object
+inline float opCut(float sdf, float cutPos, float cutOffset = 0)
+{
+    return max(sdf, cutPos - cutOffset);
+}
+
+/// Plane Cut
+/// @param sdf SDF value of the shape to cut
+/// @param planePos Position of the plane that will represent the cut
+/// @param planeNormal Normal of the plane that will represent the cut
+/// @return SDF value of the cut object
+inline float opCutPlane(float sdf, float3 planePos, float3 planeNormal)
+{
+    float planeCut = sdfPlane(planePos, planeNormal);
+    return opCut(sdf, planeCut);
 }
 
 /// Round
@@ -1090,8 +1105,11 @@ inline float opOnion(in float sdf, in float thickness)
     return abs(sdf) - thickness;
 }
 
-
-float3 opTwist(in float3 pos, float twistForce = 10.0)
+/// Twist
+/// @param pos Position of the shape
+/// @param twistForce Intensity of the twist deformation
+/// @return Position of the twisted shape
+inline float3 opTwist(in float3 pos, float twistForce = 10.0)
 {
     float c = cos(twistForce * pos.y);
     float s = sin(twistForce * pos.y);
@@ -1100,7 +1118,11 @@ float3 opTwist(in float3 pos, float twistForce = 10.0)
     return twistedPos;
 }
 
-float3 opCheapBend(in float3 pos, float bendForce = 10.0)
+/// Bend
+/// @param pos Position of the shape
+/// @param bendForce Intensity of the bend deformation
+/// @return Position of the bent shape
+inline float3 opBend(in float3 pos, float bendForce = 10.0)
 {
     float c = cos(bendForce * pos.x);
     float s = sin(bendForce * pos.x);
@@ -1109,11 +1131,17 @@ float3 opCheapBend(in float3 pos, float bendForce = 10.0)
     return bendPos;
 }
 
-float opDisp(float3 pos, float sdf, float3 dispForce = 20)
+// How to displace ?
+// displacedShape = sdf + displacement function
+
+/// Bubble displacement
+/// @param pos Position of the shape
+/// @param sdf Sdf value of the shape to displace
+/// @param dispForce Intensity of the displacement
+/// @return SDF value of the displaced shape
+inline float opBubbleDisplacement(float3 pos, float sdf, float3 dispForce = 20)
 {
     return sdf + sin(dispForce.x * pos.x) * sin(dispForce.y * pos.y) * sin(dispForce.z * pos.z);
 }
-
-// TODO : Add a cut function
 
 

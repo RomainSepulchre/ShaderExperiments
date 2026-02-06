@@ -65,8 +65,6 @@ public class FreeCamera : MonoBehaviour {
 		// Mouse delta divided by 10 to lower default look speed
 		var rotStrafe = Mouse.current.delta.ReadValue().x / 10; 
 		var rotFwd = Mouse.current.delta.ReadValue().y / 10;
-		
-		Debug.Log($"yaw: {lookSpeed * rotStrafe}, pitch: {lookSpeed * rotFwd}");
 
 		m_yaw = (m_yaw + lookSpeed * rotStrafe) % 360f;
 		m_pitch = (m_pitch - lookSpeed * rotFwd) % 360f;

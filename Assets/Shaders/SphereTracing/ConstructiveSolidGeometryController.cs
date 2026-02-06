@@ -50,6 +50,11 @@ public class ConstructiveSolidGeometryController : SceneViewFilter
     public Vector3 DemoRotation;
     public float DemoScale;
     [Range(0f,1f)]public float DemoSmooth = 0.5f;
+    [Range(-0.25f,0.25f)]public float DemoCutOffset;
+    public float DemoSymmetryOffset = 0.25f;
+    public float DemoTwist = 2f;
+    public float DemoBend = 2f;
+    public float DemoDisplacement = 1f;
     [Header("Debug")]
     public Vector4 DebugParams;
     public enum SDFAxis
@@ -92,7 +97,12 @@ public class ConstructiveSolidGeometryController : SceneViewFilter
         RaymarchMaterial.SetVector("_DemoRot", DemoRotation);
         RaymarchMaterial.SetFloat("_DemoScale", DemoScale);
         RaymarchMaterial.SetFloat("_DemoSmooth", DemoSmooth);
-        
+        RaymarchMaterial.SetFloat("_DemoCutOffset", DemoCutOffset);
+        RaymarchMaterial.SetFloat("_DemoSymOffset", DemoSymmetryOffset);
+        RaymarchMaterial.SetFloat("_DemoTwist", DemoTwist);
+        RaymarchMaterial.SetFloat("_DemoBend", DemoBend);
+        RaymarchMaterial.SetFloat("_DemoDisplacement", DemoDisplacement);
+            
         RaymarchMaterial.SetVector("_DebugParams", DebugParams);
         RaymarchMaterial.SetInt("_DebugAxis", (int)DebugAxis);
         
