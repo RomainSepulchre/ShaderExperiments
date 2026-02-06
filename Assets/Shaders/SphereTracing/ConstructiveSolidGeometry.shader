@@ -11,13 +11,20 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
 
         Pass
         {
-            CGPROGRAM
+            HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
             #pragma target 3.0 // Specify compile target, see https://docs.unity3d.com/2020.1/Documentation/Manual/SL-ShaderCompileTargets.html
-
+            
+            // CG
             #include "UnityCG.cginc"
-            #include "Assets/Shaders/SphereTracing/SDF_Functions.cginc" // Cginc file that include all the SDF functions
+            // HLSL URP
+            //#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            //#include "HLSLSupport.cginc"
+            //#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+            
+            // SDF Functions
+            #include "Assets/Shaders/SphereTracing/SDF_Functions.hlsl" // Cginc file that include all the SDF functions
             
             sampler2D _MainTex;
             uniform sampler2D _CameraDepthTexture;
@@ -66,7 +73,11 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 half index = v.vertex.z;
                 v.vertex.z = 0;
                 
+                // CG
                 o.vertex = UnityObjectToClipPos(v.vertex);
+                // HLSL URP
+                //o.vertex = TransformObjectToHClip(v.vertex);
+                
                 o.uv = v.uv;
                 
                 // Get Ray and convert to world space
@@ -383,7 +394,14 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                     {
                         // Shade object
                         float3 normal =  getNormal(rayPos);
+                        
+                        // CG
                         float3 lightDir = _WorldSpaceLightPos0.xyz;
+                        
+                        // HLSL URP
+                        //Light mainLight = GetMainLight();
+                        //float3 lightDir = mainLight.direction;
+                        
                         float light = dot(lightDir, normal); // dot product to know if the normal point toward the light or no
                         result = fixed4(_ShapesColor.rgb * light, 1) ;
                         break;
@@ -394,8 +412,13 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
             }
 
             fixed4 frag (v2f i) : SV_Target
-            {                
-                float depth = LinearEyeDepth(tex2D(_CameraDepthTexture, i.uv).r); // Depth texture is all black
+            {   
+                 // CG
+                float depth = LinearEyeDepth(tex2D(_CameraDepthTexture, i.uv).r);
+                
+                // HLSL URP: we need to the built-in varaible _ZBufferParams to the function
+                //float depth = LinearEyeDepth(tex2D(_CameraDepthTexture, i.uv).r, _ZBufferParams); // In HLSL we need to the built-in varaible _ZBufferParams to the function
+                
                 depth *= length(i.ray);
                 
                 fixed3 texColor = tex2D(_MainTex, i.uv);
@@ -406,7 +429,7 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 
                 return fixed4(texColor * (1.0 - result.w) + result.rgb * result.w  ,1.0); // Draw scene + rayMarched shapes
             }
-            ENDCG
+            ENDHLSL
         }
     }
 }
