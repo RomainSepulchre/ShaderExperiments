@@ -45,9 +45,12 @@ public class ConstructiveSolidGeometryController : SceneViewFilter
     public Vector3 BoxPosition;
     public Vector3 BoxSize;
     [Space(10)]
+    [Header("Demo")]
+    public Vector3 DemoPosition;
+    public Vector3 DemoRotation;
+    public float DemoScale;
+    [Range(0f,1f)]public float DemoSmooth = 0.5f;
     [Header("Debug")]
-    public Vector3 DebugPos;
-    public Vector3 DebugRot;
     public Vector4 DebugParams;
     public enum SDFAxis
     {
@@ -84,10 +87,14 @@ public class ConstructiveSolidGeometryController : SceneViewFilter
         RaymarchMaterial.SetVector("_Sphere2", Sphere2);
         RaymarchMaterial.SetVector("_BoxPosition", BoxPosition);
         RaymarchMaterial.SetVector("_BoxSize", BoxSize);
-        RaymarchMaterial.SetVector("_DebugPos", DebugPos);
+        
+        RaymarchMaterial.SetVector("_DemoPos", DemoPosition);
+        RaymarchMaterial.SetVector("_DemoRot", DemoRotation);
+        RaymarchMaterial.SetFloat("_DemoScale", DemoScale);
+        RaymarchMaterial.SetFloat("_DemoSmooth", DemoSmooth);
+        
         RaymarchMaterial.SetVector("_DebugParams", DebugParams);
         RaymarchMaterial.SetInt("_DebugAxis", (int)DebugAxis);
-        RaymarchMaterial.SetVector("_DebugRot", DebugRot);
         
         
         RenderTexture.active = destination;

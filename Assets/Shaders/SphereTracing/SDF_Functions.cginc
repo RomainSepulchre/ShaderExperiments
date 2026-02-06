@@ -867,21 +867,21 @@ inline float opSmoothUnionX4(float shapeA, float shapeB, float t)
 /// Substraction
 /// - Note: subtracted item depends on the order, produce only exterior sdf
 /// @param shapeToSubtract Shape that will subtract from the other shape
-/// @param subtractedShape Shape that will be subtracted
+/// @param otherShape Shape that will be subtracted
 /// @return SDF value of the shapes subtraction
-inline float opSubtraction( float shapeToSubtract, float subtractedShape)
+inline float opSubtraction( float shapeToSubtract, float otherShape)
 {
-    return max(-shapeToSubtract, subtractedShape);
+    return max(-shapeToSubtract, otherShape);
 }
 
 /// Smooth Substraction
-/// @param shapeA First shape SDF value
-/// @param shapeB Second shape SDF value
+/// @param shapeToSubtract First shape SDF value
+/// @param otherShape Second shape SDF value
 /// @param t Smooth interpolation value (0.0 to 1.0)
 /// @return SDF value of the shapes smoothed subtraction
-float opSmoothSubtraction(float shapeA, float shapeB, float t)
+float opSmoothSubtraction(float shapeToSubtract, float otherShape, float t)
 {
-    return -opSmoothUnion(shapeA, -shapeB, t);
+    return -opSmoothUnion(shapeToSubtract, -otherShape, t);
 }
 
 /// Intersection
@@ -904,7 +904,7 @@ float opSmoothIntersection(float shapeA, float shapeB, float t)
     return -opSmoothUnion(-shapeA, -shapeB, t);
 }
 
-/// XOR (Exclusive OR)
+/// XOR (Exclusive OR: render only the areas where they not overlap)
 /// - Note: produce true sdf (exterior and interior)
 /// @param shapeA First shape SDF value
 /// @param shapeB Second shape SDF value
@@ -1114,5 +1114,6 @@ float opDisp(float3 pos, float sdf, float3 dispForce = 20)
     return sdf + sin(dispForce.x * pos.x) * sin(dispForce.y * pos.y) * sin(dispForce.z * pos.z);
 }
 
+// TODO : Add a cut function
 
 

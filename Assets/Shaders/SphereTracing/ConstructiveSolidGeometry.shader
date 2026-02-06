@@ -33,10 +33,12 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
             uniform float4 _Sphere2;
             uniform float3 _BoxPosition;
             uniform float3 _BoxSize;
-            uniform float3 _DebugPos;
+            uniform float3 _DemoPos;
+            uniform float3 _DemoRot;
+            uniform float _DemoScale;
+            uniform float _DemoSmooth;
             uniform float4 _DebugParams;
             uniform int _DebugAxis;
-            uniform float3 _DebugRot;
 
             struct appdata
             {
@@ -94,7 +96,7 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 // float mergedShapes = opSmoothSubtraction(sphere1, box, _ShapesInterpolation);
                 
                 // Test the shapes
-                float3 pos = opMove(rayPos, _DebugPos);
+                float3 pos = opMove(rayPos, _DemoPos);
                 
                 // Spheres
                 float sphere = sdfSphere(rayPos - float3(0,0.5,0), 0.5);
@@ -181,6 +183,75 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 float otherShapes = opUnion(solidAngle, vesica);
                 otherShapes = opUnion(otherShapes, ellipsoid);
                 
+                // Transform
+                float3 movePos = opMove(rayPos, _DemoPos);
+                float moveCube = sdfBox(movePos, 0.3);
+                
+                float3 rotPos = opRotateInDegree(rayPos - float3(3,0.5,-2), _DemoRot);
+                float rotCube = sdfBox(rotPos, 0.3);
+                
+                float4 scaledPos = opScale(rayPos - float3(4,0.5,-2.5), _DemoScale);
+                float scaledBox = sdfBox(scaledPos.xyz, 0.5) * scaledPos.w;
+
+                float transformShapes = opUnion(moveCube,rotCube);
+                transformShapes = opUnion(transformShapes, scaledBox);
+                
+                // Combine shapes
+                float cubeU = sdfBox(rayPos - float3(5,0.5,-3), 0.3);
+                float sphereU = sdfSphere(rayPos - float3(5,0.9,-3), 0.25);
+                float Union = opUnion(cubeU, sphereU);
+                
+                float cubeSU = sdfBox(rayPos - float3(5,0.5,-2), 0.3);
+                float sphereSU = sdfSphere(rayPos - float3(5,0.9,-2), 0.25);
+                float smoothUnion = opSmoothUnion(cubeSU, sphereSU, _DemoSmooth);
+                
+                float cubeSub = sdfBox(rayPos - float3(6,0.5,-3), 0.3);
+                float sphereSub = sdfSphere(rayPos - float3(6,0.9,-3), 0.25);
+                float subtract = opSubtraction(sphereSub,cubeSub);
+                
+                float cubeSSub = sdfBox(rayPos - float3(6,0.5,-2), 0.3);
+                float sphereSSub = sdfSphere(rayPos - float3(6,0.9,-2), 0.25);
+                float smoothSub = opSmoothSubtraction(sphereSSub, cubeSSub, _DemoSmooth);
+                
+                float cubeInt = sdfBox(rayPos - float3(7,0.5,-3), 0.3);
+                float sphereInt = sdfSphere(rayPos - float3(7,0.9,-3), 0.25);
+                float intersect = opIntersection(cubeInt,sphereInt);
+                
+                float cubeSInt = sdfBox(rayPos - float3(7,0.5,-2), 0.3);
+                float sphereSInt = sdfSphere(rayPos - float3(7,0.9,-2), 0.25);
+                float smoothInt = opSmoothIntersection(cubeSInt, sphereSInt, _DemoSmooth);
+                
+                float cutPlaneXOR = sdfPlane(rayPos - float3(8,0.5,-3), normalize(float3(0,0,1)));
+                float cubeXOR = sdfBox(rayPos - float3(8,0.5,-3), 0.3);
+                float sphereXOR = sdfSphere(rayPos - float3(8,0.9,-3), 0.25);
+                float xOR = max(opXor(cubeXOR, sphereXOR), -cutPlaneXOR);
+                
+                float cutPlaneNoXOR = sdfPlane(rayPos - float3(8,0.5,-2), normalize(float3(0,0,1)));
+                float cubeNoXOR = sdfBox(rayPos - float3(8,0.5,-2), 0.3);
+                float sphereNoXOR = sdfSphere(rayPos - float3(8,0.9,-2), 0.25);
+                float noXOR = max(opUnion(cubeNoXOR, sphereNoXOR), -cutPlaneNoXOR);
+                
+                float combinedShapes = opUnion(Union, smoothUnion);
+                combinedShapes = opUnion(combinedShapes, subtract);
+                combinedShapes = opUnion(combinedShapes, smoothSub);
+                combinedShapes = opUnion(combinedShapes, intersect);
+                combinedShapes = opUnion(combinedShapes, smoothInt);
+                combinedShapes = opUnion(combinedShapes, xOR);
+                combinedShapes = opUnion(combinedShapes, noXOR);
+                
+                // Shapes modification
+                float3 repeatPos = opRepetition(rayPos - float3(1,1.05,16), 0.8, 1);
+                float repeatBox = sdfBox(repeatPos, 0.25);
+                
+                float cube1 = sdfBox(repeatPos, float3(0.2,0.15,0.1));
+                float cube2 = sdfBox(repeatPos - float3(0,0.1,-0.05), 0.15);
+                float sphere1 = sdfSphere(repeatPos - float3(0,0,-0.125), 0.15);
+                
+                float mdShapes = opSmoothUnion(cube1, cube2, 0.05);
+                mdShapes = opSmoothUnion(mdShapes, sphere1, 0.05);
+                
+                
+                
                 // FINAL SHAPES COMBINATION
                 float shapes = opUnion(spheres, boxes);
                 //shapes = opUnion(shapes, plane);
@@ -190,16 +261,12 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 shapes = opUnion(shapes, capsules);
                 shapes = opUnion(shapes, polygons);
                 shapes = opUnion(shapes, otherShapes);
+                shapes = opUnion(shapes, transformShapes);
+                shapes = opUnion(shapes, combinedShapes);
+                shapes = opUnion(shapes, repeatBox);
                 
-
-                // Scale
-                float4 scaledPos = opScale(pos, _DebugParams.w);
-                float scaledSphere = sdfSphere(scaledPos.xyz, 0.5) * scaledPos.w;
                 
-                // Rotation
-                float3 rotPos = opRotateInDegree(pos, _DebugRot);
-                float rotBox = sdfBox(rotPos, float3(1,1,1));
-                float rotSphere = sdfSphere(rotPos, 0.5);
+                
                 
                 // Repeat
                 float3 repeatedPos = opRepetition(rotPos, _RepeatInterval, float3(1,1,1));
@@ -217,7 +284,8 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 //float onionSphere = max(opOnion(opOnion(scaledSphere, _DebugParams.x), _DebugParams.y), pos.y); // max(sdf, pos.y) to be able to see sdf interior
                 
                 // Rotated onion
-                float rotOnionSphere = max(opOnion(opOnion(opOnion(rotSphere, _DebugParams.x), _DebugParams.y), _DebugParams.z), rotPos.y);
+                float onionSphere = sdfSphere(rayPos, 0.5);
+                float rotOnionSphere = max(opOnion(opOnion(opOnion(onionSphere, _DebugParams.x), _DebugParams.y), _DebugParams.z), rotPos.y);
                 
                 // Repeated onion
                 float repeatOnionSphere = max(opOnion(opOnion(opOnion(repeatSphere, _DebugParams.x), _DebugParams.y), _DebugParams.z), repeatedPos.y);
