@@ -5,8 +5,9 @@ using UnityEngine;
 [ExecuteInEditMode]
 public class ConstructiveSolidGeometryController : SceneViewFilter
 {
+    [Header("Required")]
     public Shader shader;
-    
+    public Light mainLight;
 
     public Material RaymarchMaterial
     {
@@ -35,15 +36,24 @@ public class ConstructiveSolidGeometryController : SceneViewFilter
     }
     private Camera _camera;
     
+    [Header("Rendering")]
     public float maxDistance;
-
     public Color ShapesColor = Color.white;
+    public int maxIteration = 128;
+
+    [Header("Shadows")]
+    [Range(0f,10f)] public float ShadowIntensity;
+    public Vector2 ShadowDistance;
+    [Range(1f,128f)] public float ShadowPenumbra;
+    
+    [Header("Repeat pattern")]
     [Range(0f,1f)]public float ShapesInterpolation = 0.5f;
     public Vector3 RepeatInterval = new Vector3(1f, 1f, 1f);
     public Vector4 Sphere1;
     public Vector4 Sphere2;
     public Vector3 BoxPosition;
     public Vector3 BoxSize;
+    
     [Space(10)]
     [Header("Demo")]
     public Vector3 DemoPosition;
@@ -55,6 +65,7 @@ public class ConstructiveSolidGeometryController : SceneViewFilter
     public float DemoTwist = 2f;
     public float DemoBend = 2f;
     public float DemoDisplacement = 1f;
+    
     [Header("Debug")]
     public Vector4 DebugParams;
     public enum SDFAxis
@@ -85,7 +96,14 @@ public class ConstructiveSolidGeometryController : SceneViewFilter
         RaymarchMaterial.SetMatrix("_CamFrustumMatrix", GetCameraFrustum(Camera));
         RaymarchMaterial.SetMatrix("_CamToWorldMatrix", Camera.cameraToWorldMatrix);
         RaymarchMaterial.SetFloat("_MaxDistance", maxDistance);
+        RaymarchMaterial.SetInt("_MaxIteration", maxIteration);
         RaymarchMaterial.SetColor("_ShapesColor", ShapesColor);
+        RaymarchMaterial.SetColor("_LightColor", mainLight.color);
+        RaymarchMaterial.SetFloat("_LightIntensity", mainLight.intensity);
+        RaymarchMaterial.SetFloat("_ShadowIntensity", ShadowIntensity);
+        RaymarchMaterial.SetVector("_ShadowDistance", ShadowDistance);
+        RaymarchMaterial.SetFloat("_ShadowPenumbra", ShadowPenumbra);
+        
         RaymarchMaterial.SetFloat("_ShapesInterpolation", ShapesInterpolation);
         RaymarchMaterial.SetVector("_RepeatInterval", RepeatInterval);
         RaymarchMaterial.SetVector("_Sphere1", Sphere1);

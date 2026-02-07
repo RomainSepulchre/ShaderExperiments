@@ -33,13 +33,21 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
             uniform float4x4 _CamFrustumMatrix;
             uniform float4x4 _CamToWorldMatrix;
             uniform float _MaxDistance;
+            uniform float _MaxIteration;
             uniform fixed4 _ShapesColor;
+            uniform float3 _LightColor;
+            uniform float _LightIntensity;
+            uniform float2 _ShadowDistance;
+            uniform float _ShadowIntensity;
+            uniform float _ShadowPenumbra;
+            
             uniform float _ShapesInterpolation;
             uniform float3 _RepeatInterval;
             uniform float4 _Sphere1;
             uniform float4 _Sphere2;
             uniform float3 _BoxPosition;
             uniform float3 _BoxSize;
+            
             uniform float3 _DemoPos;
             uniform float3 _DemoRot;
             uniform float _DemoScale;
@@ -49,6 +57,7 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
             uniform float _DemoTwist;
             uniform float _DemoBend;
             uniform float _DemoDisplacement;
+            
             uniform float4 _DebugParams;
             uniform int _DebugAxis;
 
@@ -341,7 +350,7 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 
                 // FINAL SHAPES COMBINATION
                 float shapes = opUnion(spheres, boxes);
-                //shapes = opUnion(shapes, plane);
+                shapes = opUnion(shapes, plane);
                 shapes = opUnion(shapes, tori);
                 shapes = opUnion(shapes, cylinders);
                 shapes = opUnion(shapes, cones);
@@ -374,10 +383,63 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 return normalize(normal);
             }
             
+            float hardShadows(float3 rayOrigin, float3 rayDirection, float minDist, float maxDist)
+            {
+                for (float d = minDist; d < maxDist;)
+                {
+                    float h = distanceField(rayOrigin + rayDirection * d);
+                    if (h < 0.001)
+                    {
+                        return 0.0; // Shadow
+                    }
+                    d += h;
+                }
+                return 1.0; // No Shadow
+            }
+            
+            float softShadow(float3 rayOrigin, float3 rayDirection, float minDist, float maxDist, float penumbra)
+            {
+                float result = 1.0;
+                for (float d = minDist; d < maxDist;)
+                {
+                    float h = distanceField(rayOrigin + rayDirection * d);
+                    if (h < 0.001)
+                    {
+                        return 0.0; // Shadow
+                    }
+                    result = min(result, penumbra * h / d);
+                    d += h;
+                }
+                return result; // No Shadow
+            }
+            
+            float3 shading(float3 pos, float3 normal)
+            {
+                // CG
+                float3 lightDir = _WorldSpaceLightPos0.xyz;
+                
+                // HLSL URP
+                //Light mainLight = GetMainLight();
+                //float3 lightDir = mainLight.direction;
+                
+                // Directional light
+                // -> dot product to know if the normal point toward the light or no
+                // -> * 0.5 + 0.5 to prevent multiplication by 0
+                float result = (_LightColor * dot(lightDir, normal) * 0.5 + 0.5) * _LightIntensity;
+                
+                // Shadows
+                //float shadow = hardShadows(pos, lightDir, _ShadowDistance.x, _ShadowDistance.y) * 0.5 + 0.5;
+                float shadow = softShadow(pos, lightDir, _ShadowDistance.x, _ShadowDistance.y, _ShadowPenumbra) * 0.5 + 0.5;
+                shadow = max(0.0, pow(shadow, _ShadowIntensity));
+                result *= shadow;
+                
+                return result;
+            }
+            
             fixed4 raymarching(float3 rayOrigin, float3 rayDirection, float depth)
             {
                 fixed4 result = fixed4(1,1,1,1);
-                const int maxIteration = 64;
+                const int maxIteration = _MaxIteration;
                 float dist = 0; // distance travelled along the ray direction
 
                 for (int i = 0; i < maxIteration; i++)
@@ -395,15 +457,8 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                         // Shade object
                         float3 normal =  getNormal(rayPos);
                         
-                        // CG
-                        float3 lightDir = _WorldSpaceLightPos0.xyz;
-                        
-                        // HLSL URP
-                        //Light mainLight = GetMainLight();
-                        //float3 lightDir = mainLight.direction;
-                        
-                        float light = dot(lightDir, normal); // dot product to know if the normal point toward the light or no
-                        result = fixed4(_ShapesColor.rgb * light, 1) ;
+                        float3 shade = shading(rayPos, normal);
+                        result = fixed4(_ShapesColor.rgb * shade, 1) ;
                         break;
                     }
                     dist += sdf;

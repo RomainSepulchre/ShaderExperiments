@@ -670,8 +670,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ConstructiveSolidGeometryController
   shader: {fileID: 4800000, guid: 8562c427da3697749ba9bdef50c518b3, type: 3}
-  maxDistance: 45
+  mainLight: {fileID: 606275433}
+  maxDistance: 100
   ShapesColor: {r: 0.754717, g: 0.754717, b: 0.754717, a: 1}
+  maxIteration: 164
+  ShadowIntensity: 1
+  ShadowDistance: {x: 0.1, y: 100}
+  ShadowPenumbra: 15.9
   ShapesInterpolation: 0.118
   RepeatInterval: {x: 1, y: 1, z: 1}
   Sphere1: {x: 0.59, y: 0, z: 0, w: 0.65}
@@ -1026,7 +1031,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!64 &2006181152
 MeshCollider:
   m_ObjectHideFlags: 0
