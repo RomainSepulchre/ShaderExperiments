@@ -3,6 +3,7 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
     Properties
     {
         _MainTex ("Texture", 2D) = "white" {}
+        [KeywordEnum(HardShadow, SoftShadow)] _ShadowMode ("Shadow Mode", Float) = 0
     }
     SubShader
     {
@@ -15,6 +16,8 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
             #pragma vertex vert
             #pragma fragment frag
             #pragma target 3.0 // Specify compile target, see https://docs.unity3d.com/2020.1/Documentation/Manual/SL-ShaderCompileTargets.html
+            
+            #pragma multi_compile_local _SHADOWMODE_HARDSHADOW _SHADOWMODE_SOFTSHADOW
             
             // CG
             #include "UnityCG.cginc"
@@ -41,12 +44,12 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
             uniform float _ShadowIntensity;
             uniform float _ShadowPenumbra;
             
-            uniform float _ShapesInterpolation;
-            uniform float3 _RepeatInterval;
-            uniform float4 _Sphere1;
-            uniform float4 _Sphere2;
-            uniform float3 _BoxPosition;
-            uniform float3 _BoxSize;
+            // uniform float _ShapesInterpolation;
+            // uniform float3 _RepeatInterval;
+            // uniform float4 _Sphere1;
+            // uniform float4 _Sphere2;
+            // uniform float3 _BoxPosition;
+            // uniform float3 _BoxSize;
             
             uniform float3 _DemoPos;
             uniform float3 _DemoRot;
@@ -119,9 +122,6 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 // float smoothedShapes = opSmoothUnion(sphere1, sphere2, _ShapesInterpolation);
                 // float smoothedIntersection = opSmoothIntersection(sphere1, box, _ShapesInterpolation);
                 // float mergedShapes = opSmoothSubtraction(sphere1, box, _ShapesInterpolation);
-                
-                // Test the shapes
-                float3 pos = opMove(rayPos, _DemoPos);
                 
                 // Spheres
                 float sphere = sdfSphere(rayPos - float3(0,0.5,0), 0.5);
@@ -428,8 +428,12 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 float result = (_LightColor * dot(lightDir, normal) * 0.5 + 0.5) * _LightIntensity;
                 
                 // Shadows
-                //float shadow = hardShadows(pos, lightDir, _ShadowDistance.x, _ShadowDistance.y) * 0.5 + 0.5;
-                float shadow = softShadow(pos, lightDir, _ShadowDistance.x, _ShadowDistance.y, _ShadowPenumbra) * 0.5 + 0.5;
+                #if _SHADOWMODE_HARDSHADOW
+                    float shadow = hardShadows(pos, lightDir, _ShadowDistance.x, _ShadowDistance.y) * 0.5 + 0.5;
+                #elif _SHADOWMODE_SOFTSHADOW
+                    float shadow = softShadow(pos, lightDir, _ShadowDistance.x, _ShadowDistance.y, _ShadowPenumbra) * 0.5 + 0.5;
+                #endif
+                
                 shadow = max(0.0, pow(shadow, _ShadowIntensity));
                 result *= shadow;
                 

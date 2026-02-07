@@ -674,15 +674,10 @@ MonoBehaviour:
   maxDistance: 100
   ShapesColor: {r: 0.754717, g: 0.754717, b: 0.754717, a: 1}
   maxIteration: 164
+  ShadowMode: 1
   ShadowIntensity: 1
   ShadowDistance: {x: 0.1, y: 100}
   ShadowPenumbra: 15.9
-  ShapesInterpolation: 0.118
-  RepeatInterval: {x: 1, y: 1, z: 1}
-  Sphere1: {x: 0.59, y: 0, z: 0, w: 0.65}
-  Sphere2: {x: 0, y: 1.19, z: 0, w: 0.25}
-  BoxPosition: {x: 0, y: 0, z: 0}
-  BoxSize: {x: 0.5, y: 0.5, z: 0.5}
   DemoPosition: {x: 3, y: 0.5, z: -3}
   DemoRotation: {x: 45, y: 45, z: 0}
   DemoScale: 0.25

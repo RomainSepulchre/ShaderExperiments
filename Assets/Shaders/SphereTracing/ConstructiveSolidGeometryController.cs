@@ -1,5 +1,7 @@
 using System;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Serialization;
 
 [RequireComponent(typeof(Camera))]
 [ExecuteInEditMode]
@@ -41,18 +43,24 @@ public class ConstructiveSolidGeometryController : SceneViewFilter
     public Color ShapesColor = Color.white;
     public int maxIteration = 128;
 
+    public enum ShadowModes
+    {
+        HardShadow = 0,
+        SoftShadow = 1
+    }
     [Header("Shadows")]
+    public ShadowModes ShadowMode;
     [Range(0f,10f)] public float ShadowIntensity;
     public Vector2 ShadowDistance;
     [Range(1f,128f)] public float ShadowPenumbra;
     
-    [Header("Repeat pattern")]
-    [Range(0f,1f)]public float ShapesInterpolation = 0.5f;
-    public Vector3 RepeatInterval = new Vector3(1f, 1f, 1f);
-    public Vector4 Sphere1;
-    public Vector4 Sphere2;
-    public Vector3 BoxPosition;
-    public Vector3 BoxSize;
+    // [Header("Repeat pattern")]
+    // [Range(0f,1f)]public float ShapesInterpolation = 0.5f;
+    // public Vector3 RepeatInterval = new Vector3(1f, 1f, 1f);
+    // public Vector4 Sphere1;
+    // public Vector4 Sphere2;
+    // public Vector3 BoxPosition;
+    // public Vector3 BoxSize;
     
     [Space(10)]
     [Header("Demo")]
@@ -79,10 +87,20 @@ public class ConstructiveSolidGeometryController : SceneViewFilter
     }
     public SDFAxis DebugAxis = SDFAxis.Y;
     
+    // Keyword that match with ShadowModes enum
+    private LocalKeyword HardShadowKeyword;
+    private LocalKeyword SoftShadowKeyword;
 
     private void OnEnable()
     {
         Camera.depthTextureMode = DepthTextureMode.Depth;
+        
+        // Note: when doing this at Start(), I had a "local keyword are not using same shader" error, maybe because start() is called too late (or only in specific condition) with [ExecuteInEditMode] ?
+        if (RaymarchMaterial != null)
+        {
+            HardShadowKeyword = new LocalKeyword(RaymarchMaterial.shader, "_SHADOWMODE_HARDSHADOW");
+            SoftShadowKeyword = new LocalKeyword(RaymarchMaterial.shader, "_SHADOWMODE_SOFTSHADOW");
+        }
     }
 
     private void OnRenderImage(RenderTexture source, RenderTexture destination)
@@ -100,16 +118,18 @@ public class ConstructiveSolidGeometryController : SceneViewFilter
         RaymarchMaterial.SetColor("_ShapesColor", ShapesColor);
         RaymarchMaterial.SetColor("_LightColor", mainLight.color);
         RaymarchMaterial.SetFloat("_LightIntensity", mainLight.intensity);
+        RaymarchMaterial.SetKeyword(HardShadowKeyword, ShadowMode == ShadowModes.HardShadow);
+        RaymarchMaterial.SetKeyword(SoftShadowKeyword, ShadowMode ==  ShadowModes.SoftShadow);
         RaymarchMaterial.SetFloat("_ShadowIntensity", ShadowIntensity);
         RaymarchMaterial.SetVector("_ShadowDistance", ShadowDistance);
         RaymarchMaterial.SetFloat("_ShadowPenumbra", ShadowPenumbra);
         
-        RaymarchMaterial.SetFloat("_ShapesInterpolation", ShapesInterpolation);
-        RaymarchMaterial.SetVector("_RepeatInterval", RepeatInterval);
-        RaymarchMaterial.SetVector("_Sphere1", Sphere1);
-        RaymarchMaterial.SetVector("_Sphere2", Sphere2);
-        RaymarchMaterial.SetVector("_BoxPosition", BoxPosition);
-        RaymarchMaterial.SetVector("_BoxSize", BoxSize);
+        // RaymarchMaterial.SetFloat("_ShapesInterpolation", ShapesInterpolation);
+        // RaymarchMaterial.SetVector("_RepeatInterval", RepeatInterval);
+        // RaymarchMaterial.SetVector("_Sphere1", Sphere1);
+        // RaymarchMaterial.SetVector("_Sphere2", Sphere2);
+        // RaymarchMaterial.SetVector("_BoxPosition", BoxPosition);
+        // RaymarchMaterial.SetVector("_BoxSize", BoxSize);
         
         RaymarchMaterial.SetVector("_DemoPos", DemoPosition);
         RaymarchMaterial.SetVector("_DemoRot", DemoRotation);
@@ -176,15 +196,15 @@ public class ConstructiveSolidGeometryController : SceneViewFilter
 
     private void OnDrawGizmos()
     {
-        Gizmos.color = Color.green;
-        Gizmos.DrawCube(new Vector3(BoxPosition.x, BoxPosition.y, BoxPosition.z), BoxSize * 2);
-        Gizmos.DrawWireCube(new Vector3(BoxPosition.x, BoxPosition.y, BoxPosition.z), BoxSize * 2);
-        Gizmos.color = Color.red;
-        Gizmos.DrawSphere(new Vector3(Sphere1.x, Sphere1.y, Sphere1.z), Sphere1.w);
-        Gizmos.DrawWireSphere(new Vector3(Sphere1.x, Sphere1.y, Sphere1.z), Sphere1.w);
-        Gizmos.color = Color.blue;
-        Gizmos.DrawSphere(new Vector3(Sphere2.x, Sphere2.y, Sphere2.z), Sphere2.w);
-        Gizmos.DrawWireSphere(new Vector3(Sphere2.x, Sphere2.y, Sphere2.z), Sphere2.w);
+        // Gizmos.color = Color.green;
+        // Gizmos.DrawCube(new Vector3(BoxPosition.x, BoxPosition.y, BoxPosition.z), BoxSize * 2);
+        // Gizmos.DrawWireCube(new Vector3(BoxPosition.x, BoxPosition.y, BoxPosition.z), BoxSize * 2);
+        // Gizmos.color = Color.red;
+        // Gizmos.DrawSphere(new Vector3(Sphere1.x, Sphere1.y, Sphere1.z), Sphere1.w);
+        // Gizmos.DrawWireSphere(new Vector3(Sphere1.x, Sphere1.y, Sphere1.z), Sphere1.w);
+        // Gizmos.color = Color.blue;
+        // Gizmos.DrawSphere(new Vector3(Sphere2.x, Sphere2.y, Sphere2.z), Sphere2.w);
+        // Gizmos.DrawWireSphere(new Vector3(Sphere2.x, Sphere2.y, Sphere2.z), Sphere2.w);
         
     }
 }
