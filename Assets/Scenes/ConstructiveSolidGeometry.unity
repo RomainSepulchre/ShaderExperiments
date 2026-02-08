@@ -678,6 +678,8 @@ MonoBehaviour:
   ShadowIntensity: 1
   ShadowDistance: {x: 0.1, y: 100}
   ShadowPenumbra: 15.9
+  AnimateDemo: 1
+  AnimationSpeed: 1
   DemoPosition: {x: 3, y: 0.5, z: -3}
   DemoRotation: {x: 45, y: 45, z: 0}
   DemoScale: 0.25

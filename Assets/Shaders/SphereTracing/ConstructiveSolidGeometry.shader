@@ -51,6 +51,8 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
             // uniform float3 _BoxPosition;
             // uniform float3 _BoxSize;
             
+            uniform bool _AnimateDemo;
+            uniform float _AnimationSpeed;
             uniform float3 _DemoPos;
             uniform float3 _DemoRot;
             uniform float _DemoScale;
@@ -100,10 +102,21 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 return o;
             }
             
-            float smoothMinimum(float a, float b, float t) // Moved into SDF_Functions.cginc as opSmoothedUnion()
+            float animate(float valueToAnimate)
             {
-                float h = clamp(0.5 + 0.5 * (b - a) / t, 0.0, 1.0);
-                return lerp(b, a, h) - t * h * (1.0 - h);
+                return valueToAnimate * (_Time.y * _AnimationSpeed);
+            }
+            
+            float animateSin(float min, float max)
+            {
+                float t = ((_SinTime.w * _AnimationSpeed)  + 1) / 2; // + 1 / 2 to remap from [-1,1] to [0,1]
+                return lerp(min, max, t);
+            }
+            
+            float animateCos(float min, float max)
+            {
+                float t = ((_CosTime.w * _AnimationSpeed)  + 1) / 2; // + 1 / 2 to remap from [-1,1] to [0,1]
+                return lerp(min, max, t);
             }
             
             float distanceField(float3 rayPos)
@@ -209,49 +222,56 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 otherShapes = opUnion(otherShapes, ellipsoid);
                 
                 // Transform
-                float3 movePos = opMove(rayPos, _DemoPos);
+                float3 position = _AnimateDemo ? _DemoPos + float3(animateSin(-0.25,0.25), 0, animateCos(-0.25,0.25)) : _DemoPos;
+                float3 movePos = opMove(rayPos, position);
                 float moveCube = sdfBox(movePos, 0.3);
                 
-                float3 rotPos = opRotateInDegree(rayPos - float3(3,0.5,-2), _DemoRot);
+                float3 rotation = _AnimateDemo ? float3(_DemoRot.x, animate(_DemoRot.y), _DemoRot.z) : _DemoRot;
+                //float3 rotPos = opRotateInDegree(rayPos - float3(3,0.5,-2), _DemoRot);
+                float3 rotPos = opRotateInDegree(rayPos - float3(3,0.5,-2), rotation);
                 float rotCube = sdfBox(rotPos, 0.3);
                 
-                float4 scaledPos = opScale(rayPos - float3(4,0.5,-2.5), _DemoScale);
+                float scale = _AnimateDemo ? _DemoScale + animateSin(0,0.25) : _DemoScale;
+                float4 scaledPos = opScale(rayPos - float3(4,0.5,-2.5), scale);
                 float scaledBox = sdfBox(scaledPos.xyz, 0.5) * scaledPos.w;
 
                 float transformShapes = opUnion(moveCube,rotCube);
                 transformShapes = opUnion(transformShapes, scaledBox);
                 
                 // Combine shapes
+                float smooth = _AnimateDemo ? saturate(_DemoSmooth + animateSin(-0.05,0.05)) : _DemoSmooth; // To animate smooth, not used for now
+                float3 posAnimOffset = _AnimateDemo ? float3(0,animateCos(-0.15,0.1),0) : float3(0,0,0);
+                
                 float cubeU = sdfBox(rayPos - float3(5,0.5,-3), 0.3);
-                float sphereU = sdfSphere(rayPos - float3(5,0.9,-3), 0.25);
+                float sphereU = sdfSphere(rayPos - float3(5,0.9,-3) - posAnimOffset, 0.25);
                 float Union = opUnion(cubeU, sphereU);
                 
                 float cubeSU = sdfBox(rayPos - float3(5,0.5,-2), 0.3);
-                float sphereSU = sdfSphere(rayPos - float3(5,0.9,-2), 0.25);
+                float sphereSU = sdfSphere(rayPos - float3(5,0.9,-2) - posAnimOffset, 0.25);
                 float smoothUnion = opSmoothUnion(cubeSU, sphereSU, _DemoSmooth);
                 
                 float cubeSub = sdfBox(rayPos - float3(6,0.5,-3), 0.3);
-                float sphereSub = sdfSphere(rayPos - float3(6,0.9,-3), 0.25);
+                float sphereSub = sdfSphere(rayPos - float3(6,0.9,-3) - posAnimOffset, 0.25);
                 float subtract = opSubtraction(sphereSub,cubeSub);
                 
                 float cubeSSub = sdfBox(rayPos - float3(6,0.5,-2), 0.3);
-                float sphereSSub = sdfSphere(rayPos - float3(6,0.9,-2), 0.25);
+                float sphereSSub = sdfSphere(rayPos - float3(6,0.9,-2) - posAnimOffset, 0.25);
                 float smoothSub = opSmoothSubtraction(sphereSSub, cubeSSub, _DemoSmooth);
                 
                 float cubeInt = sdfBox(rayPos - float3(7,0.5,-3), 0.3);
-                float sphereInt = sdfSphere(rayPos - float3(7,0.9,-3), 0.25);
+                float sphereInt = sdfSphere(rayPos - float3(7,0.9,-3) - posAnimOffset, 0.25);
                 float intersect = opIntersection(cubeInt,sphereInt);
                 
                 float cubeSInt = sdfBox(rayPos - float3(7,0.5,-2), 0.3);
-                float sphereSInt = sdfSphere(rayPos - float3(7,0.9,-2), 0.25);
+                float sphereSInt = sdfSphere(rayPos - float3(7,0.9,-2) - posAnimOffset, 0.25);
                 float smoothInt = opSmoothIntersection(cubeSInt, sphereSInt, _DemoSmooth);
                 
                 float cubeNoXOR = sdfBox(rayPos - float3(8,0.5,-3), 0.3);
-                float sphereNoXOR = sdfSphere(rayPos - float3(8,0.9,-3), 0.25);
+                float sphereNoXOR = sdfSphere(rayPos - float3(8,0.9,-3) - posAnimOffset, 0.25);
                 float noXOR = opCutPlane(opUnion(cubeNoXOR, sphereNoXOR), rayPos - float3(8,0.5,-3), float3(0,0,-1));
                 
                 float cubeXOR = sdfBox(rayPos - float3(8,0.5,-2), 0.3);
-                float sphereXOR = sdfSphere(rayPos - float3(8,0.9,-2), 0.25);
+                float sphereXOR = sdfSphere(rayPos - float3(8,0.9,-2) - posAnimOffset, 0.25);
                 float xOR = opCutPlane(opXor(cubeXOR, sphereXOR), rayPos - float3(8,0.5,-2), float3(0,0,-1));
                 
                 float combinedShapes = opUnion(Union, smoothUnion);
@@ -263,40 +283,45 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 combinedShapes = opUnion(combinedShapes, noXOR);
                 
                 // Repeat Shapes
-                float3 repeatPos1 = opRepetition(rayPos - float3(1,1.05,16), 0.8, 1);
-                float3 infiniteRepeatPos = opRepetition(rayPos - float3(1,1.05,16), 0.8); // Infinite repetition
+                float interval1 = _AnimateDemo ? animateSin(0.6,0.8) : 0.8;
+                float3 repeatPos1 = opRepetition(rayPos - float3(1,1.05,16), interval1, 1);
+                float3 infiniteRepeatPos = opRepetition(rayPos - float3(1,1.05,16), interval1); // Infinite repetition
                 float repeatBox = sdfBox(repeatPos1, 0.25);
                 
+                float interval2 = _AnimateDemo ? animateSin(0.65,0.75) : 0.75;
                 float3 repeatPos2 = opMove(rayPos, float3(1,0.125,18));
-                opRepetitionOnOneAxis(repeatPos2.y, 0.75);
+                opRepetitionOnOneAxis(repeatPos2.y, interval2);
                 float repeatSphere = sdfSphere(repeatPos2, 0.25);
                 
                 float repeats = opUnion(repeatBox, repeatSphere);
                 
                 // Cut
+                float cutOffset = _AnimateDemo ? clamp(_DemoCutOffset + animateSin(-0.1,0.1), -0.25, 0.25) : _DemoCutOffset;
                 float3 cutPos1 = rayPos - float3(3,0.5,15.5);
                 float cutBox1 = sdfBox(cutPos1, 0.25);
-                cutBox1 = opCut(cutBox1, cutPos1.y, _DemoCutOffset);
+                cutBox1 = opCut(cutBox1, cutPos1.y, cutOffset);
                 
                 float3 cutPos2 = rayPos - float3(3.6,0.5,15.5);
                 float cutBox2 = sdfBox(cutPos2, 0.25);
-                cutBox2 = opCut(cutBox2, -cutPos2.z, _DemoCutOffset);
+                cutBox2 = opCut(cutBox2, -cutPos2.z, cutOffset);
                 
                 float3 cutPos3 = rayPos - float3(3.3,0.5,16.5);
                 float cutBox3 = sdfBox(cutPos3, 0.5);
-                cutBox3 = opCutPlane(cutBox3, cutPos3 - float3(0,_DemoCutOffset * 4,0), normalize(float3(0,1,-1)));
+                cutBox3 = opCutPlane(cutBox3, cutPos3 - float3(0,cutOffset * 4,0), normalize(float3(0,1,-1)));
                 
                 float cuts = opUnion(cutBox1, cutBox2);
                 cuts = opUnion(cuts,cutBox3);
                 
                 // Round shape
                 float roundOcta = sdfOctahedron(rayPos - float3(4.75,0.5,16), 0.35);
-                roundOcta = opRound(roundOcta, 0.125);
+                roundOcta = opRound(roundOcta, _AnimateDemo ? 0.125 + animateSin(-0.1,0.1) : 0.125);
                 
                 // Elongate
-                float3 elongPos1 = opElongate1D(rayPos - float3(6,0.8,15.5), float3(0,0,0.25));
+                float3 elong1 = _AnimateDemo ? float3(0,0,0.25 + animateSin(-0.1,0.1)) : float3(0,0,0.25);
+                float3 elongPos1 = opElongate1D(rayPos - float3(6,0.8,15.5), elong1);
                 float elongTorus = sdfTorus(elongPos1, 0.35, 0.05, SDF_AXIS_Z);
-                float4 elongPos2 = opElongate(rayPos - float3(6,0.8,16.5), float3(0,0.5,0));
+                float3 elong2 = _AnimateDemo ? float3(0,0.5 + animateSin(-0.2,0.1),0) : float3(0,0.5,0);
+                float4 elongPos2 = opElongate(rayPos - float3(6,0.8,16.5), elong2);
                 float elongOcta = sdfOctahedron(elongPos2.xyz, 0.35) + elongPos2.w;
                 
                 float elongatedShapes = opUnion(elongOcta, elongTorus);
@@ -312,41 +337,46 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 float onions = opUnion(onionSphere, onionBox); 
                 
                 // Symmetry
+                float symOffset = _AnimateDemo ? _DemoSymOffset + animateCos(-0.2,0.2) : _DemoSymOffset;
+                
                 float3 symPosX = opSymmetry(rayPos - float3(8.5,0.75,15.5), SDF_AXIS_X);
-                float3 symXOffset = float3(_DemoSymOffset,0,0);
+                float3 symXOffset = float3(symOffset,0,0);
                 float symXCone = sdfCappedConeAxis(symPosX - symXOffset, 0.25, 0.25,0.1);
                 
                 float3 symPosZ = opSymmetry(rayPos - float3(8.5,0.75,16.5), SDF_AXIS_Z);
-                float3 symZOffset = float3(0,0,_DemoSymOffset);
+                float3 symZOffset = float3(0,0,symOffset);
                 float symZCone = sdfCappedConeAxis(symPosZ - symZOffset, 0.25, 0.25,0.1);
                 
                 float3 sym2AxisPos = opSymmetry2Axis(rayPos - float3(8.5,0.75,17.5), SDF_AXIS_X, SDF_AXIS_Y);
-                float3 sym2AxisOffset = float3(_DemoSymOffset,_DemoSymOffset,0);
+                float3 sym2AxisOffset = float3(symOffset,symOffset,0);
                 float sym2AxisCone = sdfCappedConeAxis(sym2AxisPos - sym2AxisOffset, 0.25, 0.25,0.1);
                 
                 float symmetries = opUnion(symXCone, symZCone);
                 symmetries = opUnion(symmetries, sym2AxisCone);
                 
                 // Twist
-                float3 twistPos1 = opTwist(rayPos - float3(10,0.5,15.5), _DemoTwist);
+                float twist = _AnimateDemo ? _DemoTwist + animateSin(-2,1) : _DemoTwist;
+                float3 twistPos1 = opTwist(rayPos - float3(10,0.5,15.5), twist);
                 float twistedTorus = sdfTorus(twistPos1, 0.35, 0.05, SDF_AXIS_Y);
-                float3 twistPos2 = opTwist(rayPos - float3(10,0.5,16.5), _DemoTwist);
+                float3 twistPos2 = opTwist(rayPos - float3(10,0.5,16.5), twist);
                 float twistedBox = sdfBoxFrame(twistPos2, 0.3, 0.04);
                 
                 float twistedShapes = opUnion(twistedTorus, twistedBox);
                     
                 // Bend
-                float3 bendPos1 = opBend(rayPos - float3(11.5,0.5,15.5), _DemoBend);
+                float bend = _AnimateDemo ? _DemoBend + animateCos(-2,0): _DemoBend;
+                float3 bendPos1 = opBend(rayPos - float3(11.5,0.5,15.5), bend);
                 float bendLink = sdfLink(bendPos1, 0.5, 0.25, 0.1, SDF_AXIS_Y);
-                float3 bendPos2 = opBend(rayPos - float3(11.5,0.5,16.5), _DemoBend);
+                float3 bendPos2 = opBend(rayPos - float3(11.5,0.5,16.5), bend);
                 float bendBox = sdfBox(bendPos2, float3(0.5,0.2,0.35));
                 
                 float bentShapes = opUnion(bendBox, bendLink);
                 
                 // Displacement
+                float disp = _AnimateDemo ? _DemoDisplacement + animateSin(-0.5,0.5) : _DemoDisplacement;
                 float3 dispPos = rayPos - float3(13.5,0.5,16);
                 float dispSphere = sdfSphere(dispPos, 0.25);
-                dispSphere = opBubbleDisplacement(dispPos, dispSphere, _DemoDisplacement);
+                dispSphere = opBubbleDisplacement(dispPos, dispSphere, disp);
                 
                 // FINAL SHAPES COMBINATION
                 float shapes = opUnion(spheres, boxes);

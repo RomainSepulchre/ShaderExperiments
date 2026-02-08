@@ -63,7 +63,9 @@ public class ConstructiveSolidGeometryController : SceneViewFilter
     // public Vector3 BoxSize;
     
     [Space(10)]
-    [Header("Demo")]
+    [Header("Demo Controls")]
+    public bool AnimateDemo = true;
+    public float AnimationSpeed = 1f;
     public Vector3 DemoPosition;
     public Vector3 DemoRotation;
     public float DemoScale;
@@ -88,6 +90,7 @@ public class ConstructiveSolidGeometryController : SceneViewFilter
     public SDFAxis DebugAxis = SDFAxis.Y;
     
     // Keyword that match with ShadowModes enum
+    
     private LocalKeyword HardShadowKeyword;
     private LocalKeyword SoftShadowKeyword;
 
@@ -96,6 +99,12 @@ public class ConstructiveSolidGeometryController : SceneViewFilter
         Camera.depthTextureMode = DepthTextureMode.Depth;
         
         // Note: when doing this at Start(), I had a "local keyword are not using same shader" error, maybe because start() is called too late (or only in specific condition) with [ExecuteInEditMode] ?
+        // -> still happens with OnEnable but less recurrent than with start: Ensure they are valid in OnRenderImage.
+        SetLocalKeyword();
+    }
+
+    void SetLocalKeyword()
+    {
         if (RaymarchMaterial != null)
         {
             HardShadowKeyword = new LocalKeyword(RaymarchMaterial.shader, "_SHADOWMODE_HARDSHADOW");
@@ -118,6 +127,7 @@ public class ConstructiveSolidGeometryController : SceneViewFilter
         RaymarchMaterial.SetColor("_ShapesColor", ShapesColor);
         RaymarchMaterial.SetColor("_LightColor", mainLight.color);
         RaymarchMaterial.SetFloat("_LightIntensity", mainLight.intensity);
+        if (!HardShadowKeyword.isValid || !SoftShadowKeyword.isValid) SetLocalKeyword(); // Ensure local keyword are set in case onEnable was called before in editor => doesn't work either, they are considered valid
         RaymarchMaterial.SetKeyword(HardShadowKeyword, ShadowMode == ShadowModes.HardShadow);
         RaymarchMaterial.SetKeyword(SoftShadowKeyword, ShadowMode ==  ShadowModes.SoftShadow);
         RaymarchMaterial.SetFloat("_ShadowIntensity", ShadowIntensity);
@@ -131,6 +141,8 @@ public class ConstructiveSolidGeometryController : SceneViewFilter
         // RaymarchMaterial.SetVector("_BoxPosition", BoxPosition);
         // RaymarchMaterial.SetVector("_BoxSize", BoxSize);
         
+        RaymarchMaterial.SetInt("_AnimateDemo", AnimateDemo ? 1 : 0);
+        RaymarchMaterial.SetFloat("_AnimationSpeed", AnimationSpeed);
         RaymarchMaterial.SetVector("_DemoPos", DemoPosition);
         RaymarchMaterial.SetVector("_DemoRot", DemoRotation);
         RaymarchMaterial.SetFloat("_DemoScale", DemoScale);
