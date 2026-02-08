@@ -98,8 +98,8 @@ public class ConstructiveSolidGeometryController : SceneViewFilter
     {
         Camera.depthTextureMode = DepthTextureMode.Depth;
         
-        // Note: when doing this at Start(), I had a "local keyword are not using same shader" error, maybe because start() is called too late (or only in specific condition) with [ExecuteInEditMode] ?
-        // -> still happens with OnEnable but less recurrent than with start: Ensure they are valid in OnRenderImage.
+        // Note: [ExecuteInEditMode] cause a "local keyword are not using same shader" error when doing this at Start(), maybe because start() is called too late (or only in specific condition) ?
+        // -> It also happens with OnEnable() usually after a recompilation of the script/shader, so I added additionals Application.isEditor and Application.isPlaying before updating the keywords state
         SetLocalKeyword();
     }
 
@@ -127,9 +127,11 @@ public class ConstructiveSolidGeometryController : SceneViewFilter
         RaymarchMaterial.SetColor("_ShapesColor", ShapesColor);
         RaymarchMaterial.SetColor("_LightColor", mainLight.color);
         RaymarchMaterial.SetFloat("_LightIntensity", mainLight.intensity);
-        if (!HardShadowKeyword.isValid || !SoftShadowKeyword.isValid) SetLocalKeyword(); // Ensure local keyword are set in case onEnable was called before in editor => doesn't work either, they are considered valid
-        RaymarchMaterial.SetKeyword(HardShadowKeyword, ShadowMode == ShadowModes.HardShadow);
-        RaymarchMaterial.SetKeyword(SoftShadowKeyword, ShadowMode ==  ShadowModes.SoftShadow);
+        if (!Application.isEditor || Application.isPlaying) // Do this to prevent "Local keyword comes from a different shader" error when making change in the editor
+        {
+            RaymarchMaterial.SetKeyword(HardShadowKeyword, ShadowMode == ShadowModes.HardShadow);
+            RaymarchMaterial.SetKeyword(SoftShadowKeyword, ShadowMode ==  ShadowModes.SoftShadow);
+        }
         RaymarchMaterial.SetFloat("_ShadowIntensity", ShadowIntensity);
         RaymarchMaterial.SetVector("_ShadowDistance", ShadowDistance);
         RaymarchMaterial.SetFloat("_ShadowPenumbra", ShadowPenumbra);
