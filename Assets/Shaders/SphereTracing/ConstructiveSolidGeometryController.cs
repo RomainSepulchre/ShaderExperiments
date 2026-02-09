@@ -42,6 +42,7 @@ public class ConstructiveSolidGeometryController : SceneViewFilter
     public float maxDistance;
     public Color ShapesColor = Color.white;
     public int maxIteration = 128;
+    [Range(0.1f, 0.001f)]public float Accuracy = 0.01f;
 
     public enum ShadowModes
     {
@@ -53,6 +54,11 @@ public class ConstructiveSolidGeometryController : SceneViewFilter
     [Range(0f,10f)] public float ShadowIntensity;
     public Vector2 ShadowDistance;
     [Range(1f,128f)] public float ShadowPenumbra;
+
+    [Header("Ambient occlusion")]
+    [Range(0.1f,10.0f)]public float AoStepSize;
+    [Range(1,5)]public int AoIterations;
+    [Range(0f,1f)]public float AoIntensity;
     
     // [Header("Repeat pattern")]
     // [Range(0f,1f)]public float ShapesInterpolation = 0.5f;
@@ -124,6 +130,7 @@ public class ConstructiveSolidGeometryController : SceneViewFilter
         RaymarchMaterial.SetMatrix("_CamToWorldMatrix", Camera.cameraToWorldMatrix);
         RaymarchMaterial.SetFloat("_MaxDistance", maxDistance);
         RaymarchMaterial.SetInt("_MaxIteration", maxIteration);
+        RaymarchMaterial.SetFloat("_Accuracy", Accuracy);
         RaymarchMaterial.SetColor("_ShapesColor", ShapesColor);
         RaymarchMaterial.SetColor("_LightColor", mainLight.color);
         RaymarchMaterial.SetFloat("_LightIntensity", mainLight.intensity);
@@ -135,6 +142,10 @@ public class ConstructiveSolidGeometryController : SceneViewFilter
         RaymarchMaterial.SetFloat("_ShadowIntensity", ShadowIntensity);
         RaymarchMaterial.SetVector("_ShadowDistance", ShadowDistance);
         RaymarchMaterial.SetFloat("_ShadowPenumbra", ShadowPenumbra);
+        
+        RaymarchMaterial.SetFloat("_AoStepSize", AoStepSize);
+        RaymarchMaterial.SetInt("_AoIterations", AoIterations);
+        RaymarchMaterial.SetFloat("_AoIntensity", AoIntensity);
         
         // RaymarchMaterial.SetFloat("_ShapesInterpolation", ShapesInterpolation);
         // RaymarchMaterial.SetVector("_RepeatInterval", RepeatInterval);

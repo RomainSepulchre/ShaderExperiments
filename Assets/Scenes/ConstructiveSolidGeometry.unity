@@ -673,11 +673,15 @@ MonoBehaviour:
   mainLight: {fileID: 606275433}
   maxDistance: 100
   ShapesColor: {r: 0.754717, g: 0.754717, b: 0.754717, a: 1}
-  maxIteration: 164
+  maxIteration: 175
+  Accuracy: 0.01
   ShadowMode: 1
   ShadowIntensity: 1
   ShadowDistance: {x: 0.1, y: 100}
   ShadowPenumbra: 15.9
+  AoStepSize: 0.2
+  AoIterations: 2
+  AoIntensity: 0.125
   AnimateDemo: 1
   AnimationSpeed: 1
   DemoPosition: {x: 3, y: 0.5, z: -3}

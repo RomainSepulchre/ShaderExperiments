@@ -36,13 +36,18 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
             uniform float4x4 _CamFrustumMatrix;
             uniform float4x4 _CamToWorldMatrix;
             uniform float _MaxDistance;
-            uniform float _MaxIteration;
+            uniform int _MaxIteration;
+            uniform float _Accuracy;
             uniform fixed4 _ShapesColor;
             uniform float3 _LightColor;
             uniform float _LightIntensity;
             uniform float2 _ShadowDistance;
             uniform float _ShadowIntensity;
             uniform float _ShadowPenumbra;
+            
+            uniform float _AoStepSize;
+            uniform int _AoIterations;
+            uniform float _AoIntensity;
             
             // uniform float _ShapesInterpolation;
             // uniform float3 _RepeatInterval;
@@ -443,8 +448,27 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 return result; // No Shadow
             }
             
+            float3 ambientOcclusion(float3 pos, float3 normal)
+            {
+                float step = _AoStepSize;
+                float ao = 0.0;
+                float dist;
+                
+                for (int i = 1; i <= _AoIterations; i++)
+                {
+                    dist = step * i;
+                    ao += max(0.0, (dist - distanceField(pos + normal * dist)) / dist);
+                }
+                return (1.0 - ao * _AoIntensity);
+            }
+            
             float3 shading(float3 pos, float3 normal)
             {
+                float3 result;
+                
+                // Diffuse color
+                float3 color = _ShapesColor.rgb;
+                
                 // CG
                 float3 lightDir = _WorldSpaceLightPos0.xyz;
                 
@@ -455,7 +479,7 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 // Directional light
                 // -> dot product to know if the normal point toward the light or no
                 // -> * 0.5 + 0.5 to prevent multiplication by 0
-                float result = (_LightColor * dot(lightDir, normal) * 0.5 + 0.5) * _LightIntensity;
+                float3 light = (_LightColor * dot(lightDir, normal) * 0.5 + 0.5) * _LightIntensity;
                 
                 // Shadows
                 #if _SHADOWMODE_HARDSHADOW
@@ -463,9 +487,12 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 #elif _SHADOWMODE_SOFTSHADOW
                     float shadow = softShadow(pos, lightDir, _ShadowDistance.x, _ShadowDistance.y, _ShadowPenumbra) * 0.5 + 0.5;
                 #endif
-                
                 shadow = max(0.0, pow(shadow, _ShadowIntensity));
-                result *= shadow;
+                
+                // Ambient occlusion
+                float ao = ambientOcclusion(pos, normal);
+                
+                result = color * light * shadow * ao;
                 
                 return result;
             }
@@ -486,13 +513,13 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                     
                     float3 rayPos = rayOrigin + rayDirection * dist;
                     float sdf = distanceField(rayPos); // Signed distance field (< 0 = inside something, > 0 outside something)
-                    if (sdf < 0.01) // We hit something
+                    if (sdf < _Accuracy) // We hit something
                     {
                         // Shade object
                         float3 normal =  getNormal(rayPos);
                         
                         float3 shade = shading(rayPos, normal);
-                        result = fixed4(_ShapesColor.rgb * shade, 1) ;
+                        result = fixed4(shade, 1) ;
                         break;
                     }
                     dist += sdf;
