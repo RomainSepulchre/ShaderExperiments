@@ -4,6 +4,7 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
     {
         _MainTex ("Texture", 2D) = "white" {}
         [KeywordEnum(HardShadow, SoftShadow)] _ShadowMode ("Shadow Mode", Float) = 0
+        [KeywordEnum(NoReflections, CubemapReflections, FullReflections)] _ReflectionMode ("Reflections Mode", Float) = 0
     }
     SubShader
     {
@@ -18,6 +19,7 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
             #pragma target 3.0 // Specify compile target, see https://docs.unity3d.com/2020.1/Documentation/Manual/SL-ShaderCompileTargets.html
             
             #pragma multi_compile_local _SHADOWMODE_HARDSHADOW _SHADOWMODE_SOFTSHADOW
+            #pragma multi_compile_local _REFLECTIONMODE_NOREFLECTIONS _REFLECTIONMODE_CUBEMAPREFLECTIONS _REFLECTIONMODE_FULLREFLECTIONS
             
             // CG
             #include "UnityCG.cginc"
@@ -36,7 +38,7 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
             uniform float4x4 _CamFrustumMatrix;
             uniform float4x4 _CamToWorldMatrix;
             uniform float _MaxDistance;
-            uniform int _MaxIterations;
+            uniform uint _MaxIterations;
             uniform float _Accuracy;
             uniform fixed4 _ShapesColor;
             uniform float3 _LightColor;
@@ -502,7 +504,7 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 return result;
             }
             
-            bool raymarching(float3 rayOrigin, float3 rayDirection, float depth, float maxDistance, int maxIterations, inout float3 rayPos)
+            bool raymarching(float3 rayOrigin, float3 rayDirection, float depth, float maxDistance, int maxIterations, inout float3 hitPos)
             {
                 bool hit;
                 float dist = 0; // distance travelled along the ray direction
@@ -515,8 +517,8 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                         break;
                     }
                     
-                    rayPos = rayOrigin + rayDirection * dist;
-                    float sdf = distanceField(rayPos); // Signed distance field (< 0 = inside something, > 0 outside something)
+                    hitPos = rayOrigin + rayDirection * dist;
+                    float sdf = distanceField(hitPos); // Signed distance field (< 0 = inside something, > 0 outside something)
                     if (sdf < _Accuracy) // We hit something
                     {
                         hit = true;
@@ -544,6 +546,8 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 
                 fixed4 result; 
                 float3 hitPosition;
+                
+                // Shape raymarching
                 bool hit = raymarching(rayOrigin, rayDirection, depth, _MaxDistance, _MaxIterations, hitPosition);
                 
                 if (hit)
@@ -552,14 +556,20 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                     float3 normal =  getNormal(hitPosition);
                     float3 shade = shading(hitPosition, normal);
                     result = fixed4(shade, 1) ;
-                    result += fixed4(texCUBE(_ReflectionCube, normal).rgb * _EnvReflectionIntensity * _ReflectionIntensity, 0);
                     
+                    // Cubemap reflections
+                    #if _REFLECTIONMODE_CUBEMAPREFLECTIONS || _REFLECTIONMODE_FULLREFLECTIONS
+                    result += fixed4(texCUBE(_ReflectionCube, normal).rgb * _EnvReflectionIntensity * _ReflectionIntensity, 0);
+                    #endif
+                    
+                    #if _REFLECTIONMODE_FULLREFLECTIONS
                     // Reflections
                     if (_ReflectionCount > 0)
                     {
                         rayDirection = normalize(reflect(rayDirection, normal));
                         rayOrigin = hitPosition + (rayDirection * 0.01);
-                        // New raymarching to check other object hit
+                        
+                        // Raymarching to get other sdf shapes reflections
                         // -> depth buffer is ignored so we replace it with _MaxDistance
                         // _MaxDistance and iterations are divided by 2
                         hit = raymarching(rayOrigin, rayDirection, _MaxDistance, _MaxDistance * 0.5f, _MaxIterations / 2, hitPosition);
@@ -573,6 +583,8 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                             {
                                 rayDirection = normalize(reflect(rayDirection, normal));
                                 rayOrigin = hitPosition + (rayDirection * 0.01);
+                                
+                                // Raymarching to get reflections inside other sdf shapes reflections
                                 hit = raymarching(rayOrigin, rayDirection, _MaxDistance, _MaxDistance * 0.25f, _MaxIterations / 4, hitPosition); // Divided by 4
                                 
                                 if (hit)
@@ -584,6 +596,8 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                             }
                         }
                     }
+                    #endif
+                    
                 }
                 else
                 {

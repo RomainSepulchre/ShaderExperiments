@@ -41,7 +41,7 @@ public class ConstructiveSolidGeometryController : SceneViewFilter
     [Header("Rendering")]
     public float maxDistance;
     public Color ShapesColor = Color.white;
-    [FormerlySerializedAs("maxIteration")] public int maxIterations = 128;
+    [FormerlySerializedAs("maxIteration")] public uint maxIterations = 128;
     [Range(0.1f, 0.001f)]public float Accuracy = 0.01f;
 
     public enum ShadowModes
@@ -59,8 +59,15 @@ public class ConstructiveSolidGeometryController : SceneViewFilter
     [Range(0.1f,10.0f)]public float AoStepSize;
     [Range(1,5)]public int AoIterations;
     [Range(0f,1f)]public float AoIntensity;
-
+    
+    public enum ReflectionsModes
+    {
+        NoReflections = 0,
+        CubemapReflections = 1,
+        FullReflections = 2
+    }
     [Header("Reflections")]
+    public ReflectionsModes ReflectionsMode;
     [Range(0,2)]public int ReflectionCount;
     [Range(0f,1f)]public float ReflectionIntensity;
     [Range(0f,1f)]public float EnvReflectionIntensity;
@@ -105,6 +112,10 @@ public class ConstructiveSolidGeometryController : SceneViewFilter
     
     private LocalKeyword HardShadowKeyword;
     private LocalKeyword SoftShadowKeyword;
+    
+    private LocalKeyword NoReflectionsKeyword;
+    private LocalKeyword CubemapReflectionsKeyword;
+    private LocalKeyword FullReflectionsKeyword;
 
     private void OnEnable()
     {
@@ -121,6 +132,10 @@ public class ConstructiveSolidGeometryController : SceneViewFilter
         {
             HardShadowKeyword = new LocalKeyword(RaymarchMaterial.shader, "_SHADOWMODE_HARDSHADOW");
             SoftShadowKeyword = new LocalKeyword(RaymarchMaterial.shader, "_SHADOWMODE_SOFTSHADOW");
+            
+            NoReflectionsKeyword = new LocalKeyword(RaymarchMaterial.shader, "_REFLECTIONMODE_NOREFLECTIONS");
+            CubemapReflectionsKeyword = new LocalKeyword(RaymarchMaterial.shader, "_REFLECTIONMODE_CUBEMAPREFLECTIONS");
+            FullReflectionsKeyword = new LocalKeyword(RaymarchMaterial.shader, "_REFLECTIONMODE_FULLREFLECTIONS");
         }
     }
 
@@ -135,11 +150,12 @@ public class ConstructiveSolidGeometryController : SceneViewFilter
         RaymarchMaterial.SetMatrix("_CamFrustumMatrix", GetCameraFrustum(Camera));
         RaymarchMaterial.SetMatrix("_CamToWorldMatrix", Camera.cameraToWorldMatrix);
         RaymarchMaterial.SetFloat("_MaxDistance", maxDistance);
-        RaymarchMaterial.SetInt("_MaxIterations", maxIterations);
+        RaymarchMaterial.SetInteger("_MaxIterations", (int)maxIterations);
         RaymarchMaterial.SetFloat("_Accuracy", Accuracy);
         RaymarchMaterial.SetColor("_ShapesColor", ShapesColor);
         RaymarchMaterial.SetColor("_LightColor", mainLight.color);
         RaymarchMaterial.SetFloat("_LightIntensity", mainLight.intensity);
+        
         if (!Application.isEditor || Application.isPlaying) // Do this to prevent "Local keyword comes from a different shader" error when making change in the editor
         {
             RaymarchMaterial.SetKeyword(HardShadowKeyword, ShadowMode == ShadowModes.HardShadow);
@@ -150,9 +166,15 @@ public class ConstructiveSolidGeometryController : SceneViewFilter
         RaymarchMaterial.SetFloat("_ShadowPenumbra", ShadowPenumbra);
         
         RaymarchMaterial.SetFloat("_AoStepSize", AoStepSize);
-        RaymarchMaterial.SetInt("_AoIterations", AoIterations);
+        RaymarchMaterial.SetInteger("_AoIterations", AoIterations);
         RaymarchMaterial.SetFloat("_AoIntensity", AoIntensity);
         
+        if (!Application.isEditor || Application.isPlaying) // Do this to prevent "Local keyword comes from a different shader" error when making change in the editor
+        {
+            RaymarchMaterial.SetKeyword(NoReflectionsKeyword, ReflectionsMode == ReflectionsModes.NoReflections);
+            RaymarchMaterial.SetKeyword(CubemapReflectionsKeyword, ReflectionsMode ==  ReflectionsModes.CubemapReflections);
+            RaymarchMaterial.SetKeyword(FullReflectionsKeyword, ReflectionsMode ==  ReflectionsModes.FullReflections);
+        }
         RaymarchMaterial.SetInt("_ReflectionCount", ReflectionCount);
         RaymarchMaterial.SetFloat("_ReflectionIntensity", ReflectionIntensity);
         RaymarchMaterial.SetFloat("_EnvReflectionIntensity", EnvReflectionIntensity);
