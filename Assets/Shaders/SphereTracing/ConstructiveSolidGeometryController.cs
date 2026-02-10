@@ -40,7 +40,9 @@ public class ConstructiveSolidGeometryController : SceneViewFilter
     
     [Header("Rendering")]
     public float maxDistance;
-    public Color ShapesColor = Color.white;
+    public Color GroundColor = Color.white;
+    public Color[] ShapesColors = new Color[8];
+    [Range(0f,1f)]public float ColorIntensity = 1f;
     [FormerlySerializedAs("maxIteration")] public uint maxIterations = 128;
     [Range(0.1f, 0.001f)]public float Accuracy = 0.01f;
 
@@ -152,15 +154,17 @@ public class ConstructiveSolidGeometryController : SceneViewFilter
         RaymarchMaterial.SetFloat("_MaxDistance", maxDistance);
         RaymarchMaterial.SetInteger("_MaxIterations", (int)maxIterations);
         RaymarchMaterial.SetFloat("_Accuracy", Accuracy);
-        RaymarchMaterial.SetColor("_ShapesColor", ShapesColor);
+        RaymarchMaterial.SetColor("_GroundColor", GroundColor);
+        RaymarchMaterial.SetColorArray("_ShapesColors", ShapesColors);
+        RaymarchMaterial.SetFloat("_ColorIntensity", ColorIntensity);
         RaymarchMaterial.SetColor("_LightColor", mainLight.color);
         RaymarchMaterial.SetFloat("_LightIntensity", mainLight.intensity);
         
-        if (!Application.isEditor || Application.isPlaying) // Do this to prevent "Local keyword comes from a different shader" error when making change in the editor
-        {
+        //if (!Application.isEditor || Application.isPlaying) // Do this to prevent "Local keyword comes from a different shader" error when making change in the editor
+        //{
             RaymarchMaterial.SetKeyword(HardShadowKeyword, ShadowMode == ShadowModes.HardShadow);
             RaymarchMaterial.SetKeyword(SoftShadowKeyword, ShadowMode ==  ShadowModes.SoftShadow);
-        }
+        //}
         RaymarchMaterial.SetFloat("_ShadowIntensity", ShadowIntensity);
         RaymarchMaterial.SetVector("_ShadowDistance", ShadowDistance);
         RaymarchMaterial.SetFloat("_ShadowPenumbra", ShadowPenumbra);
@@ -169,12 +173,12 @@ public class ConstructiveSolidGeometryController : SceneViewFilter
         RaymarchMaterial.SetInteger("_AoIterations", AoIterations);
         RaymarchMaterial.SetFloat("_AoIntensity", AoIntensity);
         
-        if (!Application.isEditor || Application.isPlaying) // Do this to prevent "Local keyword comes from a different shader" error when making change in the editor
-        {
+        //if (!Application.isEditor || Application.isPlaying) // Do this to prevent "Local keyword comes from a different shader" error when making change in the editor
+        //{
             RaymarchMaterial.SetKeyword(NoReflectionsKeyword, ReflectionsMode == ReflectionsModes.NoReflections);
             RaymarchMaterial.SetKeyword(CubemapReflectionsKeyword, ReflectionsMode ==  ReflectionsModes.CubemapReflections);
             RaymarchMaterial.SetKeyword(FullReflectionsKeyword, ReflectionsMode ==  ReflectionsModes.FullReflections);
-        }
+        //}
         RaymarchMaterial.SetInt("_ReflectionCount", ReflectionCount);
         RaymarchMaterial.SetFloat("_ReflectionIntensity", ReflectionIntensity);
         RaymarchMaterial.SetFloat("_EnvReflectionIntensity", EnvReflectionIntensity);

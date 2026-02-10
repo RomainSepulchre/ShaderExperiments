@@ -40,9 +40,14 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
             uniform float _MaxDistance;
             uniform uint _MaxIterations;
             uniform float _Accuracy;
-            uniform fixed4 _ShapesColor;
+            
+            uniform fixed4 _GroundColor;
+            uniform fixed4 _ShapesColors[8];
+            uniform float _ColorIntensity;
+            
             uniform float3 _LightColor;
             uniform float _LightIntensity;
+            
             uniform float2 _ShadowDistance;
             uniform float _ShadowIntensity;
             uniform float _ShadowPenumbra;
@@ -131,7 +136,7 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 return lerp(min, max, t);
             }
             
-            float distanceField(float3 rayPos)
+            float4 distanceField(float3 rayPos)
             {
                 // Repeat shapes
                 //float modX = pMod1(rayPos.x, _RepeatInterval.x);
@@ -411,16 +416,38 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 shapes = opUnion(shapes, bentShapes);
                 shapes = opUnion(shapes, dispSphere);
                 
-                return shapes;
+                float4 colorAndShapes = float4(0,0,0, shapes);
+                if (shapes == spheres) colorAndShapes.rgb = _ShapesColors[0].rgb;
+                else if (shapes == boxes) colorAndShapes.rgb = _ShapesColors[1].rgb;
+                else if (shapes == plane) colorAndShapes.rgb = _GroundColor.rgb;
+                else if (shapes == tori) colorAndShapes.rgb = _ShapesColors[2].rgb;
+                else if (shapes == cylinders) colorAndShapes.rgb = _ShapesColors[3].rgb;
+                else if (shapes == cones) colorAndShapes.rgb = _ShapesColors[4].rgb;
+                else if (shapes == capsules) colorAndShapes.rgb = _ShapesColors[5].rgb;
+                else if (shapes == polygons) colorAndShapes.rgb = _ShapesColors[6].rgb;
+                else if (shapes == otherShapes) colorAndShapes.rgb = _ShapesColors[7].rgb;
+                else if (shapes == transformShapes) colorAndShapes.rgb = _ShapesColors[0].rgb;
+                else if (shapes == combinedShapes) colorAndShapes.rgb = _ShapesColors[1].rgb;
+                else if (shapes == repeats) colorAndShapes.rgb = _ShapesColors[2].rgb;
+                else if (shapes == cuts) colorAndShapes.rgb = _ShapesColors[3].rgb;
+                else if (shapes == roundOcta) colorAndShapes.rgb = _ShapesColors[4].rgb;
+                else if (shapes == elongatedShapes) colorAndShapes.rgb = _ShapesColors[5].rgb;
+                else if (shapes == onions) colorAndShapes.rgb = _ShapesColors[6].rgb;
+                else if (shapes == symmetries) colorAndShapes.rgb = _ShapesColors[7].rgb;
+                else if (shapes == twistedShapes) colorAndShapes.rgb = _ShapesColors[0].rgb;
+                else if (shapes == bentShapes) colorAndShapes.rgb = _ShapesColors[1].rgb;
+                else if (shapes == dispSphere) colorAndShapes.rgb = _ShapesColors[2].rgb;
+                
+                return colorAndShapes;
             }
             
             float3 getNormal(float3 hitPos)
             {
                 const float2 offset = float2(0.001, 0.0);
                 float3 normal = float3(
-                    distanceField(hitPos + offset.xyy) - distanceField(hitPos - offset.xyy),
-                    distanceField(hitPos + offset.yxy) - distanceField(hitPos - offset.yxy),
-                    distanceField(hitPos + offset.yyx) - distanceField(hitPos - offset.yyx));
+                    distanceField(hitPos + offset.xyy).w - distanceField(hitPos - offset.xyy).w,
+                    distanceField(hitPos + offset.yxy).w - distanceField(hitPos - offset.yxy).w,
+                    distanceField(hitPos + offset.yyx).w - distanceField(hitPos - offset.yyx).w);
                 
                 return normalize(normal);
             }
@@ -429,7 +456,7 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
             {
                 for (float d = minDist; d < maxDist;)
                 {
-                    float h = distanceField(rayOrigin + rayDirection * d);
+                    float h = distanceField(rayOrigin + rayDirection * d).w;
                     if (h < 0.001)
                     {
                         return 0.0; // Shadow
@@ -444,7 +471,7 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 float result = 1.0;
                 for (float d = minDist; d < maxDist;)
                 {
-                    float h = distanceField(rayOrigin + rayDirection * d);
+                    float h = distanceField(rayOrigin + rayDirection * d).w;
                     if (h < 0.001)
                     {
                         return 0.0; // Shadow
@@ -464,17 +491,16 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 for (int i = 1; i <= _AoIterations; i++)
                 {
                     dist = step * i;
-                    ao += max(0.0, (dist - distanceField(pos + normal * dist)) / dist);
+                    ao += max(0.0, (dist - distanceField(pos + normal * dist).w) / dist);
                 }
                 return (1.0 - ao * _AoIntensity);
             }
             
-            float3 shading(float3 pos, float3 normal)
+            float3 shading(float3 pos, float3 normal, fixed3 color)
             {
                 float3 result;
                 
-                // Diffuse color
-                float3 color = _ShapesColor.rgb;
+                float3 col = color * _ColorIntensity;
                 
                 // CG
                 float3 lightDir = _WorldSpaceLightPos0.xyz;
@@ -499,12 +525,12 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 // Ambient occlusion
                 float ao = ambientOcclusion(pos, normal);
                 
-                result = color * light * shadow * ao;
+                result = col * light * shadow * ao;
                 
                 return result;
             }
             
-            bool raymarching(float3 rayOrigin, float3 rayDirection, float depth, float maxDistance, int maxIterations, inout float3 hitPos)
+            bool raymarching(float3 rayOrigin, float3 rayDirection, float depth, float maxDistance, int maxIterations, inout float3 hitPos, inout fixed3 color)
             {
                 bool hit;
                 float dist = 0; // distance travelled along the ray direction
@@ -518,13 +544,14 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                     }
                     
                     hitPos = rayOrigin + rayDirection * dist;
-                    float sdf = distanceField(hitPos); // Signed distance field (< 0 = inside something, > 0 outside something)
-                    if (sdf < _Accuracy) // We hit something
+                    float4 colorAndSdf = distanceField(hitPos); // Signed distance field (< 0 = inside something, > 0 outside something)
+                    if (colorAndSdf.w < _Accuracy) // We hit something
                     {
+                        color = colorAndSdf.rgb;
                         hit = true;
                         break;
                     }
-                    dist += sdf;
+                    dist += colorAndSdf.w;
                 }
                 return hit;
             }
@@ -546,15 +573,16 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 
                 fixed4 result; 
                 float3 hitPosition;
+                fixed3 color;
                 
                 // Shape raymarching
-                bool hit = raymarching(rayOrigin, rayDirection, depth, _MaxDistance, _MaxIterations, hitPosition);
+                bool hit = raymarching(rayOrigin, rayDirection, depth, _MaxDistance, _MaxIterations, hitPosition, color);
                 
                 if (hit)
                 {
                     // Shade object
                     float3 normal =  getNormal(hitPosition);
-                    float3 shade = shading(hitPosition, normal);
+                    float3 shade = shading(hitPosition, normal, color);
                     result = fixed4(shade, 1) ;
                     
                     // Cubemap reflections
@@ -572,12 +600,12 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                         // Raymarching to get other sdf shapes reflections
                         // -> depth buffer is ignored so we replace it with _MaxDistance
                         // _MaxDistance and iterations are divided by 2
-                        hit = raymarching(rayOrigin, rayDirection, _MaxDistance, _MaxDistance * 0.5f, _MaxIterations / 2, hitPosition);
+                        hit = raymarching(rayOrigin, rayDirection, _MaxDistance, _MaxDistance * 0.5f, _MaxIterations / 2, hitPosition, color);
                         
                         if (hit)
                         {
                             float3 normal =  getNormal(hitPosition);
-                            float3 shade = shading(hitPosition, normal);
+                            float3 shade = shading(hitPosition, normal, color);
                             result += fixed4(shade * _ReflectionIntensity, 0);
                             if (_ReflectionCount > 1)
                             {
@@ -585,12 +613,12 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                                 rayOrigin = hitPosition + (rayDirection * 0.01);
                                 
                                 // Raymarching to get reflections inside other sdf shapes reflections
-                                hit = raymarching(rayOrigin, rayDirection, _MaxDistance, _MaxDistance * 0.25f, _MaxIterations / 4, hitPosition); // Divided by 4
+                                hit = raymarching(rayOrigin, rayDirection, _MaxDistance, _MaxDistance * 0.25f, _MaxIterations / 4, hitPosition, color); // Divided by 4
                                 
                                 if (hit)
                                 {
                                     float3 normal =  getNormal(hitPosition);
-                                    float3 shade = shading(hitPosition, normal);
+                                    float3 shade = shading(hitPosition, normal, color);
                                     result += fixed4(shade * _ReflectionIntensity * 0.5f, 0);
                                 }
                             }
