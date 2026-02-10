@@ -36,7 +36,7 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
             uniform float4x4 _CamFrustumMatrix;
             uniform float4x4 _CamToWorldMatrix;
             uniform float _MaxDistance;
-            uniform int _MaxIteration;
+            uniform int _MaxIterations;
             uniform float _Accuracy;
             uniform fixed4 _ShapesColor;
             uniform float3 _LightColor;
@@ -48,6 +48,11 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
             uniform float _AoStepSize;
             uniform int _AoIterations;
             uniform float _AoIntensity;
+            
+            uniform float _ReflectionCount;
+            uniform float _ReflectionIntensity;
+            uniform float _EnvReflectionIntensity;
+            uniform samplerCUBE _ReflectionCube;
             
             // uniform float _ShapesInterpolation;
             // uniform float3 _RepeatInterval;
@@ -497,34 +502,29 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 return result;
             }
             
-            fixed4 raymarching(float3 rayOrigin, float3 rayDirection, float depth)
+            bool raymarching(float3 rayOrigin, float3 rayDirection, float depth, float maxDistance, int maxIterations, inout float3 rayPos)
             {
-                fixed4 result = fixed4(1,1,1,1);
-                const int maxIteration = _MaxIteration;
+                bool hit;
                 float dist = 0; // distance travelled along the ray direction
 
-                for (int i = 0; i < maxIteration; i++)
+                for (int i = 0; i < maxIterations; i++)
                 {
-                    if (dist > _MaxDistance || dist >= depth) // Hit environment / skybox
+                    if (dist > maxDistance || dist >= depth) // Hit environment / skybox
                     {
-                        result = fixed4(rayDirection, 0); // w = 0 to tell when to draw screen render texture
+                        hit = false;
                         break;
                     }
                     
-                    float3 rayPos = rayOrigin + rayDirection * dist;
+                    rayPos = rayOrigin + rayDirection * dist;
                     float sdf = distanceField(rayPos); // Signed distance field (< 0 = inside something, > 0 outside something)
                     if (sdf < _Accuracy) // We hit something
                     {
-                        // Shade object
-                        float3 normal =  getNormal(rayPos);
-                        
-                        float3 shade = shading(rayPos, normal);
-                        result = fixed4(shade, 1) ;
+                        hit = true;
                         break;
                     }
                     dist += sdf;
                 }
-                return result;
+                return hit;
             }
 
             fixed4 frag (v2f i) : SV_Target
@@ -541,8 +541,55 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 
                 float3 rayDirection = normalize(i.ray.xyz);
                 float3 rayOrigin = _WorldSpaceCameraPos;
-                fixed4 result = raymarching(rayOrigin, rayDirection, depth);
                 
+                fixed4 result; 
+                float3 hitPosition;
+                bool hit = raymarching(rayOrigin, rayDirection, depth, _MaxDistance, _MaxIterations, hitPosition);
+                
+                if (hit)
+                {
+                    // Shade object
+                    float3 normal =  getNormal(hitPosition);
+                    float3 shade = shading(hitPosition, normal);
+                    result = fixed4(shade, 1) ;
+                    result += fixed4(texCUBE(_ReflectionCube, normal).rgb * _EnvReflectionIntensity * _ReflectionIntensity, 0);
+                    
+                    // Reflections
+                    if (_ReflectionCount > 0)
+                    {
+                        rayDirection = normalize(reflect(rayDirection, normal));
+                        rayOrigin = hitPosition + (rayDirection * 0.01);
+                        // New raymarching to check other object hit
+                        // -> depth buffer is ignored so we replace it with _MaxDistance
+                        // _MaxDistance and iterations are divided by 2
+                        hit = raymarching(rayOrigin, rayDirection, _MaxDistance, _MaxDistance * 0.5f, _MaxIterations / 2, hitPosition);
+                        
+                        if (hit)
+                        {
+                            float3 normal =  getNormal(hitPosition);
+                            float3 shade = shading(hitPosition, normal);
+                            result += fixed4(shade * _ReflectionIntensity, 0);
+                            if (_ReflectionCount > 1)
+                            {
+                                rayDirection = normalize(reflect(rayDirection, normal));
+                                rayOrigin = hitPosition + (rayDirection * 0.01);
+                                hit = raymarching(rayOrigin, rayDirection, _MaxDistance, _MaxDistance * 0.25f, _MaxIterations / 4, hitPosition); // Divided by 4
+                                
+                                if (hit)
+                                {
+                                    float3 normal =  getNormal(hitPosition);
+                                    float3 shade = shading(hitPosition, normal);
+                                    result += fixed4(shade * _ReflectionIntensity * 0.5f, 0);
+                                }
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    result = fixed4(0,0,0,0);
+                }
+
                 return fixed4(texColor * (1.0 - result.w) + result.rgb * result.w  ,1.0); // Draw scene + rayMarched shapes
             }
             ENDHLSL
