@@ -159,17 +159,17 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 float cutHollowSphere = sdfCutHollowSphere(rayPos - float3(0,0.5,4), 0.5, 0.25, 0.01);
                 float deathStar = sdfDeathStar(opRotateInDegree(rayPos - float3(0,0.5,6), float3(0,45,0)), 0.5, 0.25, 0.5);
                 
-                float spheres = opUnion(sphere, cutSphere);
-                spheres = opUnion(spheres, cutHollowSphere);
-                spheres = opUnion(spheres, deathStar);
+                float4 spheres = opUnion(float4(_ShapesColors[0].rgb, sphere), float4(_ShapesColors[1].rgb, cutSphere));
+                spheres = opUnion(spheres, float4(_ShapesColors[2].rgb, cutHollowSphere));
+                spheres = opUnion(spheres, float4(_ShapesColors[3].rgb, deathStar));
                 
                 // Boxes
                 float box = sdfBox(rayPos - float3(2,0.5,0), float3(0.5,0.5,0.5));
                 float roundBox = sdfRoundBox(rayPos - float3(2,0.5,2), float3(0.5,0.5,0.5), 0.2);
                 float boxFrame = sdfBoxFrame(rayPos - float3(2,0.5,4), float3(0.5,0.5,0.5), 0.05);
                 
-                float boxes = opUnion(box, roundBox);
-                boxes = opUnion(boxes, boxFrame);
+                float4 boxes = opUnion(float4(_ShapesColors[0].rgb, box), float4(_ShapesColors[1].rgb, roundBox));
+                boxes = opUnion(boxes, float4(_ShapesColors[2].rgb, boxFrame));
                 
                 // Plane
                 float plane = sdfPlane(rayPos - float3(0,0,0), float3(0,1,0)); 
@@ -179,8 +179,8 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 float cappedTorus = sdfCappedTorus(rayPos - float3(4,0.5,2), 0.5, 0.1, 0.75);
                 float link = sdfLink(rayPos - float3(4,0.5,4), 0.5, 0.5, 0.1, SDF_AXIS_Y);
                 
-                float tori = opUnion(torus, cappedTorus);
-                tori = opUnion(tori, link);
+                float4 tori = opUnion(float4(_ShapesColors[0].rgb, torus), float4(_ShapesColors[1].rgb, cappedTorus));
+                tori = opUnion(tori,  float4(_ShapesColors[2].rgb, link));
                 
                 // Cylinder
                 float cylinderAxis = sdfCylinderAxis(rayPos - float3(6,0.5,0), 0.5, 0.25);
@@ -188,9 +188,9 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 float roundedCylinder = sdfRoundedCylinder(rayPos - float3(6,0.5,4), 0.5, 0.25, 0.1);
                 float infCylinder = sdfInfiniteCylinder(rayPos - float3(6,0.5,6), 0.25);
                 
-                float cylinders = opUnion(cylinder, cylinderAxis);
-                cylinders = opUnion(cylinders, roundedCylinder);
-                cylinders = opUnion(cylinders, infCylinder);
+                float4 cylinders = opUnion(float4(_ShapesColors[1].rgb, cylinder), float4(_ShapesColors[0].rgb, cylinderAxis));
+                cylinders = opUnion(cylinders, float4(_ShapesColors[2].rgb, roundedCylinder));
+                cylinders = opUnion(cylinders, float4(_ShapesColors[3].rgb, infCylinder));
                 
                 // Cones
                 float cone = sdfCone(rayPos - float3(8,1,0), 0.5, 1); // Y offset is 1 instead of 0.5 because origin is the tip of the cone
@@ -200,17 +200,17 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 float roundCone = sdfRoundCone(rayPos - float3(8,0.25,8), float3(0,0,0), float3(0,0.75,-0.75), 0.25, 0.1); // Y offset is 0.25 because we subtract the base radius
                 float infiniteCone = sdfInfiniteCone(rayPos - float3(8,10,10), float2(sin(radians(2.5)), cos(radians(2.5))));
                 
-                float cones = opUnion(cone, cappedConeAxis);
-                cones = opUnion(cones, cappedCone);
-                cones = opUnion(cones, roundConeAxis);
-                cones = opUnion(cones, roundCone);
-                cones = opUnion(cones, infiniteCone);
+                float4 cones = opUnion(float4(_ShapesColors[0].rgb, cone), float4(_ShapesColors[1].rgb, cappedConeAxis));
+                cones = opUnion(cones, float4(_ShapesColors[2].rgb, cappedCone));
+                cones = opUnion(cones, float4(_ShapesColors[3].rgb, roundConeAxis));
+                cones = opUnion(cones, float4(_ShapesColors[4].rgb, roundCone));
+                cones = opUnion(cones, float4(_ShapesColors[5].rgb, infiniteCone));
                 
                 // Capsules
                 float capsuleAxis = sdfCapsuleAxis(rayPos - float3(10,0.25,0), 0.5, 0.25); // Y offset is 0.25 because we subtract the base radius
                 float capsule = sdfCapsule(rayPos - float3(10,0.5,2), float3(-0.1125,-0.2225, 0), float3(0.1125,0.2225, 0), 0.25); // start/end offset: normalize(float3(0.25,0.5,0)) * 0.25 (0.25 because we add 0.25 of radius after)
                 
-                float capsules = opUnion(capsuleAxis, capsule);
+                float4 capsules = opUnion(float4(_ShapesColors[0].rgb, capsuleAxis), float4(_ShapesColors[1].rgb, capsule));
                 
                 // Polygonal Shapes
                 float triangleSdf = sdfTriangle(rayPos - float3(12,0.5,0), float3(-0.5,-0.5,0), float3(0,0.5,0.5), float3(0.5,-0.5,0));
@@ -222,21 +222,21 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 float trianglePrism = sdfTrianglePrism(rayPos - float3(12,0.5,10), 0.75, 0.25);
                 float hexPrism = sdfHexPrism(rayPos - float3(12,0.75,12), 0.75, 0.25); // Y offset is 0.75 to place the hexagon on the plane because radius is 0.75
                 
-                float polygons = opUnion(triangleSdf, quad);
-                polygons = opUnion(polygons, pyramid);
-                polygons = opUnion(polygons, octahedron);
-                polygons = opUnion(polygons, octahedronBound);
-                polygons = opUnion(polygons, rhombus);
-                polygons = opUnion(polygons, trianglePrism);
-                polygons = opUnion(polygons, hexPrism);
+                float4 polygons = opUnion(float4(_ShapesColors[0].rgb, triangleSdf), float4(_ShapesColors[1].rgb, quad));
+                polygons = opUnion(polygons, float4(_ShapesColors[2].rgb, pyramid));
+                polygons = opUnion(polygons, float4(_ShapesColors[3].rgb, octahedron));
+                polygons = opUnion(polygons, float4(_ShapesColors[4].rgb, octahedronBound));
+                polygons = opUnion(polygons, float4(_ShapesColors[5].rgb, rhombus));
+                polygons = opUnion(polygons, float4(_ShapesColors[6].rgb, trianglePrism));
+                polygons = opUnion(polygons, float4(_ShapesColors[7].rgb, hexPrism));
                 
                 // Other shapes
                 float solidAngle = sdfSolidAngle(rayPos - float3(14,0,0), radians(45), 0.5);
                 float vesica = sdfVesicaSegment(rayPos - float3(14,0.5,2), float3(-0.5,0,0), float3(0.5,0,0), 0.25);
                 float ellipsoid = sdfEllipsoid(rayPos - float3(14,0.5,4), float3(0.5, 0.25, 0.25));
                 
-                float otherShapes = opUnion(solidAngle, vesica);
-                otherShapes = opUnion(otherShapes, ellipsoid);
+                float4 otherShapes = opUnion(float4(_ShapesColors[0].rgb, solidAngle), float4(_ShapesColors[1].rgb, vesica));
+                otherShapes = opUnion(otherShapes, float4(_ShapesColors[2].rgb, ellipsoid));
                 
                 // Transform
                 float3 position = _AnimateDemo ? _DemoPos + float3(animateSin(-0.25,0.25), 0, animateCos(-0.25,0.25)) : _DemoPos;
@@ -252,8 +252,8 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 float4 scaledPos = opScale(rayPos - float3(4,0.5,-2.5), scale);
                 float scaledBox = sdfBox(scaledPos.xyz, 0.5) * scaledPos.w;
 
-                float transformShapes = opUnion(moveCube,rotCube);
-                transformShapes = opUnion(transformShapes, scaledBox);
+                float4 transformShapes = opUnion(float4(_ShapesColors[0].rgb, moveCube), float4(_ShapesColors[1].rgb, rotCube));
+                transformShapes = opUnion(transformShapes, float4(_ShapesColors[2].rgb, scaledBox));
                 
                 // Combine shapes
                 float smooth = _AnimateDemo ? saturate(_DemoSmooth + animateSin(-0.05,0.05)) : _DemoSmooth; // To animate smooth, not used for now
@@ -291,13 +291,13 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 float sphereXOR = sdfSphere(rayPos - float3(8,0.9,-2) - posAnimOffset, 0.25);
                 float xOR = opCutPlane(opXor(cubeXOR, sphereXOR), rayPos - float3(8,0.5,-2), float3(0,0,-1));
                 
-                float combinedShapes = opUnion(Union, smoothUnion);
-                combinedShapes = opUnion(combinedShapes, subtract);
-                combinedShapes = opUnion(combinedShapes, smoothSub);
-                combinedShapes = opUnion(combinedShapes, intersect);
-                combinedShapes = opUnion(combinedShapes, smoothInt);
-                combinedShapes = opUnion(combinedShapes, xOR);
-                combinedShapes = opUnion(combinedShapes, noXOR);
+                float4 combinedShapes = opUnion(float4(_ShapesColors[0].rgb, Union), float4(_ShapesColors[1].rgb, smoothUnion));
+                combinedShapes = opUnion(combinedShapes, float4(_ShapesColors[2].rgb, subtract));
+                combinedShapes = opUnion(combinedShapes, float4(_ShapesColors[3].rgb, smoothSub));
+                combinedShapes = opUnion(combinedShapes, float4(_ShapesColors[4].rgb, intersect));
+                combinedShapes = opUnion(combinedShapes, float4(_ShapesColors[5].rgb, smoothInt));
+                combinedShapes = opUnion(combinedShapes, float4(_ShapesColors[6].rgb, xOR));
+                combinedShapes = opUnion(combinedShapes, float4(_ShapesColors[7].rgb, noXOR));
                 
                 // Repeat Shapes
                 float interval1 = _AnimateDemo ? animateSin(0.6,0.8) : 0.8;
@@ -310,7 +310,7 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 opRepetitionOnOneAxis(repeatPos2.y, interval2);
                 float repeatSphere = sdfSphere(repeatPos2, 0.25);
                 
-                float repeats = opUnion(repeatBox, repeatSphere);
+                float4 repeats = opUnion(float4(_ShapesColors[0].rgb, repeatBox), float4(_ShapesColors[1].rgb, repeatSphere));
                 
                 // Cut
                 float cutOffset = _AnimateDemo ? clamp(_DemoCutOffset + animateSin(-0.1,0.1), -0.25, 0.25) : _DemoCutOffset;
@@ -326,8 +326,8 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 float cutBox3 = sdfBox(cutPos3, 0.5);
                 cutBox3 = opCutPlane(cutBox3, cutPos3 - float3(0,cutOffset * 4,0), normalize(float3(0,1,-1)));
                 
-                float cuts = opUnion(cutBox1, cutBox2);
-                cuts = opUnion(cuts,cutBox3);
+                float4 cuts = opUnion(float4(_ShapesColors[0].rgb, cutBox1), float4(_ShapesColors[1].rgb, cutBox2));
+                cuts = opUnion(cuts,float4(_ShapesColors[2].rgb, cutBox3));
                 
                 // Round shape
                 float roundOcta = sdfOctahedron(rayPos - float3(4.75,0.5,16), 0.35);
@@ -341,7 +341,7 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 float4 elongPos2 = opElongate(rayPos - float3(6,0.8,16.5), elong2);
                 float elongOcta = sdfOctahedron(elongPos2.xyz, 0.35) + elongPos2.w;
                 
-                float elongatedShapes = opUnion(elongOcta, elongTorus);
+                float4 elongatedShapes = opUnion(float4(_ShapesColors[0].rgb, elongOcta), float4(_ShapesColors[1].rgb, elongTorus));
                 
                 // Onion
                 float3 onionPos1 = rayPos - float3(7,0.5,15.5);
@@ -351,7 +351,7 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 float boxToOnion = sdfBox(onionPos2, 0.25);
                 float onionBox = opCut(opOnion(opOnion(opOnion(boxToOnion, 0.06), 0.03), 0.01), onionPos2.y); // opCut(sdf, pos.y) to be able to see sdf interior
                 
-                float onions = opUnion(onionSphere, onionBox); 
+                float4 onions = opUnion(float4(_ShapesColors[0].rgb, onionSphere), float4(_ShapesColors[1].rgb, onionBox)); 
                 
                 // Symmetry
                 float symOffset = _AnimateDemo ? _DemoSymOffset + animateCos(-0.2,0.2) : _DemoSymOffset;
@@ -368,8 +368,8 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 float3 sym2AxisOffset = float3(symOffset,symOffset,0);
                 float sym2AxisCone = sdfCappedConeAxis(sym2AxisPos - sym2AxisOffset, 0.25, 0.25,0.1);
                 
-                float symmetries = opUnion(symXCone, symZCone);
-                symmetries = opUnion(symmetries, sym2AxisCone);
+                float4 symmetries = opUnion(float4(_ShapesColors[0].rgb, symXCone), float4(_ShapesColors[1].rgb, symZCone));
+                symmetries = opUnion(symmetries, float4(_ShapesColors[2].rgb, sym2AxisCone));
                 
                 // Twist
                 float twist = _AnimateDemo ? _DemoTwist + animateSin(-2,1) : _DemoTwist;
@@ -378,7 +378,7 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 float3 twistPos2 = opTwist(rayPos - float3(10,0.5,16.5), twist);
                 float twistedBox = sdfBoxFrame(twistPos2, 0.3, 0.04);
                 
-                float twistedShapes = opUnion(twistedTorus, twistedBox);
+                float4 twistedShapes = opUnion(float4(_ShapesColors[0].rgb, twistedTorus), float4(_ShapesColors[1].rgb, twistedBox));
                     
                 // Bend
                 float bend = _AnimateDemo ? _DemoBend + animateCos(-2,0): _DemoBend;
@@ -387,7 +387,7 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 float3 bendPos2 = opBend(rayPos - float3(11.5,0.5,16.5), bend);
                 float bendBox = sdfBox(bendPos2, float3(0.5,0.2,0.35));
                 
-                float bentShapes = opUnion(bendBox, bendLink);
+                float4 bentShapes = opUnion(float4(_ShapesColors[1].rgb, bendBox), float4(_ShapesColors[0].rgb, bendLink));
                 
                 // Displacement
                 float disp = _AnimateDemo ? _DemoDisplacement + animateSin(-0.5,0.5) : _DemoDisplacement;
@@ -396,8 +396,8 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 dispSphere = opBubbleDisplacement(dispPos, dispSphere, disp);
                 
                 // FINAL SHAPES COMBINATION
-                float shapes = opUnion(spheres, boxes);
-                shapes = opUnion(shapes, plane);
+                float4 shapes = opUnion(spheres, boxes);
+                shapes = opUnion(shapes, float4(_GroundColor.rgb, plane));
                 shapes = opUnion(shapes, tori);
                 shapes = opUnion(shapes, cylinders);
                 shapes = opUnion(shapes, cones);
@@ -408,37 +408,15 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
                 shapes = opUnion(shapes, combinedShapes);
                 shapes = opUnion(shapes, repeats);
                 shapes = opUnion(shapes, cuts);
-                shapes = opUnion(shapes, roundOcta);
+                shapes = opUnion(shapes, float4(_ShapesColors[0].rgb,roundOcta));
                 shapes = opUnion(shapes, elongatedShapes);
                 shapes = opUnion(shapes, onions);
                 shapes = opUnion(shapes, symmetries);
                 shapes = opUnion(shapes, twistedShapes);
                 shapes = opUnion(shapes, bentShapes);
-                shapes = opUnion(shapes, dispSphere);
+                shapes = opUnion(shapes, float4(_ShapesColors[0].rgb, dispSphere));
                 
-                float4 colorAndShapes = float4(0,0,0, shapes);
-                if (shapes == spheres) colorAndShapes.rgb = _ShapesColors[0].rgb;
-                else if (shapes == boxes) colorAndShapes.rgb = _ShapesColors[1].rgb;
-                else if (shapes == plane) colorAndShapes.rgb = _GroundColor.rgb;
-                else if (shapes == tori) colorAndShapes.rgb = _ShapesColors[2].rgb;
-                else if (shapes == cylinders) colorAndShapes.rgb = _ShapesColors[3].rgb;
-                else if (shapes == cones) colorAndShapes.rgb = _ShapesColors[4].rgb;
-                else if (shapes == capsules) colorAndShapes.rgb = _ShapesColors[5].rgb;
-                else if (shapes == polygons) colorAndShapes.rgb = _ShapesColors[6].rgb;
-                else if (shapes == otherShapes) colorAndShapes.rgb = _ShapesColors[7].rgb;
-                else if (shapes == transformShapes) colorAndShapes.rgb = _ShapesColors[0].rgb;
-                else if (shapes == combinedShapes) colorAndShapes.rgb = _ShapesColors[1].rgb;
-                else if (shapes == repeats) colorAndShapes.rgb = _ShapesColors[2].rgb;
-                else if (shapes == cuts) colorAndShapes.rgb = _ShapesColors[3].rgb;
-                else if (shapes == roundOcta) colorAndShapes.rgb = _ShapesColors[4].rgb;
-                else if (shapes == elongatedShapes) colorAndShapes.rgb = _ShapesColors[5].rgb;
-                else if (shapes == onions) colorAndShapes.rgb = _ShapesColors[6].rgb;
-                else if (shapes == symmetries) colorAndShapes.rgb = _ShapesColors[7].rgb;
-                else if (shapes == twistedShapes) colorAndShapes.rgb = _ShapesColors[0].rgb;
-                else if (shapes == bentShapes) colorAndShapes.rgb = _ShapesColors[1].rgb;
-                else if (shapes == dispSphere) colorAndShapes.rgb = _ShapesColors[2].rgb;
-                
-                return colorAndShapes;
+                return shapes;
             }
             
             float3 getNormal(float3 hitPos)

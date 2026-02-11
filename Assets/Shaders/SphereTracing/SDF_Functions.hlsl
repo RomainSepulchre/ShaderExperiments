@@ -917,6 +917,117 @@ inline float opXor(float shapeA, float shapeB)
 
 
 
+// ------------------------------------
+// ----- COMBINATIONS WITH COLORS -----
+// ------------------------------------
+
+/// Union
+/// - Note: produce true sdf (exterior and interior)
+/// @param shapeA First shape SDF value
+/// @param shapeB Second shape SDF value
+/// @return SDF value of the shapes union
+inline float4 opUnion(float4 shapeA, float4 shapeB)
+{
+    float shape = min(shapeA.w, shapeB.w);
+    float3 color = shape == shapeA.w ? shapeA.rgb : shapeB.rgb;
+    return float4(color, shape);
+}
+
+/// Smoothed Union
+/// @param shapeA First shape SDF value
+/// @param shapeB Second shape SDF value
+/// @param t Smooth interpolation value (0.0 to 1.0)
+/// @return SDF value of the shapes smoothed union
+inline float4 opSmoothUnion(float4 shapeA, float4 shapeB, float4 t)
+{
+    float h = clamp(0.5 + 0.5 * (shapeB.w - shapeA.w) / t, 0.0, 1.0);
+    float shape = lerp(shapeB.w, shapeA.w, h) - t * h * (1.0 - h);
+    float3 color = lerp(shapeB.rgb, shapeA.rgb, h);
+    
+    return float4(color, shape);
+}
+/// @param shapeA First shape SDF value
+/// @param shapeB Second shape SDF value
+/// @param t Smooth interpolation value (0.0 to 1.0)
+/// @return SDF value of the shapes smoothed union
+inline float4 opSmoothUnionX4(float4 shapeA, float4 shapeB, float t)
+{
+    // Different way of getting smoothed min, t is also multiplied by 4 
+    t *= 4.0;
+    float h = max(t - abs(shapeA.w - shapeB.w), 0.0);
+    float shape = min(shapeA.w, shapeB.w) - h * h * 0.25 / t;
+    float3 color = lerp(shapeB.rgb, shapeA.rgb, h);
+    
+    return float4(color, shape);
+}
+
+/// Substraction
+/// - Note: subtracted item depends on the order, produce only exterior sdf
+/// @param shapeToSubtract Shape that will subtract from the other shape
+/// @param otherShape Shape that will be subtracted
+/// @return SDF value of the shapes subtraction
+inline float4 opSubtraction(float shapeToSubtract, float4 otherShape)
+{
+    float shape = max(-shapeToSubtract, otherShape.w);
+    float3 color = otherShape.rgb;
+    
+    return float4(color, shape);
+}
+
+/// Smooth Substraction
+/// @param shapeToSubtract First shape SDF value
+/// @param otherShape Second shape SDF value
+/// @param t Smooth interpolation value (0.0 to 1.0)
+/// @return SDF value of the shapes smoothed subtraction
+inline float4 opSmoothSubtraction(float shapeToSubtract, float4 otherShape, float t)
+{
+    float shape = -opSmoothUnion(shapeToSubtract, -otherShape.w, t);
+    float3 color = otherShape.rgb;
+        
+    return float4(color, shape);
+}
+
+/// Intersection
+/// - Note: produce only exterior sdf
+/// @param shapeA First shape SDF value
+/// @param shapeB Second shape SDF value
+/// @return SDF value of the shapes intersection
+inline float4 opIntersection(float4 shapeA, float shapeB)
+{
+    float shape = max(shapeA.w, shapeB);
+    float3 color = shapeA.rgb;
+    
+    return float4(color, shape);
+}
+
+/// Smooth Intersection
+/// @param shapeA First shape SDF value
+/// @param shapeB Second shape SDF value
+/// @param t Smooth interpolation value (0.0 to 1.0)
+/// @return SDF value of the shapes smoothed intersection
+inline float4 opSmoothIntersection(float4 shapeA, float shapeB, float t)
+{
+    float shape = -opSmoothUnion(-shapeA.w, -shapeB, t);
+    float3 color = shapeA.rgb;
+    
+    return float4(color, shape);
+}
+
+/// XOR (Exclusive OR: render only the areas where they not overlap)
+/// - Note: produce true sdf (exterior and interior)
+/// @param shapeA First shape SDF value
+/// @param shapeB Second shape SDF value
+/// @return SDF value of the shapes XOR operation
+inline float4 opXor(float4 shapeA, float4 shapeB)
+{
+    float shape = max(min(shapeA, shapeB), -max(shapeA, shapeB));
+    float3 color = shape == shapeA.w ? shapeA.rgb : shapeB.rgb;
+    
+    return float4(color, shape);
+}
+
+
+
 // ---------------------
 // ----- TRANSFORM -----
 // ---------------------
