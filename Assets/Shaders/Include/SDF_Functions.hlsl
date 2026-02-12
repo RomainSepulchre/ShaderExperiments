@@ -867,8 +867,8 @@ inline float opSmoothUnionX4(float shapeA, float shapeB, float t)
 
 /// Substraction
 /// - Note: subtracted item depends on the order, produce only exterior sdf
-/// @param shapeToSubtract Shape that will subtract from the other shape
-/// @param otherShape Shape that will be subtracted
+/// @param shapeToSubtract SDF value of the shape that will subtract from the other shape
+/// @param otherShape SDF value of the shape that will be subtracted
 /// @return SDF value of the shapes subtraction
 inline float opSubtraction( float shapeToSubtract, float otherShape)
 {
@@ -876,8 +876,8 @@ inline float opSubtraction( float shapeToSubtract, float otherShape)
 }
 
 /// Smooth Substraction
-/// @param shapeToSubtract First shape SDF value
-/// @param otherShape Second shape SDF value
+/// @param shapeToSubtract SDF value of the shape that will subtract from the other shape
+/// @param otherShape SDF value of the shape that will be subtracted
 /// @param t Smooth interpolation value (0.0 to 1.0)
 /// @return SDF value of the shapes smoothed subtraction
 inline float opSmoothSubtraction(float shapeToSubtract, float otherShape, float t)
@@ -923,9 +923,9 @@ inline float opXor(float shapeA, float shapeB)
 
 /// Union
 /// - Note: produce true sdf (exterior and interior)
-/// @param shapeA First shape SDF value
-/// @param shapeB Second shape SDF value
-/// @return SDF value of the shapes union
+/// @param shapeA First shape color and SDF value (XYZ = RGB color, W = SDF value)
+/// @param shapeB Second shape color and SDF value (XYZ = RGB color, W = SDF value)
+/// @return Color and SDF value of the shapes union (XYZ = RGB color, W = SDF value)
 inline float4 opUnion(float4 shapeA, float4 shapeB)
 {
     float shape = min(shapeA.w, shapeB.w);
@@ -934,10 +934,10 @@ inline float4 opUnion(float4 shapeA, float4 shapeB)
 }
 
 /// Smoothed Union
-/// @param shapeA First shape SDF value
-/// @param shapeB Second shape SDF value
+/// @param shapeA First shape color and SDF value (XYZ = RGB color, W = SDF value)
+/// @param shapeB Second shape color and SDF value (XYZ = RGB color, W = SDF value)
 /// @param t Smooth interpolation value (0.0 to 1.0)
-/// @return SDF value of the shapes smoothed union
+/// @return Color and SDF value of the shapes smoothed union (XYZ = RGB color, W = SDF value)
 inline float4 opSmoothUnion(float4 shapeA, float4 shapeB, float4 t)
 {
     float h = clamp(0.5 + 0.5 * (shapeB.w - shapeA.w) / t, 0.0, 1.0);
@@ -946,10 +946,10 @@ inline float4 opSmoothUnion(float4 shapeA, float4 shapeB, float4 t)
     
     return float4(color, shape);
 }
-/// @param shapeA First shape SDF value
-/// @param shapeB Second shape SDF value
+/// @param shapeA First shape color and SDF value (XYZ = RGB color, W = SDF value)
+/// @param shapeB Second shape color and SDF value (XYZ = RGB color, W = SDF value)
 /// @param t Smooth interpolation value (0.0 to 1.0)
-/// @return SDF value of the shapes smoothed union
+/// @return Color and SDF value of the shapes smoothed union (XYZ = RGB color, W = SDF value)
 inline float4 opSmoothUnionX4(float4 shapeA, float4 shapeB, float t)
 {
     // Different way of getting smoothed min, t is also multiplied by 4 
@@ -963,9 +963,9 @@ inline float4 opSmoothUnionX4(float4 shapeA, float4 shapeB, float t)
 
 /// Substraction
 /// - Note: subtracted item depends on the order, produce only exterior sdf
-/// @param shapeToSubtract Shape that will subtract from the other shape
-/// @param otherShape Shape that will be subtracted
-/// @return SDF value of the shapes subtraction
+/// @param shapeToSubtract SDF value of the shape that will subtract from the other shape
+/// @param otherShape Color and SDF value of the shape that will be subtracted (XYZ = RGB color, W = SDF value)
+/// @return Color and SDF value of the shapes subtraction (XYZ = RGB color, W = SDF value)
 inline float4 opSubtraction(float shapeToSubtract, float4 otherShape)
 {
     float shape = max(-shapeToSubtract, otherShape.w);
@@ -975,10 +975,10 @@ inline float4 opSubtraction(float shapeToSubtract, float4 otherShape)
 }
 
 /// Smooth Substraction
-/// @param shapeToSubtract First shape SDF value
-/// @param otherShape Second shape SDF value
+/// @param shapeToSubtract SDF value of the shape that will subtract from the other shape
+/// @param otherShape Color and SDF value of the shape that will be subtracted (XYZ = RGB color, W = SDF value)
 /// @param t Smooth interpolation value (0.0 to 1.0)
-/// @return SDF value of the shapes smoothed subtraction
+/// @return Color and SDF value of the shapes smoothed subtraction (XYZ = RGB color, W = SDF value)
 inline float4 opSmoothSubtraction(float shapeToSubtract, float4 otherShape, float t)
 {
     float shape = -opSmoothUnion(shapeToSubtract, -otherShape.w, t);
@@ -989,9 +989,9 @@ inline float4 opSmoothSubtraction(float shapeToSubtract, float4 otherShape, floa
 
 /// Intersection
 /// - Note: produce only exterior sdf
-/// @param shapeA First shape SDF value
+/// @param shapeA First shape color and SDF value (XYZ = RGB color, W = SDF value)
 /// @param shapeB Second shape SDF value
-/// @return SDF value of the shapes intersection
+/// @return Color and SDF value of the shapes intersection (XYZ = RGB color, W = SDF value)
 inline float4 opIntersection(float4 shapeA, float shapeB)
 {
     float shape = max(shapeA.w, shapeB);
@@ -1001,10 +1001,10 @@ inline float4 opIntersection(float4 shapeA, float shapeB)
 }
 
 /// Smooth Intersection
-/// @param shapeA First shape SDF value
+/// @param shapeA First shape color and SDF value (XYZ = RGB color, W = SDF value)
 /// @param shapeB Second shape SDF value
 /// @param t Smooth interpolation value (0.0 to 1.0)
-/// @return SDF value of the shapes smoothed intersection
+/// @return Color and SDF value of the shapes smoothed intersection (XYZ = RGB color, W = SDF value)
 inline float4 opSmoothIntersection(float4 shapeA, float shapeB, float t)
 {
     float shape = -opSmoothUnion(-shapeA.w, -shapeB, t);
@@ -1015,9 +1015,9 @@ inline float4 opSmoothIntersection(float4 shapeA, float shapeB, float t)
 
 /// XOR (Exclusive OR: render only the areas where they not overlap)
 /// - Note: produce true sdf (exterior and interior)
-/// @param shapeA First shape SDF value
-/// @param shapeB Second shape SDF value
-/// @return SDF value of the shapes XOR operation
+/// @param shapeA First shape color and SDF value (XYZ = RGB color, W = SDF value)
+/// @param shapeB Second shape color and SDF value (XYZ = RGB color, W = SDF value)
+/// @return Color and SDF value of the shapes XOR operation (XYZ = RGB color, W = SDF value)
 inline float4 opXor(float4 shapeA, float4 shapeB)
 {
     float shape = max(min(shapeA, shapeB), -max(shapeA, shapeB));

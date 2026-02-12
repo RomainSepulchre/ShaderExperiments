@@ -29,7 +29,7 @@ Shader "LearnShader/Sphere Tracing/Constructive Solid Geometry"
             //#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
             
             // SDF Functions
-            #include "Assets/Shaders/SphereTracing/SDF_Functions.hlsl" // Cginc file that include all the SDF functions
+            #include "Assets/Shaders/Include/SDF_Functions.hlsl" // Cginc file that include all the SDF functions
             
             sampler2D _MainTex;
             uniform sampler2D _CameraDepthTexture;
