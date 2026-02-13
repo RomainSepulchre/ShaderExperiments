@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <project version="2">
 	<pipeline>
-		<pass name="Simple" type="shader" active="true" patchverts="1">
-			<shader type="vs" path="shaders\test_SimpleVS.hlsl" entry="main" />
-			<shader type="ps" path="shaders\test_SimplePS.hlsl" entry="main" />
+		<pass name="Main" type="shader" active="true" patchverts="1" collapsed="true">
+			<shader type="vs" path="shaders\TryFeatures_MainVS.hlsl" entry="main" />
+			<shader type="ps" path="shaders\TryFeatures_MainPS.hlsl" entry="main" />
 			<inputlayout>
 				<item value="Position" semantic="POSITION" />
 				<item value="Normal" semantic="NORMAL" />
@@ -16,8 +16,6 @@
 					<width>1</width>
 					<height>1</height>
 					<depth>1</depth>
-					<pitch>0.183783144</pitch>
-					<yaw>0.511381447</yaw>
 					<topology>TriangleList</topology>
 				</item>
 				<item name="quad" type="geometry">
@@ -33,18 +31,18 @@
 				<variable type="float4x4" name="matVP" system="ViewProjection" />
 				<variable type="float4x4" name="matGeo" system="GeometryTransform" />
 				<variable type="float" name="time" system="Time" />
+				<variable type="float" name="timeSpeed">
+					<row>
+						<value>2</value>
+					</row>
+				</variable>
 				<variable type="float2" name="mousePos" system="MousePosition" />
 				<variable type="float4" name="varColor">
 					<row>
 						<value>1</value>
 						<value>1</value>
-						<value>0</value>
 						<value>1</value>
-					</row>
-				</variable>
-				<variable type="float" name="timeSpeed">
-					<row>
-						<value>2</value>
+						<value>1</value>
 					</row>
 				</variable>
 			</variables>
@@ -53,20 +51,19 @@
 	</pipeline>
 	<objects>
 		<object type="texture" path="..\..\..\..\..\Program Files\SHADERed\icon_256x256.png" vflip="false" min_filter="Linear" mag_filter="Nearest" wrap_s="Repeat" wrap_t="Repeat">
-			<bind slot="0" name="Simple" />
+			<bind slot="0" name="Main" />
 		</object>
 	</objects>
 	<cameras />
 	<settings>
-		<entry type="property" name="Simple" item="pipe" />
-		<entry type="file" name="Simple" shader="vs" />
-		<entry type="file" name="Simple" shader="ps" />
-		<entry type="pinned" name="varColor" owner="Simple" />
-		<entry type="pinned" name="timeSpeed" owner="Simple" />
+		<entry type="file" name="Main" shader="vs" />
+		<entry type="file" name="Main" shader="ps" />
+		<entry type="pinned" name="timeSpeed" owner="Main" />
+		<entry type="pinned" name="varColor" owner="Main" />
 		<entry type="camera" fp="false">
 			<distance>6</distance>
-			<pitch>10</pitch>
-			<yaw>216</yaw>
+			<pitch>-1</pitch>
+			<yaw>182</yaw>
 			<roll>360</roll>
 		</entry>
 		<entry type="clearcolor" r="0" g="0" b="0" a="1" />
