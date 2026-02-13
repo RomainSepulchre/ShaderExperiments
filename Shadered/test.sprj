@@ -16,7 +16,15 @@
 					<width>1</width>
 					<height>1</height>
 					<depth>1</depth>
-					<yaw>4.50277472</yaw>
+					<pitch>0.183783144</pitch>
+					<yaw>0.511381447</yaw>
+					<topology>TriangleList</topology>
+				</item>
+				<item name="quad" type="geometry">
+					<type>ScreenQuadNDC</type>
+					<width>1</width>
+					<height>1</height>
+					<depth>1</depth>
 					<topology>TriangleList</topology>
 				</item>
 			</items>
@@ -24,24 +32,49 @@
 			<variables>
 				<variable type="float4x4" name="matVP" system="ViewProjection" />
 				<variable type="float4x4" name="matGeo" system="GeometryTransform" />
+				<variable type="float" name="time" system="Time" />
+				<variable type="float2" name="mousePos" system="MousePosition" />
+				<variable type="float4" name="varColor">
+					<row>
+						<value>1</value>
+						<value>1</value>
+						<value>0</value>
+						<value>1</value>
+					</row>
+				</variable>
+				<variable type="float" name="timeSpeed">
+					<row>
+						<value>2</value>
+					</row>
+				</variable>
 			</variables>
 			<macros />
 		</pass>
 	</pipeline>
-	<objects />
+	<objects>
+		<object type="texture" path="..\..\..\..\..\Program Files\SHADERed\icon_256x256.png" vflip="false" min_filter="Linear" mag_filter="Nearest" wrap_s="Repeat" wrap_t="Repeat">
+			<bind slot="0" name="Simple" />
+		</object>
+	</objects>
 	<cameras />
 	<settings>
-		<entry type="property" name="Box" item="pipe" />
+		<entry type="property" name="Simple" item="pipe" />
 		<entry type="file" name="Simple" shader="vs" />
 		<entry type="file" name="Simple" shader="ps" />
+		<entry type="pinned" name="varColor" owner="Simple" />
+		<entry type="pinned" name="timeSpeed" owner="Simple" />
 		<entry type="camera" fp="false">
-			<distance>8</distance>
-			<pitch>31</pitch>
-			<yaw>50</yaw>
+			<distance>6</distance>
+			<pitch>10</pitch>
+			<yaw>216</yaw>
 			<roll>360</roll>
 		</entry>
 		<entry type="clearcolor" r="0" g="0" b="0" a="1" />
 		<entry type="usealpha" val="false" />
+		<entry type="watch_expr" expr="texCol.rgb" />
+		<entry type="watch_expr" expr="pin.Color" />
+		<entry type="vecwatch_expr" expr="normalize(pin.Normal)" color_r="0.949806929" color_g="0.726107061" color_b="0" />
+		<entry type="vecwatch_expr" expr="pin.Color" color_r="0.788235307" color_g="0.470588237" color_b="0.549019635" />
 	</settings>
 	<plugindata />
 </project>
