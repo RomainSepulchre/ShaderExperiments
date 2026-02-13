@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <project version="2">
 	<pipeline>
-		<pass name="Main" type="shader" active="true" patchverts="1" collapsed="true">
+		<pass name="Main" type="shader" active="true" patchverts="1">
 			<shader type="vs" path="shaders\TryFeatures_MainVS.hlsl" entry="main" />
 			<shader type="ps" path="shaders\TryFeatures_MainPS.hlsl" entry="main" />
 			<inputlayout>
@@ -48,22 +48,53 @@
 			</variables>
 			<macros />
 		</pass>
+		<pass name="simpleRT" type="shader" active="true" patchverts="1">
+			<shader type="vs" path="shaders\simpleRTVS.hlsl" entry="main" />
+			<shader type="ps" path="shaders\simpleRTPS.hlsl" entry="main" />
+			<inputlayout>
+				<item value="Position" semantic="POSITION" />
+				<item value="Normal" semantic="NORMAL" />
+				<item value="Texcoord" semantic="TEXCOORD0" />
+			</inputlayout>
+			<rendertexture name="rt" />
+			<items>
+				<item name="sphere" type="geometry">
+					<type>Sphere</type>
+					<width>1</width>
+					<height>1</height>
+					<depth>1</depth>
+					<topology>TriangleList</topology>
+				</item>
+			</items>
+			<itemvalues />
+			<variables>
+				<variable type="float4x4" name="matVP" system="ViewProjection" />
+				<variable type="float4x4" name="matGeo" system="GeometryTransform" />
+			</variables>
+			<macros />
+		</pass>
 	</pipeline>
 	<objects>
 		<object type="texture" path="..\..\..\..\..\Program Files\SHADERed\icon_256x256.png" vflip="false" min_filter="Linear" mag_filter="Nearest" wrap_s="Repeat" wrap_t="Repeat">
 			<bind slot="0" name="Main" />
 		</object>
+		<object type="rendertexture" name="rt" fsize="1024,1024" clear="true">
+			<bind slot="1" name="Main" />
+		</object>
 	</objects>
 	<cameras />
 	<settings>
+		<entry type="property" name="rt" item="rt" />
+		<entry type="file" name="simpleRT" shader="vs" />
+		<entry type="file" name="simpleRT" shader="ps" />
 		<entry type="file" name="Main" shader="vs" />
 		<entry type="file" name="Main" shader="ps" />
 		<entry type="pinned" name="timeSpeed" owner="Main" />
 		<entry type="pinned" name="varColor" owner="Main" />
 		<entry type="camera" fp="false">
-			<distance>6</distance>
-			<pitch>-1</pitch>
-			<yaw>182</yaw>
+			<distance>4</distance>
+			<pitch>0</pitch>
+			<yaw>180</yaw>
 			<roll>360</roll>
 		</entry>
 		<entry type="clearcolor" r="0" g="0" b="0" a="1" />
