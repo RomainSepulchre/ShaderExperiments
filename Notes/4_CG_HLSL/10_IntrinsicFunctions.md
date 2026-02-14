@@ -80,7 +80,9 @@ sin(x) // sine of x
 cos(x) // cosine of x
 ```
 
-![sine and cosine period](https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Sine_cosine_one_period.svg/2560px-Sine_cosine_one_period.svg.png)
+<img src="Images/sincos.gif" alt="Representation of a sin and cos function" height="300"/>
+<img src="Images/Sine_cosine_one_period.png" alt="sine and cosine period" height="300"/>
+
 <!-- Backup link of the image: https://en.wikipedia.org/wiki/Sine_and_cosine#/media/File:Sine_cosine_one_period.svg -->
 
 `sin()` and `cos()` are very useful functions in computer graphics, you can use them to generate geometric figures and matrix transformations.
