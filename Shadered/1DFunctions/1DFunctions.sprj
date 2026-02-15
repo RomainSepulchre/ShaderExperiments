@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <project version="2">
 	<pipeline>
-		<pass name="Main" type="shader" active="false" patchverts="1" collapsed="true">
+		<pass name="Main" type="shader" active="true" patchverts="1" collapsed="true">
 			<shader type="vs" path="shaders\1DFunctions_MainVS.hlsl" entry="main" />
 			<shader type="ps" path="shaders\1DFunctions_MainPS.hlsl" entry="main" />
 			<inputlayout>
@@ -23,6 +23,25 @@
 			<variables>
 				<variable type="float2" name="uResolution" system="ViewportSize" />
 				<variable type="float" name="uTime" system="Time" />
+				<variable type="float" name="lineThickness">
+					<row>
+						<value>1</value>
+					</row>
+				</variable>
+				<variable type="float4" name="linePosAB">
+					<row>
+						<value>0.200000003</value>
+						<value>0.300000012</value>
+						<value>0.800000012</value>
+						<value>0.899999976</value>
+					</row>
+				</variable>
+				<variable type="float2" name="linePosC">
+					<row>
+						<value>0.670000017</value>
+						<value>0.379999995</value>
+					</row>
+				</variable>
 			</variables>
 			<macros />
 		</pass>
@@ -87,17 +106,20 @@
 	<objects />
 	<cameras />
 	<settings>
-		<entry type="property" name="Plot" item="pipe" />
-		<entry type="file" name="Plot" shader="vs" />
-		<entry type="file" name="Plot" shader="ps" />
+		<entry type="property" name="Main" item="pipe" />
+		<entry type="file" name="Main" shader="vs" />
+		<entry type="file" name="Main" shader="ps" />
 		<entry type="pinned" name="plotThickness" owner="Plot" />
 		<entry type="pinned" name="plotExponent" owner="Plot" />
 		<entry type="pinned" name="stepValue" owner="Plot" />
 		<entry type="pinned" name="smoothstepValue" owner="Plot" />
 		<entry type="pinned" name="mirrorStEnTh" owner="Plot" />
 		<entry type="pinned" name="moduloDivisor" owner="Plot" />
+		<entry type="pinned" name="lineThickness" owner="Main" />
+		<entry type="pinned" name="linePosAB" owner="Main" />
+		<entry type="pinned" name="linePosC" owner="Main" />
 		<entry type="camera" fp="false">
-			<distance>4</distance>
+			<distance>10</distance>
 			<pitch>28</pitch>
 			<yaw>317</yaw>
 			<roll>360</roll>
