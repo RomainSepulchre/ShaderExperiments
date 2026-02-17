@@ -22,6 +22,9 @@ uniform float moduloDivisor = 0.5;
 // --- Functions ---
 // -----------------
 
+// Draw functions
+// ..............
+
 float plotLine(float2 uv, float pct)
 {
 	return smoothstep(pct - plotThickness, pct, uv.y) - 
@@ -41,6 +44,59 @@ float4 drawPlot(float plot, float value, float3 lineColor = float3(1.0,1.0,0.0))
     return float4(color,1.0);
 }
 
+// plot functions
+// ..............
+
+float impulse(float k, float x)
+{
+    float h = k * x;
+    return h * exp(1.0 - h);
+}
+
+float cubicPulse(float c, float w, float x)
+{
+    x = abs(x - c);
+    if(x > w) return 0.0;
+    x /= w;
+    return 1.0 - x * x * (3.0  - 2.0 * x);
+}
+
+float expStep(float k, float n, float x)
+{
+    return exp( -k * pow(x,n));
+}
+
+float parabola(float k, float x)
+{
+    return pow(4.0 * x * (1.0 - x), k);
+}
+
+float pcurve(float a, float b, float x)
+{
+    float k = pow(a + b, a + b) / (pow(a,a) * pow(b,b));
+    return k * pow(x, a) * pow(1.0 - x, b);
+}
+
+float quadraticBezier(float2 a, float x)
+{
+  	float epsilon = 0.00001;
+  	a.x = clamp(a.x, 0.0, 1.0); 
+  	a.y = clamp(a.y, 0.0, 1.0); 
+  	if (a.x == 0.5) a += epsilon;
+  	
+  	// solve t from x (an inverse operation)
+  	float om2a = 1.0 - 2.0 * a.x;
+ 	float t = (sqrt(a.x * a.x + om2a * x) - a.x) / om2a;
+  	float y = (1.0 - 2.0 * a.y) * (t * t) + (2.0 * a.y) * t;
+  	
+  	return y;
+}
+
+// Cubic bezier
+// https://thebookofshaders.com/edit.php?log=160414041933
+
+// Cubic bezier through 2 points
+// https://thebookofshaders.com/edit.php?log=160414041756
 
 // ****************
 // ***** Main *****
@@ -86,7 +142,28 @@ float4 main(float4 fragCoord : SV_POSITION) : SV_TARGET
     //y = floor(sin(uv.x * PI + uTime));
     
     // Modulo
-    y = fmod(uv.x,moduloDivisor);   
+    y = fmod(uv.x,moduloDivisor);
+    
+    // Impulse
+    y = impulse(9 + sin(uTime) * 2, uv.x);
+    
+    // Cubic pulse
+    y = cubicPulse(0.5 + sin(uTime) / 6, 0.2 + cos(uTime) / 10, uv.x);
+    
+    // Exponential Step
+    y = expStep(10 + sin(uTime) * 4,2 + cos(uTime), uv.x);
+    
+    // Parabola
+    y = parabola( 2 + sin(uTime) * 1.5, uv.x);
+    
+    // PCurve
+    y = pcurve(1 + sin(uTime), 1 + cos(uTime), uv.x);
+    
+    // Quadratic Bezier
+    float2 qBezier = float2(cos(uTime), sin(uTime)) * 0.45 + 0.5;
+    y = quadraticBezier(qBezier, uv.x);
+    
+    // Cubic bezier
     
     float plot = plotLine(uv, y);
     return drawPlot(plot, y);

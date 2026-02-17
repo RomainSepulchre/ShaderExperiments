@@ -32,8 +32,8 @@
 					<row>
 						<value>0.200000003</value>
 						<value>0.300000012</value>
-						<value>0.800000012</value>
-						<value>0.899999976</value>
+						<value>0.699999988</value>
+						<value>0.699999988</value>
 					</row>
 				</variable>
 				<variable type="float2" name="linePosC">
@@ -109,6 +109,8 @@
 		<entry type="property" name="Main" item="pipe" />
 		<entry type="file" name="Main" shader="vs" />
 		<entry type="file" name="Main" shader="ps" />
+		<entry type="file" name="Plot" shader="vs" />
+		<entry type="file" name="Plot" shader="ps" />
 		<entry type="pinned" name="plotThickness" owner="Plot" />
 		<entry type="pinned" name="plotExponent" owner="Plot" />
 		<entry type="pinned" name="stepValue" owner="Plot" />

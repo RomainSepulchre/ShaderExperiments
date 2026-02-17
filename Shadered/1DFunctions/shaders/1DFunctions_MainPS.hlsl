@@ -31,9 +31,14 @@ float4 main(float4 fragCoord : SV_POSITION) : SV_TARGET
 {
     float2 uv = fragCoord.xy/uResolution;
     
-    float line1 = lineSegment(uv, linePosAB.xy, linePosAB.zw, lineThickness);
-    float line2 = lineSegment(uv, linePosAB.zw.xy, linePosC, lineThickness);
-    float line3 = lineSegment(uv, linePosC, linePosAB.xy, lineThickness);
+    
+    float2 A = linePosAB.xy + (float2(sin(uTime), cos(uTime)) / 5);
+    float2 B = linePosAB.zw + (float2(sin(uTime+1), cos(uTime+1)) / 5);
+    float2 C = linePosC + (float2(sin(uTime+2), cos(uTime+2)) / 5);
+    
+    float line1 = lineSegment(uv, A, B, lineThickness);
+    float line2 = lineSegment(uv, B, C, lineThickness);
+    float line3 = lineSegment(uv, C, A, lineThickness);
     
     return line1 + line2 + line3;
     //return float4(uv, 0.0, 1.0);
