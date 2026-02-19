@@ -1,0 +1,185 @@
+<?xml version="1.0"?>
+<project version="2">
+	<pipeline>
+		<pass name="FBM" type="shader" active="false" patchverts="1">
+			<shader type="vs" path="shaders\NoiseFunctions_FbmVS.hlsl" entry="main" />
+			<shader type="ps" path="shaders\NoiseFunctions_FbmPS.hlsl" entry="main" />
+			<inputlayout>
+				<item value="Position" semantic="POSITION" />
+				<item value="Normal" semantic="NORMAL" />
+				<item value="Texcoord" semantic="TEXCOORD0" />
+			</inputlayout>
+			<rendertexture />
+			<items>
+				<item name="screen0" type="geometry">
+					<type>ScreenQuadNDC</type>
+					<width>1</width>
+					<height>1</height>
+					<depth>1</depth>
+					<topology>TriangleList</topology>
+				</item>
+			</items>
+			<itemvalues />
+			<variables>
+				<variable type="float2" name="uResolution" system="ViewportSize" />
+				<variable type="float" name="uTime" system="Time" />
+				<variable type="float" name="fbmAmplitude">
+					<row>
+						<value>1</value>
+					</row>
+				</variable>
+				<variable type="int" name="fbmOctaves">
+					<row>
+						<value>4</value>
+					</row>
+				</variable>
+				<variable type="float" name="fbmGridLength">
+					<row>
+						<value>4</value>
+					</row>
+				</variable>
+			</variables>
+			<macros />
+		</pass>
+		<pass name="DomainWarp" type="shader" active="false" patchverts="1">
+			<shader type="vs" path="shaders\NoiseFunctions_DomainWarpVS.hlsl" entry="main" />
+			<shader type="ps" path="shaders\NoiseFunctions_DomainWarpPS.hlsl" entry="main" />
+			<inputlayout>
+				<item value="Position" semantic="POSITION" />
+				<item value="Normal" semantic="NORMAL" />
+				<item value="Texcoord" semantic="TEXCOORD0" />
+			</inputlayout>
+			<rendertexture />
+			<items>
+				<item name="screen1" type="geometry">
+					<type>ScreenQuadNDC</type>
+					<width>1</width>
+					<height>1</height>
+					<depth>1</depth>
+					<topology>TriangleList</topology>
+				</item>
+			</items>
+			<itemvalues />
+			<variables>
+				<variable type="float2" name="uResolution" system="ViewportSize" />
+				<variable type="float" name="uTime" system="Time" />
+				<variable type="float" name="dwGridLength">
+					<row>
+						<value>4</value>
+					</row>
+				</variable>
+				<variable type="float" name="dwAmplitude">
+					<row>
+						<value>1</value>
+					</row>
+				</variable>
+				<variable type="int" name="dwOctaves">
+					<row>
+						<value>5</value>
+					</row>
+				</variable>
+			</variables>
+			<macros />
+		</pass>
+		<pass name="CalculateNormal" type="shader" active="true" patchverts="1">
+			<shader type="vs" path="shaders\NoiseFunctions_CalculateNormalVS.hlsl" entry="main" />
+			<shader type="ps" path="shaders\NoiseFunctions_CalculateNormalPS.hlsl" entry="main" />
+			<inputlayout>
+				<item value="Position" semantic="POSITION" />
+				<item value="Normal" semantic="NORMAL" />
+				<item value="Texcoord" semantic="TEXCOORD0" />
+			</inputlayout>
+			<rendertexture />
+			<items>
+				<item name="screen2" type="geometry">
+					<type>ScreenQuadNDC</type>
+					<width>1</width>
+					<height>1</height>
+					<depth>1</depth>
+					<topology>TriangleList</topology>
+				</item>
+			</items>
+			<itemvalues />
+			<variables>
+				<variable type="float" name="normGridLength">
+					<row>
+						<value>0.810000002</value>
+					</row>
+				</variable>
+				<variable type="float" name="normAmplitude">
+					<row>
+						<value>1</value>
+					</row>
+				</variable>
+				<variable type="int" name="normOctaves">
+					<row>
+						<value>3</value>
+					</row>
+				</variable>
+				<variable type="float2" name="uResolution" system="ViewportSize" />
+				<variable type="float" name="uTime" system="Time" />
+				<variable type="float3" name="normLightColor">
+					<row>
+						<value>0.764478743</value>
+						<value>0.67099613</value>
+						<value>0.268600672</value>
+					</row>
+				</variable>
+				<variable type="float" name="normSpecularIntensity">
+					<row>
+						<value>32</value>
+					</row>
+				</variable>
+				<variable type="bool" name="normShowNormals">
+					<row>
+						<value>false</value>
+					</row>
+				</variable>
+				<variable type="bool" name="normShowOnlyDiffuse">
+					<row>
+						<value>false</value>
+					</row>
+				</variable>
+				<variable type="bool" name="normShowOnlySpecular">
+					<row>
+						<value>true</value>
+					</row>
+				</variable>
+			</variables>
+			<macros />
+		</pass>
+	</pipeline>
+	<objects />
+	<cameras />
+	<settings>
+		<entry type="file" name="FBM" shader="vs" />
+		<entry type="file" name="FBM" shader="ps" />
+		<entry type="file" name="DomainWarp" shader="vs" />
+		<entry type="file" name="DomainWarp" shader="ps" />
+		<entry type="file" name="CalculateNormal" shader="vs" />
+		<entry type="file" name="CalculateNormal" shader="ps" />
+		<entry type="pinned" name="fbmGridLength" owner="FBM" />
+		<entry type="pinned" name="fbmAmplitude" owner="FBM" />
+		<entry type="pinned" name="fbmOctaves" owner="FBM" />
+		<entry type="pinned" name="dwGridLength" owner="DomainWarp" />
+		<entry type="pinned" name="dwAmplitude" owner="DomainWarp" />
+		<entry type="pinned" name="dwOctaves" owner="DomainWarp" />
+		<entry type="pinned" name="normGridLength" owner="CalculateNormal" />
+		<entry type="pinned" name="normAmplitude" owner="CalculateNormal" />
+		<entry type="pinned" name="normOctaves" owner="CalculateNormal" />
+		<entry type="pinned" name="normLightColor" owner="CalculateNormal" />
+		<entry type="pinned" name="normSpecularIntensity" owner="CalculateNormal" />
+		<entry type="pinned" name="normShowNormals" owner="CalculateNormal" />
+		<entry type="pinned" name="normShowOnlyDiffuse" owner="CalculateNormal" />
+		<entry type="pinned" name="normShowOnlySpecular" owner="CalculateNormal" />
+		<entry type="camera" fp="false">
+			<distance>25</distance>
+			<pitch>28</pitch>
+			<yaw>317</yaw>
+			<roll>360</roll>
+		</entry>
+		<entry type="clearcolor" r="0" g="0" b="0" a="0" />
+		<entry type="usealpha" val="false" />
+	</settings>
+	<plugindata />
+</project>
