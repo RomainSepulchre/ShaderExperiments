@@ -6,6 +6,16 @@ cbuffer vars : register(b0)
 };
 
 uniform float gridLength;
+uniform int showGridOutline;
+uniform float gridOutlineThickness;
+uniform int onlyPoints;
+uniform float pointSize;
+uniform int onlyClosestPointDist;
+uniform int offsetPoints;
+uniform float2 offsetIntensity;
+uniform int AnimatePoints;
+uniform int cloudVoronoi;
+
 
 float2 noise2x2(float2 p)
 {
@@ -24,67 +34,83 @@ float4 main(float4 fragCoord : SV_POSITION) : SV_TARGET
     float2 uv = fragCoord.xy/uResolution;
     float3 color = 0;
     
-    //uv.x += sin(uTime) * 0.05;
-    //uv.y += cos(uTime) * 0.05;
-    
-    // Steps to create value noise:
-    // 1. Create a grid of cells with a point at the center
+    // Steps to create voronoi noise:
+    // 1. Create a grid of cells and define a point at the center
     // 2. Iterate through pixels and find minimum distance with closest point
     // 3. Use noise to offset the points and generate a more organic result
-    // 4. 
-    // 5.
     
-    // 1: Setup the grid
+    // 1.1: Setup the grid
     uv = uv * gridLength;
+    
+    if(!offsetPoints && AnimatePoints) uv += uTime; // Simple scroll animation when points are not offset
     
     float2 gridId = floor(uv);
     float2 gridCoord = frac(uv);
     
-    gridCoord = gridCoord - 0.5; // Center grid coord
-
-	// 1.2:
-	float2 redGridUV = gridCoord;
-	redGridUV = abs(redGridUV);
+    gridCoord = gridCoord - 0.5; // Center grid coordinates to place them at the center of the cell
 	
-	float distToCellEdge = 2.0 * max(redGridUV.x, redGridUV.y);
+	// 1.2: Create cell edges and get their distance
+	float2 gridCell = abs(gridCoord);
+	float distToCellEdge = 2.0 * max(gridCell.x, gridCell.y);
 	
-	color = distToCellEdge;
-	color = smoothstep(0.5, 1.0, distToCellEdge);
-	float3 redGridColor = float3(smoothstep(0.9, 1.0, distToCellEdge), 0, 0); // Red grid outline
+	float outlineMin = (1.0 - gridOutlineThickness) - 0.01; // 0.01 tells smooth intensity
+	float outlineMax = (1.0 - gridOutlineThickness) + 0.01; // 0.01 tells smooth intensity
+	float gridOutline = smoothstep(outlineMin, outlineMax, distToCellEdge);
 	
-	// 2.1:
+	// 2: Iterate through each pixels and find minimum distance to closest points
 	float pointsOnGrid = 0.0;
 	float minDistFromPixel = 100.0;
 	
+	// 2.1: Iterate around a uv position (here: gridCoord) 
 	for (float i = -1.0; i <= 1.0; i++)
 	{
 		for (float j = -1.0; j <= 1.0; j++)
 		{
 			float2 adjGridCoords = float2(i,j);
-			float2 pointOnAdjGrid = adjGridCoords;
-			//pointOnAdjGrid = adjGridCoords + sin(uTime) * 0.5;
-			float2 pointNoise = noise2x2(gridId + adjGridCoords);
-			pointOnAdjGrid = adjGridCoords + sin(uTime * pointNoise) * 0.5;
 			
-			float dist = length(gridCoord - pointOnAdjGrid);
+			float2 pointOnAdjGrid = adjGridCoords;
+			
+			// 3: Offset points position with a noise
+			float2 pointPosNoise = noise2x2(gridId + adjGridCoords);
+			if(offsetPoints && !AnimatePoints) // Offset only
+			{
+				pointOnAdjGrid = adjGridCoords + pointPosNoise * offsetIntensity; 
+			}
+			else if(offsetPoints && AnimatePoints) // Offset and animate
+			{
+				pointOnAdjGrid = adjGridCoords + sin(uTime * pointPosNoise) * offsetIntensity; 
+			}
+			
+			// 2.2: Calculate distance from points position to get min distance and draw points
+			float dist = length(gridCoord - pointOnAdjGrid); // Calculate 
+			
+			// 2.3: Get value to draw minimum distance to closest point
 			minDistFromPixel = min(dist, minDistFromPixel);
 			
-			pointsOnGrid += smoothstep(0.95, 0.96, 1.0 - dist);
+			// 2.3: Get value to draw points
+			float pointMinSize = (1.0 - pointSize) - 0.005; // 0.005 tells smooth intensity
+			float pointMaxSize = (1.0 - pointSize) + 0.005; // 0.005 tells smooth intensity
+			pointsOnGrid += smoothstep(pointMinSize, pointMaxSize, 1.0 - dist); // 1.0 - dist to invert circle mask
 		}
 	}
 	
-	float3 pointsOngridColor = pointsOnGrid;
-	color = redGridColor + pointsOngridColor;
-	color = redGridColor + pointsOngridColor + minDistFromPixel;
-	color = pointsOngridColor + minDistFromPixel;
+	if(onlyPoints) color = float4(pointsOnGrid.xxx,1);
+	else if (onlyClosestPointDist) color = float4(minDistFromPixel.xxx,1);
+	else
+	{
+		if(cloudVoronoi)
+		{
+			//color = smoothstep(0.0, 1.0,  minDistFromPixel);
+			color = smoothstep(0.0, 1.0,  1.0 - minDistFromPixel);
+		}
+		else
+		{
+			color = pointsOnGrid + minDistFromPixel;
+		}
+	}	
 	
+	if(showGridOutline) color.r = gridOutline;
 	
-	// cloud
-	color = smoothstep(0.0, 1.0, minDistFromPixel);
-	color = smoothstep(0.0, 1.0,  1.0 - minDistFromPixel);
-	
-	
-    
-    
-    return float4(color, 1);
+	return float4(color,1);
+
 }

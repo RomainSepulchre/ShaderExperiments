@@ -25,7 +25,53 @@
 				<variable type="float" name="uTime" system="Time" />
 				<variable type="float" name="gridLength">
 					<row>
-						<value>4</value>
+						<value>5</value>
+					</row>
+				</variable>
+				<variable type="bool" name="showGridOutline">
+					<row>
+						<value>false</value>
+					</row>
+				</variable>
+				<variable type="bool" name="onlyClosestPointDist">
+					<row>
+						<value>false</value>
+					</row>
+				</variable>
+				<variable type="bool" name="onlyPoints">
+					<row>
+						<value>false</value>
+					</row>
+				</variable>
+				<variable type="float" name="gridOutlineThickness">
+					<row>
+						<value>0.075000003</value>
+					</row>
+				</variable>
+				<variable type="bool" name="offsetPoints">
+					<row>
+						<value>true</value>
+					</row>
+				</variable>
+				<variable type="float2" name="offsetIntensity">
+					<row>
+						<value>0.5</value>
+						<value>0.5</value>
+					</row>
+				</variable>
+				<variable type="bool" name="AnimatePoints">
+					<row>
+						<value>true</value>
+					</row>
+				</variable>
+				<variable type="float" name="pointSize">
+					<row>
+						<value>0.0450000018</value>
+					</row>
+				</variable>
+				<variable type="bool" name="cloudVoronoi">
+					<row>
+						<value>false</value>
 					</row>
 				</variable>
 			</variables>
@@ -35,10 +81,18 @@
 	<objects />
 	<cameras />
 	<settings>
-		<entry type="property" name="Voronoi" item="pipe" />
 		<entry type="file" name="Voronoi" shader="vs" />
 		<entry type="file" name="Voronoi" shader="ps" />
 		<entry type="pinned" name="gridLength" owner="Voronoi" />
+		<entry type="pinned" name="cloudVoronoi" owner="Voronoi" />
+		<entry type="pinned" name="AnimatePoints" owner="Voronoi" />
+		<entry type="pinned" name="offsetPoints" owner="Voronoi" />
+		<entry type="pinned" name="offsetIntensity" owner="Voronoi" />
+		<entry type="pinned" name="pointSize" owner="Voronoi" />
+		<entry type="pinned" name="onlyPoints" owner="Voronoi" />
+		<entry type="pinned" name="onlyClosestPointDist" owner="Voronoi" />
+		<entry type="pinned" name="showGridOutline" owner="Voronoi" />
+		<entry type="pinned" name="gridOutlineThickness" owner="Voronoi" />
 		<entry type="camera" fp="false">
 			<distance>8</distance>
 			<pitch>28</pitch>
