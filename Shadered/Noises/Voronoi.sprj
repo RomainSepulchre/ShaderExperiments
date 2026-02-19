@@ -2,8 +2,8 @@
 <project version="2">
 	<pipeline>
 		<pass name="Voronoi" type="shader" active="true" patchverts="1">
-			<shader type="vs" path="shaders\Voronoi_ValueNoiseVS.hlsl" entry="main" />
-			<shader type="ps" path="shaders\Voronoi_ValueNoisePS.hlsl" entry="main" />
+			<shader type="vs" path="shaders\Voronoi_VoronoiVS.hlsl" entry="main" />
+			<shader type="ps" path="shaders\Voronoi_VoronoiPS.hlsl" entry="main" />
 			<inputlayout>
 				<item value="Position" semantic="POSITION" />
 				<item value="Normal" semantic="NORMAL" />
@@ -33,9 +33,9 @@
 						<value>false</value>
 					</row>
 				</variable>
-				<variable type="bool" name="onlyClosestPointDist">
+				<variable type="float" name="gridOutlineThickness">
 					<row>
-						<value>false</value>
+						<value>0.0450000018</value>
 					</row>
 				</variable>
 				<variable type="bool" name="onlyPoints">
@@ -43,9 +43,14 @@
 						<value>false</value>
 					</row>
 				</variable>
-				<variable type="float" name="gridOutlineThickness">
+				<variable type="float" name="pointSize">
 					<row>
-						<value>0.075000003</value>
+						<value>0.0450000018</value>
+					</row>
+				</variable>
+				<variable type="bool" name="onlyClosestPointDist">
+					<row>
+						<value>false</value>
 					</row>
 				</variable>
 				<variable type="bool" name="offsetPoints">
@@ -64,11 +69,6 @@
 						<value>true</value>
 					</row>
 				</variable>
-				<variable type="float" name="pointSize">
-					<row>
-						<value>0.0450000018</value>
-					</row>
-				</variable>
 				<variable type="bool" name="cloudVoronoi">
 					<row>
 						<value>false</value>
@@ -81,11 +81,12 @@
 	<objects />
 	<cameras />
 	<settings>
+		<entry type="property" name="Voronoi" item="pipe" />
 		<entry type="file" name="Voronoi" shader="vs" />
 		<entry type="file" name="Voronoi" shader="ps" />
 		<entry type="pinned" name="gridLength" owner="Voronoi" />
-		<entry type="pinned" name="cloudVoronoi" owner="Voronoi" />
 		<entry type="pinned" name="AnimatePoints" owner="Voronoi" />
+		<entry type="pinned" name="cloudVoronoi" owner="Voronoi" />
 		<entry type="pinned" name="offsetPoints" owner="Voronoi" />
 		<entry type="pinned" name="offsetIntensity" owner="Voronoi" />
 		<entry type="pinned" name="pointSize" owner="Voronoi" />
