@@ -71,6 +71,41 @@ float valueNoise(float2 uv)
     return vNoise;
 }
 
+//
+// Condensed value noise function with integrated FBM
+//
+float valueNoise(float2 uv, float amplitude, int octaves)
+{
+		float cells = cellCount;
+		
+		float vNoise = 0.0;
+		for(int i = 0; i <= octaves; i++)
+		{
+			float2 gridUV = frac(uv * cells);
+			float2 gridId = floor(uv * cells);
+			
+			// Use quintic to smooth the noise
+			gridUV =  gridUV * gridUV * gridUV * (10.0 + gridUV * (-15.0 + gridUV * 6.0));
+			
+			float botLeft = whiteNoise2x1(gridId);
+    		float botRight = whiteNoise2x1(gridId + float2(1.0, 0.0));
+    		float bottom = lerp(botLeft, botRight, gridUV.x);
+    
+    		float topLeft = whiteNoise2x1(gridId + float2(0.0, 1.0));
+    		float topRight = whiteNoise2x1(gridId + float2(1.0, 1.0));
+    		float top = lerp(topLeft, topRight, gridUV.x);
+	
+			vNoise += lerp(bottom, top, gridUV.y) * amplitude;
+			
+			cells *= 2;
+			amplitude *= 0.5;
+			
+		}
+		vNoise /= 2.0; // divide by 2 to prevent bright noise value
+    
+    return vNoise;
+}
+
 float4 main(float4 fragCoord : SV_POSITION) : SV_TARGET
 {
     float2 uv = fragCoord.xy/uResolution;

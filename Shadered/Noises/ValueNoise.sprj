@@ -65,6 +65,7 @@
 	<objects />
 	<cameras />
 	<settings>
+		<entry type="property" name="ValueNoise" item="pipe" />
 		<entry type="file" name="ValueNoise" shader="vs" />
 		<entry type="file" name="ValueNoise" shader="ps" />
 		<entry type="pinned" name="cellCount" owner="ValueNoise" />

@@ -30,7 +30,7 @@
 				</variable>
 				<variable type="int" name="fbmOctaves">
 					<row>
-						<value>4</value>
+						<value>8</value>
 					</row>
 				</variable>
 				<variable type="float" name="fbmGridLength">
@@ -70,12 +70,12 @@
 				</variable>
 				<variable type="float" name="dwAmplitude">
 					<row>
-						<value>1</value>
+						<value>1.63</value>
 					</row>
 				</variable>
 				<variable type="int" name="dwOctaves">
 					<row>
-						<value>5</value>
+						<value>-26</value>
 					</row>
 				</variable>
 			</variables>
@@ -103,17 +103,17 @@
 			<variables>
 				<variable type="float" name="normGridLength">
 					<row>
-						<value>0.810000002</value>
+						<value>2</value>
 					</row>
 				</variable>
 				<variable type="float" name="normAmplitude">
 					<row>
-						<value>1</value>
+						<value>0.560000002</value>
 					</row>
 				</variable>
 				<variable type="int" name="normOctaves">
 					<row>
-						<value>3</value>
+						<value>1</value>
 					</row>
 				</variable>
 				<variable type="float2" name="uResolution" system="ViewportSize" />
@@ -152,10 +152,7 @@
 	<objects />
 	<cameras />
 	<settings>
-		<entry type="file" name="FBM" shader="vs" />
-		<entry type="file" name="FBM" shader="ps" />
-		<entry type="file" name="DomainWarp" shader="vs" />
-		<entry type="file" name="DomainWarp" shader="ps" />
+		<entry type="property" name="CalculateNormal" item="pipe" />
 		<entry type="file" name="CalculateNormal" shader="vs" />
 		<entry type="file" name="CalculateNormal" shader="ps" />
 		<entry type="pinned" name="fbmGridLength" owner="FBM" />

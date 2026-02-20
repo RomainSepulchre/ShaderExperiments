@@ -111,7 +111,7 @@ float domainWarpPerlinNoise(float2 uv)
 	float fbm5 = fbmPerlinNoise(uv + 8.0 * fbm3 + float2(6.1, 5.9), normAmplitude, normOctaves, uTime);
 	float fbm6 = fbmPerlinNoise(uv + 8.0 * fbm4 + float2(1.3, 4.4), normAmplitude, normOctaves, uTime);
 	
-	return fbmPerlinNoise(float2(fbm1, fbm2), normAmplitude, normOctaves, uTime);
+	return fbmPerlinNoise(float2(fbm5, fbm6), normAmplitude, normOctaves, uTime);
 }
 
 float3 calculateNormal(float2 uv)
@@ -162,6 +162,8 @@ float4 main(float4 fragCoord : SV_POSITION) : SV_TARGET
     uv = uv * normGridLength;
     float3 color = 0;
     
+    float dw = domainWarpPerlinNoise(uv);
+    
     float3 normal = calculateNormal(uv);
     float3 lightSource = 1.0;
     
@@ -180,7 +182,7 @@ float4 main(float4 fragCoord : SV_POSITION) : SV_TARGET
     else // Full lighting
     {
     	color = diffuseSpecularLighting(normal, lightSource, normLightColor);
-    }    
+    }  
   
     return float4(color, 1);
 }
