@@ -11,7 +11,7 @@
 			</inputlayout>
 			<rendertexture />
 			<items>
-				<item name="Quad" type="geometry">
+				<item name="quad" type="geometry">
 					<type>ScreenQuadNDC</type>
 					<width>1</width>
 					<height>1</height>
@@ -79,7 +79,6 @@
 	<objects />
 	<cameras />
 	<settings>
-		<entry type="property" name="PlayWithWarp" item="pipe" />
 		<entry type="file" name="PlayWithWarp" shader="vs" />
 		<entry type="file" name="PlayWithWarp" shader="ps" />
 		<entry type="pinned" name="uvScale" owner="PlayWithWarp" />
@@ -91,9 +90,9 @@
 		<entry type="pinned" name="colorB" owner="PlayWithWarp" />
 		<entry type="pinned" name="colorC" owner="PlayWithWarp" />
 		<entry type="camera" fp="false">
-			<distance>23</distance>
-			<pitch>-83</pitch>
-			<yaw>295</yaw>
+			<distance>28</distance>
+			<pitch>-84</pitch>
+			<yaw>309</yaw>
 			<roll>360</roll>
 		</entry>
 		<entry type="clearcolor" r="0" g="0" b="0" a="1" />
