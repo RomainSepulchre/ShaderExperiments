@@ -22,77 +22,90 @@ float sinNoise(in float2 uv)
 float fbm4(float2 uv)
 {
     float fbm = 0.0;
+    float scaleMultiplier = 2.0;
     
+    // Amplitude start at 0.5000 and is divided by 2 for each new octaves
+    // Small variations on the scaleMultiplier (2.02, 2.03,...) are part of the original code but have a minor impact 
     fbm += 0.5000 * sinNoise(uv);
-    uv = warpMatrix * uv * 2.02;
+    uv = warpMatrix * uv * (scaleMultiplier + 0.02); //2.02;
     
     fbm += 0.2500 * sinNoise(uv);
-    uv = warpMatrix * uv * 2.03;
+    uv = warpMatrix * uv * (scaleMultiplier + 0.03); //2.03;
     
     fbm += 0.1250 * sinNoise(uv);
-    uv = warpMatrix * uv * 2.01;
+    uv = warpMatrix * uv * (scaleMultiplier + 0.01); //2.01;
     
     fbm += 0.0625 * sinNoise(uv);
     
-    return fbm / 0.9375;
+    return fbm / 0.9375; // 0.9375 = total of all the amplitudes
 }
 
 float fbm6(float2 uv)
 {
     float fbm = 0.0;
+    float scaleMultiplier = 2.0;
     
+    // Amplitude start at 0.500000 and is divided by 2 for each new octaves
+    // 0.5 + 0.5 * sinNoise() = remap from [-1,1] to [0,1]
+    // Small variations on the scaleMultiplier (2.02, 2.03,...) are part of the original c
     fbm += 0.500000 * (0.5 + 0.5 * sinNoise(uv));
-    uv = warpMatrix * uv * 2.02;
+    uv = warpMatrix * uv * (scaleMultiplier + 0.02); //2.02;
     
     fbm += 0.250000 * (0.5 + 0.5 * sinNoise(uv));
-    uv = warpMatrix * uv * 2.03;
+    uv = warpMatrix * uv * (scaleMultiplier + 0.03); //2.03;
     
     fbm += 0.125000 * (0.5 + 0.5 * sinNoise(uv));
-    uv = warpMatrix * uv * 2.01;
+    uv = warpMatrix * uv * (scaleMultiplier + 0.01); //2.01;
     
     fbm += 0.062500 * (0.5 + 0.5 * sinNoise(uv));
-    uv = warpMatrix * uv * 2.04;
+    uv = warpMatrix * uv * (scaleMultiplier + 0.04); //2.04;
     
     fbm += 0.031250 * (0.5 + 0.5 * sinNoise(uv));
-    uv = warpMatrix * uv * 2.01;
+    uv = warpMatrix * uv * (scaleMultiplier + 0.01); //2.01;
     
     fbm += 0.015625 * (0.5 + 0.5 * sinNoise(uv));
     
-    return fbm / 0.96875;
+    return fbm / 0.984375; // 0.984375 = total of all the amplitudes
 }
 
 float2 fbm4_2(float2 uv)
 {
-    return float2(fbm4(uv), fbm4(uv + float2(7.8)));
+	float2 offset = float2(7.8);
+    return float2(fbm4(uv), fbm4(uv + offset));
 }
 
 float2 fbm6_2(float2 uv)
 {
-    return float2(fbm6(uv + float2(16.8)), fbm6(uv + float2(11.5)));
+	float2 offsetA = float2(16.8);
+	float2 offsetB = float2(11.5);
+    return float2(fbm6(uv + offsetA), fbm6(uv + offsetB));
 }
 
 float warp(float2 uv, out float4 colMask)
 {
 	float time = uTime;
 	
+	// Ripple effect: intensity * sin(speed * uTime + length(uv) * scale)
     uv += 0.03 * sin(float2(0.27, 0.23) * time + length(uv) * float2(4.1, 4.3));
-
+    
 	float2 fbm_x4 = fbm4_2(0.9 * uv);
 
-    fbm_x4 += 0.04 * sin(float2(0.12, 0.14) * time + length(fbm_x4));
+    fbm_x4 += 0.04 * sin(float2(0.12, 0.14) * time + length(fbm_x4)); // Ripple effect
 
-    float2 fbm_x6 = fbm6_2( 3.0 * fbm_x4);
+    float2 fbm_x6 = fbm6_2(3.0 * fbm_x4);
 
 	colMask = float4(fbm_x4, fbm_x6);
 
-    float w = 0.5 + 0.5 * fbm4(1.8 * uv + 6.0 * fbm_x6);
+	float warpScale = 1.8;
+	float warpIntensity = 6.0;
+    float w = 0.5 + 0.5 * fbm4(warpScale * uv + warpIntensity * fbm_x6);
 
-    return lerp(w, w * w * w * 3.5, w * abs(fbm_x6.x));
+    return lerp(w, w * w * w * 3.5, w * abs(fbm_x6.x)); // Increase contrast with "w * abs(fbm_x6.x)" as interpolation value
 }
 
 float4 main(float4 fragCoord : SV_POSITION) : SV_TARGET
 {
-    float2 uv = (uvScale * fragCoord.xy - uResolution.xy) / uResolution.y; // scale with width
+    float2 uv = (uvScale * fragCoord.xy - uResolution.xy) / uResolution.y; // scale with height
     //float2 uv = (fragCoord.xy / uResolution) * uvScale; // uniform scaling
     
     float4 colMask = 0.0;
@@ -126,6 +139,7 @@ float4 main(float4 fragCoord : SV_POSITION) : SV_TARGET
     color *= 1.2 * light; // Apply light on the color
     color = 1.0 - color; // Invert color
     color = 1.1 * color * color; // Make color more intense
+    
     return float4(color, 1.0f);
     
      
