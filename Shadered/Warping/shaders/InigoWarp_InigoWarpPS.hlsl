@@ -76,9 +76,9 @@ float2 fbm4_2(float2 uv)
 
 float2 fbm6_2(float2 uv)
 {
-	float2 offsetA = float2(16.8);
-	float2 offsetB = float2(11.5);
-    return float2(fbm6(uv + offsetA), fbm6(uv + offsetB));
+	float2 offsetX = float2(16.8);
+	float2 offsetY = float2(11.5);
+    return float2(fbm6(uv + offsetX), fbm6(uv + offsetY));
 }
 
 float warp(float2 uv, out float4 colMask)

@@ -80,6 +80,7 @@
 	<objects />
 	<cameras />
 	<settings>
+		<entry type="property" name="InigoWarp" item="pipe" />
 		<entry type="file" name="InigoWarp" shader="vs" />
 		<entry type="file" name="InigoWarp" shader="ps" />
 		<entry type="pinned" name="warpMatrix" owner="InigoWarp" />
