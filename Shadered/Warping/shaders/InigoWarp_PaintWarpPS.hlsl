@@ -1,3 +1,5 @@
+// Based on https://www.shadertoy.com/view/3XlfWH
+
 cbuffer vars : register(b0)
 {
 	float2 uResolution;
@@ -31,7 +33,7 @@ float2 hash_2x2(in float2 uv)
                 hash_2x1(uv.yx + float2(0.7,0.5)));
 }
 
-float simpleNoise(in float2 uv)
+float perlinNoise(in float2 uv)
 {
     float2 gridId = floor(uv);
     float2 gridUv = frac(uv);
@@ -76,7 +78,7 @@ float fbmNoise(in float2 uv, in int octaves)
     float totalAmplitude = 0.0;
     for(int i=0; i<octaves; i++ )
     {
-        fbm += amplitude * simpleNoise(uv);
+        fbm += amplitude * perlinNoise(uv);
         totalAmplitude += amplitude;
         uv = turbulenceMatrix * uv * 2.01;
         amplitude *= 0.5;

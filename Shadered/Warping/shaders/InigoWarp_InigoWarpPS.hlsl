@@ -1,3 +1,5 @@
+// Based on https://www.shadertoy.com/view/lsl3RH
+
 cbuffer vars : register(b0)
 {
 	float2 uResolution;
