@@ -7,7 +7,9 @@ cbuffer vars : register(b0)
 };
 
 uniform float uvScale;
+uniform float3 colorA;
 uniform float4 d;
+uniform float4 d2;
 
 float hash2x1(in float2 uv)
 {
@@ -85,5 +87,38 @@ float4 main(float4 fragCoord : SV_POSITION) : SV_TARGET
     
     float pFbm = perlinFbm(uv);
     
-    return float4(pFbm.xxx, 1.0f);
+    // Normal
+    // e = Epsilon
+    // -> extremely small value used for calculating finite differences to approximate surface tangents and normals.
+	float2 e = float2(0.03, 0.0);
+	float normalX = perlinFbm(uv - e.xy) - perlinFbm(uv + e.xy);
+	float normalY = 2.0 * e.x;
+	float normalZ = perlinFbm(uv - e.yx) - perlinFbm(uv + e.yx);
+	float3 normal = normalize(float3(normalX, normalY,  normalZ));
+	
+	// Color
+	float3 mainColor = float3(0.8, 0.4, 0.0);
+	mainColor = colorA;
+	float mask = pow(pFbm, 4.0) * 6.0; // ??? 4.0 and 6.0	
+	float3 color = 0.5 + 0.5 * cos(5.0 + pFbm * 12.0 + mainColor);
+	
+    color *= 0.4 + 0.6 * mask;
+    
+    // Light	
+	float3 lightDir = normalize(float3(1.0, 0.2, 1.0));
+	float lightMap = clamp(0.3 + 0.7 * dot(normal,lightDir), 0.0, 1.0);
+	float3 shadowColor = float3(0.6, 0.7, 0.8);
+	float3 lightColor = float3(1.0, 0.7, 0.5);
+	color *= shadowColor + 1.0 * lightColor * lightMap; // Apply light
+	
+	// Rim light
+	float3 rimLightColor = float3(1.0, 0.5, 0.0);
+	float3 rimLight = 1.5 * rimLightColor * pow(1.0 - normal.y, 2.0) * mask;
+	color += rimLight;
+	
+	// Post process
+	color = sqrt(color) - 0.15;
+    color *= sqrt(1.0 - 0.5 * abs(uv.x - 0.5));	// Vignette
+    
+    return float4(color, 1.0f);
 }

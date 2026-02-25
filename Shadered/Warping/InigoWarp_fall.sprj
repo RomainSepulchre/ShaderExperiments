@@ -30,9 +30,24 @@
 				</variable>
 				<variable type="float4" name="d">
 					<row>
-						<value>1.25</value>
-						<value>0.100000001</value>
+						<value>0.837837815</value>
+						<value>0.631303489</value>
+						<value>0.56934154</value>
 						<value>0</value>
+					</row>
+				</variable>
+				<variable type="float3" name="colorA">
+					<row>
+						<value>0.800000012</value>
+						<value>0.400000006</value>
+						<value>0</value>
+					</row>
+				</variable>
+				<variable type="float4" name="d2">
+					<row>
+						<value>0.0955510214</value>
+						<value>0.0527720265</value>
+						<value>0.231660247</value>
 						<value>0</value>
 					</row>
 				</variable>
@@ -48,6 +63,8 @@
 		<entry type="file" name="FallWarp" shader="ps" />
 		<entry type="pinned" name="uvScale" owner="FallWarp" />
 		<entry type="pinned" name="d" owner="FallWarp" />
+		<entry type="pinned" name="colorA" owner="FallWarp" />
+		<entry type="pinned" name="d2" owner="FallWarp" />
 		<entry type="camera" fp="false">
 			<distance>8</distance>
 			<pitch>-83</pitch>
