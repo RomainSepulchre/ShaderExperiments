@@ -49,7 +49,7 @@ float fbm6(float2 uv)
     
     // Amplitude start at 0.500000 and is divided by 2 for each new octaves
     // 0.5 + 0.5 * sinNoise() = remap from [-1,1] to [0,1]
-    // Small variations on the scaleMultiplier (2.02, 2.03,...) are part of the original c
+    // Small variations on the scaleMultiplier (2.02, 2.03,...) are part of the original code
     fbm += 0.500000 * (0.5 + 0.5 * sinNoise(uv));
     uv = warpMatrix * uv * (scaleMultiplier + 0.02); //2.02;
     
