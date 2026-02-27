@@ -25,12 +25,12 @@ float hash(float2 uv)
 }
 
 
-float perlinNoise(in float2 uv)
+float valueNoise(in float2 uv)
 {
 	// original author suggest to replace this by a proper noise function
     float2 gridId = floor(uv);
     float2 gridUv = frac(uv);
-    gridUv = gridUv * gridUv * (3.0 - 2.0 * gridUv);
+    gridUv = gridUv * gridUv * (3.0 - 2.0 * gridUv); 
     
     float botL = hash(gridId + float2(0,0));
 	float botR = hash(gridId + float2(1,0));
@@ -54,16 +54,16 @@ float fbm4(float2 uv)
 	// Small variations on the scaleMultiplier (2.02, 2.03,...) are part of the original code
 	// -1.0 + 2.0 * noise(uv) = remap from [0,1] to [-1,1]
     
-    fbm += 0.5000 * (-1.0 + 2.0 * perlinNoise(uv));
+    fbm += 0.5000 * (-1.0 + 2.0 * valueNoise(uv));
     uv = warpMatrix * uv * (scaleMultiplier + 0.02); //2.02;
     
-    fbm += 0.2500 * (-1.0 + 2.0 * perlinNoise(uv));
+    fbm += 0.2500 * (-1.0 + 2.0 * valueNoise(uv));
     uv = warpMatrix * uv * (scaleMultiplier + 0.03); //2.03;
     
-    fbm += 0.1250 * (-1.0 + 2.0 * perlinNoise(uv));
+    fbm += 0.1250 * (-1.0 + 2.0 * valueNoise(uv));
     uv = warpMatrix * uv * (scaleMultiplier + 0.01); //2.01;
     
-    fbm += 0.0625 * (-1.0 + 2.0 * perlinNoise(uv));
+    fbm += 0.0625 * (-1.0 + 2.0 * valueNoise(uv));
     
     return fbm / 0.9375;
 }
@@ -76,22 +76,22 @@ float fbm6(float2 uv)
     // Amplitude start at 0.500000 and is divided by 2 for each new octaves
 	// Small variations on the scaleMultiplier (2.02, 2.03,...) are part of the original code
 	
-    fbm += 0.500000 * perlinNoise(uv);
+    fbm += 0.500000 * valueNoise(uv);
     uv = warpMatrix * uv * (scaleMultiplier + 0.02); //2.02;
     
-    fbm += 0.250000 * perlinNoise(uv);
+    fbm += 0.250000 * valueNoise(uv);
     uv = warpMatrix * uv * (scaleMultiplier + 0.03); //2.03;
     
-    fbm += 0.125000 * perlinNoise(uv);
+    fbm += 0.125000 * valueNoise(uv);
     uv = warpMatrix * uv * (scaleMultiplier + 0.01); //2.01;
     
-    fbm += 0.062500 * perlinNoise(uv);
+    fbm += 0.062500 * valueNoise(uv);
     uv = warpMatrix * uv * (scaleMultiplier + 0.04); //2.04;
     
-    fbm += 0.031250 * perlinNoise(uv);
+    fbm += 0.031250 * valueNoise(uv);
     uv = warpMatrix * uv * (scaleMultiplier + 0.01); //2.01;
     
-    fbm += 0.015625 * perlinNoise(uv);
+    fbm += 0.015625 * valueNoise(uv);
     
     return fbm / 0.984375; // 0.984375 = total of all the amplitudes
 }

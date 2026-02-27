@@ -40,7 +40,7 @@
 		<entry type="file" name="JupiterWarp" shader="ps" />
 		<entry type="pinned" name="uvScale" owner="JupiterWarp" />
 		<entry type="camera" fp="false">
-			<distance>8</distance>
+			<distance>7</distance>
 			<pitch>-83</pitch>
 			<yaw>295</yaw>
 			<roll>360</roll>

@@ -35,6 +35,7 @@
 	<objects />
 	<cameras />
 	<settings>
+		<entry type="property" name="RustWarp" item="pipe" />
 		<entry type="file" name="RustWarp" shader="vs" />
 		<entry type="file" name="RustWarp" shader="ps" />
 		<entry type="pinned" name="uvScale" owner="RustWarp" />

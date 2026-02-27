@@ -16,7 +16,7 @@ float hash(float2 uv)
     return -1.0 + 2.0 * frac(sin(h) * 43758.5453123);
 }
 
-float perlinNoise(in float2 uv)
+float valueNoise(in float2 uv)
 {
     float2 gridId = floor(uv);
     float2 gridUv = frac(uv);
@@ -40,16 +40,16 @@ float fbm(float2 uv)
     float scale = 2.0;
     
     // Amplitude start at 0.5000 and is divided by two for each new octaves
-    fbm += 0.5000 * perlinNoise(uv);
+    fbm += 0.5000 * valueNoise(uv);
     uv = warpMatrix * uv * (scale + 0.02); //2.02;
     
-    fbm += 0.2500 * perlinNoise(uv);
+    fbm += 0.2500 * valueNoise(uv);
     uv = warpMatrix * uv * (scale + 0.03); //2.03;
     
-    fbm += 0.1250 * perlinNoise(uv);
+    fbm += 0.1250 * valueNoise(uv);
     uv = warpMatrix * uv * (scale + 0.01); //2.01;
     
-    fbm += 0.0625 * perlinNoise(uv);
+    fbm += 0.0625 * valueNoise(uv);
     
     return fbm / 0.9375; // 0.9375 is the total of all amplitudes
 }

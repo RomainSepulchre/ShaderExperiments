@@ -33,7 +33,7 @@ float2 hash_2x2(in float2 uv)
                 hash_2x1(uv.yx + float2(0.7,0.5)));
 }
 
-float perlinNoise(in float2 uv)
+float valueNoise(in float2 uv)
 {
     float2 gridId = floor(uv);
     float2 gridUv = frac(uv);
@@ -78,7 +78,7 @@ float fbmNoise(in float2 uv, in int octaves)
     float totalAmplitude = 0.0;
     for(int i=0; i<octaves; i++ )
     {
-        fbm += amplitude * perlinNoise(uv);
+        fbm += amplitude * valueNoise(uv);
         totalAmplitude += amplitude;
         uv = turbulenceMatrix * uv * 2.01;
         amplitude *= 0.5;
