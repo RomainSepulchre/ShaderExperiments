@@ -1,0 +1,130 @@
+<?xml version="1.0"?>
+<project version="2">
+	<pipeline>
+		<pass name="LavaWarp" type="shader" active="true" patchverts="1">
+			<shader type="vs" path="shaders\RS_Warp_LavaWarpVS.hlsl" entry="main" />
+			<shader type="ps" path="shaders\RS_Warp_LavaWarpPS.hlsl" entry="main" />
+			<inputlayout>
+				<item value="Position" semantic="POSITION" />
+				<item value="Normal" semantic="NORMAL" />
+				<item value="Texcoord" semantic="TEXCOORD0" />
+			</inputlayout>
+			<rendertexture />
+			<items>
+				<item name="Quad" type="geometry">
+					<type>ScreenQuadNDC</type>
+					<width>1</width>
+					<height>1</height>
+					<depth>1</depth>
+					<topology>TriangleList</topology>
+				</item>
+			</items>
+			<itemvalues />
+			<variables>
+				<variable type="float2" name="uResolution" system="ViewportSize" />
+				<variable type="float" name="uTime" system="Time" />
+				<variable type="int" name="seed">
+					<row>
+						<value>0</value>
+					</row>
+				</variable>
+				<variable type="float" name="uvScale">
+					<row>
+						<value>2</value>
+					</row>
+				</variable>
+				<variable type="float" name="noiseExp">
+					<row>
+						<value>2.5</value>
+					</row>
+				</variable>
+				<variable type="float2x2" name="warpMatrix">
+					<row>
+						<value>0</value>
+						<value>1</value>
+					</row>
+					<row>
+						<value>1</value>
+						<value>0</value>
+					</row>
+				</variable>
+				<variable type="int" name="fbmOctaves">
+					<row>
+						<value>8</value>
+					</row>
+				</variable>
+				<variable type="float4" name="fbm2Offset">
+					<row>
+						<value>0</value>
+						<value>0</value>
+						<value>1.39999998</value>
+						<value>1.60000002</value>
+					</row>
+				</variable>
+				<variable type="float3" name="colorA">
+					<row>
+						<value>0.33976835</value>
+						<value>0.0393571295</value>
+						<value>0</value>
+					</row>
+				</variable>
+				<variable type="float3" name="colorB">
+					<row>
+						<value>0.092664063</value>
+						<value>0.0272488762</value>
+						<value>0.0100177359</value>
+					</row>
+				</variable>
+				<variable type="float3" name="colorC">
+					<row>
+						<value>0.447876453</value>
+						<value>0.181243986</value>
+						<value>0.0242095497</value>
+					</row>
+				</variable>
+				<variable type="float3" name="colorD">
+					<row>
+						<value>1</value>
+						<value>0.32432431</value>
+						<value>0</value>
+					</row>
+				</variable>
+				<variable type="float3" name="colorE">
+					<row>
+						<value>0.281853259</value>
+						<value>0.0424412265</value>
+						<value>0.0424412265</value>
+					</row>
+				</variable>
+			</variables>
+			<macros />
+		</pass>
+	</pipeline>
+	<objects />
+	<cameras />
+	<settings>
+		<entry type="property" name="LavaWarp" item="pipe" />
+		<entry type="file" name="LavaWarp" shader="vs" />
+		<entry type="file" name="LavaWarp" shader="ps" />
+		<entry type="pinned" name="seed" owner="LavaWarp" />
+		<entry type="pinned" name="uvScale" owner="LavaWarp" />
+		<entry type="pinned" name="noiseExp" owner="LavaWarp" />
+		<entry type="pinned" name="warpMatrix" owner="LavaWarp" />
+		<entry type="pinned" name="fbmOctaves" owner="LavaWarp" />
+		<entry type="pinned" name="fbm2Offset" owner="LavaWarp" />
+		<entry type="pinned" name="colorA" owner="LavaWarp" />
+		<entry type="pinned" name="colorB" owner="LavaWarp" />
+		<entry type="pinned" name="colorC" owner="LavaWarp" />
+		<entry type="pinned" name="colorD" owner="LavaWarp" />
+		<entry type="pinned" name="colorE" owner="LavaWarp" />
+		<entry type="camera" fp="false">
+			<distance>18</distance>
+			<pitch>-83</pitch>
+			<yaw>295</yaw>
+			<roll>360</roll>
+		</entry>
+		<entry type="clearcolor" r="0" g="0" b="0" a="1" />
+		<entry type="usealpha" val="false" />
+	</settings>
+	<plugindata />
+</project>
