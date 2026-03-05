@@ -78,7 +78,7 @@ float4 main(float4 fragCoord : SV_POSITION) : SV_TARGET
     float3 sunsetTopCol = float3(0.171, 0.098, 0.270);
     float3 sunsetCol = lerp(sunsetBotCol, sunsetTopCol, uv.y);
     
-    color = lerp(sunriseCol, sunsetCol, abs(sin(uTime)));
+    color = lerp(sunriseCol, sunsetCol, easeInOutCubic((sin(uTime * 0.5) + 1) / 2 ));
     
     // Draw plot line
     //color = lerp(color, float3(1.0, 0.0, 0.0), plotLineY(uv, t.r));

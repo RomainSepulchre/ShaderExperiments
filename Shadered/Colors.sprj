@@ -2,8 +2,8 @@
 <project version="2">
 	<pipeline>
 		<pass name="SingleColor" type="shader" active="false" patchverts="1" collapsed="true">
-			<shader type="vs" path="shaders\Colors_ColorsVS.hlsl" entry="main" />
-			<shader type="ps" path="shaders\Colors_ColorsPS.hlsl" entry="main" />
+			<shader type="vs" path="shaders\Colors_SingleColorsVS.hlsl" entry="main" />
+			<shader type="ps" path="shaders\Colors_SingleColorsPS.hlsl" entry="main" />
 			<inputlayout>
 				<item value="Position" semantic="POSITION" />
 				<item value="Normal" semantic="NORMAL" />
@@ -41,8 +41,8 @@
 			<macros />
 		</pass>
 		<pass name="Gradient" type="shader" active="true" patchverts="1" collapsed="true">
-			<shader type="vs" path="shaders\GradientVS.hlsl" entry="main" />
-			<shader type="ps" path="shaders\GradientPS.hlsl" entry="main" />
+			<shader type="vs" path="shaders\Colors_GradientVS.hlsl" entry="main" />
+			<shader type="ps" path="shaders\Colors_GradientPS.hlsl" entry="main" />
 			<inputlayout>
 				<item value="Position" semantic="POSITION" />
 				<item value="Normal" semantic="NORMAL" />
@@ -100,8 +100,8 @@
 			<macros />
 		</pass>
 		<pass name="Flag" type="shader" active="true" patchverts="1" collapsed="true">
-			<shader type="vs" path="shaders\FlagVS.hlsl" entry="main" />
-			<shader type="ps" path="shaders\FlagPS.hlsl" entry="main" />
+			<shader type="vs" path="shaders\Colors_FlagVS.hlsl" entry="main" />
+			<shader type="ps" path="shaders\Colors_FlagPS.hlsl" entry="main" />
 			<inputlayout>
 				<item value="Position" semantic="POSITION" />
 				<item value="Normal" semantic="NORMAL" />
@@ -125,8 +125,8 @@
 			<macros />
 		</pass>
 		<pass name="Rainbow" type="shader" active="true" patchverts="1" collapsed="true">
-			<shader type="vs" path="shaders\RainbowVS.hlsl" entry="main" />
-			<shader type="ps" path="shaders\RainbowPS.hlsl" entry="main" />
+			<shader type="vs" path="shaders\Colors_RainbowVS.hlsl" entry="main" />
+			<shader type="ps" path="shaders\Colors_RainbowPS.hlsl" entry="main" />
 			<inputlayout>
 				<item value="Position" semantic="POSITION" />
 				<item value="Normal" semantic="NORMAL" />
@@ -153,11 +153,9 @@
 	<objects />
 	<cameras />
 	<settings>
-		<entry type="property" name="Flag" item="pipe" />
-		<entry type="file" name="Gradient" shader="ps" />
+		<entry type="property" name="Gradient" item="pipe" />
 		<entry type="file" name="Gradient" shader="vs" />
-		<entry type="file" name="Rainbow" shader="vs" />
-		<entry type="file" name="Rainbow" shader="ps" />
+		<entry type="file" name="Gradient" shader="ps" />
 		<entry type="pinned" name="colorD" owner="Gradient" />
 		<entry type="pinned" name="colorC" owner="Gradient" />
 		<entry type="pinned" name="uvScale" owner="Gradient" />
