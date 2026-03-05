@@ -64,16 +64,16 @@
 				<variable type="float" name="uTime" system="Time" />
 				<variable type="float3" name="colorC">
 					<row>
-						<value>0.969111979</value>
-						<value>0.671938598</value>
-						<value>0.0636096522</value>
+						<value>0.895752907</value>
+						<value>0.519267738</value>
+						<value>0.12796469</value>
 					</row>
 				</variable>
 				<variable type="float3" name="colorD">
 					<row>
-						<value>0.422191113</value>
-						<value>0.693328321</value>
-						<value>0.861003876</value>
+						<value>0.315230846</value>
+						<value>0.640540838</value>
+						<value>0.841698825</value>
 					</row>
 				</variable>
 				<variable type="float" name="uvScale">
@@ -90,12 +90,62 @@
 				</variable>
 				<variable type="float4" name="d">
 					<row>
-						<value>1</value>
-						<value>0.200000003</value>
-						<value>-2.76999998</value>
+						<value>0.171194375</value>
+						<value>0.098090373</value>
+						<value>0.270270288</value>
 						<value>0</value>
 					</row>
 				</variable>
+			</variables>
+			<macros />
+		</pass>
+		<pass name="Flag" type="shader" active="true" patchverts="1" collapsed="true">
+			<shader type="vs" path="shaders\FlagVS.hlsl" entry="main" />
+			<shader type="ps" path="shaders\FlagPS.hlsl" entry="main" />
+			<inputlayout>
+				<item value="Position" semantic="POSITION" />
+				<item value="Normal" semantic="NORMAL" />
+				<item value="Texcoord" semantic="TEXCOORD0" />
+			</inputlayout>
+			<rendertexture />
+			<items>
+				<item name="screen1" type="geometry">
+					<type>ScreenQuadNDC</type>
+					<width>1</width>
+					<height>1</height>
+					<depth>1</depth>
+					<topology>TriangleList</topology>
+				</item>
+			</items>
+			<itemvalues />
+			<variables>
+				<variable type="float2" name="uResolution" system="ViewportSize" />
+				<variable type="float" name="uTime" system="Time" />
+			</variables>
+			<macros />
+		</pass>
+		<pass name="Rainbow" type="shader" active="true" patchverts="1" collapsed="true">
+			<shader type="vs" path="shaders\RainbowVS.hlsl" entry="main" />
+			<shader type="ps" path="shaders\RainbowPS.hlsl" entry="main" />
+			<inputlayout>
+				<item value="Position" semantic="POSITION" />
+				<item value="Normal" semantic="NORMAL" />
+				<item value="Texcoord" semantic="TEXCOORD0" />
+			</inputlayout>
+			<rendertexture />
+			<items>
+				<item name="screen2" type="geometry">
+					<type>ScreenQuadNDC</type>
+					<width>1</width>
+					<height>1</height>
+					<depth>1</depth>
+					<topology>TriangleList</topology>
+				</item>
+			</items>
+			<itemvalues />
+			<variables>
+				<variable type="float2" name="uResolution" system="ViewportSize" />
+				<variable type="float" name="uTime" system="Time" />
 			</variables>
 			<macros />
 		</pass>
@@ -103,10 +153,11 @@
 	<objects />
 	<cameras />
 	<settings>
-		<entry type="file" name="SingleColor" shader="vs" />
-		<entry type="file" name="SingleColor" shader="ps" />
-		<entry type="file" name="Gradient" shader="vs" />
+		<entry type="property" name="Flag" item="pipe" />
 		<entry type="file" name="Gradient" shader="ps" />
+		<entry type="file" name="Gradient" shader="vs" />
+		<entry type="file" name="Rainbow" shader="vs" />
+		<entry type="file" name="Rainbow" shader="ps" />
 		<entry type="pinned" name="colorD" owner="Gradient" />
 		<entry type="pinned" name="colorC" owner="Gradient" />
 		<entry type="pinned" name="uvScale" owner="Gradient" />
