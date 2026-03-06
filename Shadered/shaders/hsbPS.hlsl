@@ -76,7 +76,7 @@ float3 hsb2rgb(in float3 hsb)
 	//		- Blue: 2.0 (Blue is dominant in sectors [2,3] and [3,4])
 	float3 componentOffset = float3(0.0,4.0,2.0);
 	
-	float3 hueMod = fmod(hue6 + componentOffset, 6.0); // Use modulo to loop hue value if its outside of the [0,6] range.
+	float3 hueMod = fmod(hue6 + componentOffset, 6.0); // Use modulo to loop hue value bigger than 6.0 inside [0,6] range
 	float3 hueCentered = abs(hueMod - 3.0); // Center hue value around 0 to facilitate relative position calculation and get absolute value to have positive distances
 	
 	// Offset value to range [-1, 1] and clamp them between 0.0 and 1.0 to get hue as RGB value
@@ -136,7 +136,7 @@ float3 drawHsbColorPicker(float2 uv, float3 rgbColorToPick)
 float4 main(float4 fragCoord : SV_POSITION) : SV_TARGET
 {
 	float2 uv = fragCoord.xy/uResolution;
-	
+	 
 	float3 color = 0.0;
 	
 	// HSB Color picker

@@ -173,9 +173,9 @@
 				<variable type="float" name="uTime" system="Time" />
 				<variable type="float3" name="rgbColorPicker">
 					<row>
-						<value>0.884169877</value>
-						<value>0.665870249</value>
-						<value>0.262861311</value>
+						<value>0</value>
+						<value>0.298000008</value>
+						<value>1</value>
 					</row>
 				</variable>
 			</variables>
@@ -201,6 +201,7 @@
 		</entry>
 		<entry type="clearcolor" r="0" g="0" b="0" a="1" />
 		<entry type="usealpha" val="false" />
+		<entry type="bkpt" file="C:/Users/romai.DESKTOP-UA02MBJ/Dev Projects/ShaderExperiments/Shadered/shaders/hsbPS.hlsl" line="144" use_cond="false" cond="" enabled="true" />
 	</settings>
 	<plugindata />
 </project>
