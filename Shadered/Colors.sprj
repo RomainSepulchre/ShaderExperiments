@@ -173,9 +173,9 @@
 				<variable type="float" name="uTime" system="Time" />
 				<variable type="float3" name="rgbColorPicker">
 					<row>
-						<value>0</value>
-						<value>0.298000008</value>
-						<value>1</value>
+						<value>0.911196887</value>
+						<value>0.270896375</value>
+						<value>0.819725454</value>
 					</row>
 				</variable>
 			</variables>
@@ -185,13 +185,9 @@
 	<objects />
 	<cameras />
 	<settings>
+		<entry type="property" name="hsb" item="pipe" />
 		<entry type="file" name="hsb" shader="vs" />
 		<entry type="file" name="hsb" shader="ps" />
-		<entry type="pinned" name="colorD" owner="Gradient" />
-		<entry type="pinned" name="colorC" owner="Gradient" />
-		<entry type="pinned" name="uvScale" owner="Gradient" />
-		<entry type="pinned" name="colorE" owner="Gradient" />
-		<entry type="pinned" name="d" owner="Gradient" />
 		<entry type="pinned" name="rgbColorPicker" owner="hsb" />
 		<entry type="camera" fp="false">
 			<distance>8</distance>
@@ -201,7 +197,7 @@
 		</entry>
 		<entry type="clearcolor" r="0" g="0" b="0" a="1" />
 		<entry type="usealpha" val="false" />
-		<entry type="bkpt" file="C:/Users/romai.DESKTOP-UA02MBJ/Dev Projects/ShaderExperiments/Shadered/shaders/hsbPS.hlsl" line="144" use_cond="false" cond="" enabled="true" />
+		<entry type="bkpt" file="C:/Users/romai.DESKTOP-UA02MBJ/Dev Projects/ShaderExperiments/Shadered/shaders/hsbPS.hlsl" line="158" use_cond="false" cond="" enabled="true" />
 	</settings>
 	<plugindata />
 </project>
