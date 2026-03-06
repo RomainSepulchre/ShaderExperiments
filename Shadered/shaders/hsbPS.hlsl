@@ -192,15 +192,16 @@ float3 drawHsbPolarCoord(float2 uv, float3 rgbColorToPick)
 float3 drawHsbPolarCoordAnimated(float2 uv, float3 rgbColorToPick)
 {
 	float2 centerDir = 0.5 - uv;
-	float angle = atan2(centerDir.y, centerDir.x); // angle in radian between -PI and PI
+	float angleOffset = uTime * 0.5;
+	float angle = atan2(centerDir.y, centerDir.x) + angleOffset; // angle in radian between -PI and PI
 	float radius = length(centerDir) * 2.0; // Radius max is 0.5 so we multiply it by two to have value in the [0,1] range
 	
 	// Draw HSB polar map
 	// Hue: The angle has a range of [-Pi, Pi] and the hue need a value with the range [0,1] so we divide our angle by Tau and add 0.5
 	// Saturation: we use the distance from center as a saturation value
 	// Brighness: 1.0 by default
-	float angleOffset = 0.5 * (uTime * 0.05);
-	float3 hsbMap = hsb2rgb(float3((angle/TAU) + angleOffset, radius, 1.0));
+	
+	float3 hsbMap = hsb2rgb(float3((angle/TAU) + 0.5, radius, 1.0));
 	
 	// Color to pick converted to HSB
 	float3 hsbColor = rgb2hsb(rgbColorToPick);
@@ -210,7 +211,8 @@ float3 drawHsbPolarCoordAnimated(float2 uv, float3 rgbColorToPick)
 
 	// Cursor circle parameters
 	
-	float colAngle = (hsbColor.x - angleOffset) * TAU;
+	float colAngle = (hsbColor.x - 0.5) * TAU;
+	colAngle -= angleOffset;
 	float colRadius = hsbColor.y / 2;
     float2 circlePos = 0.5 + float2(-colRadius * cos(colAngle), -colRadius * sin(colAngle));
     
