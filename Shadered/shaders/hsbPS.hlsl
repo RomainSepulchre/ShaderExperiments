@@ -4,14 +4,23 @@ cbuffer vars : register(b0)
 	float uTime;
 };
 
-//  Function from Iñigo Quiles
-//  https://www.shadertoy.com/view/MsS3Wc
+uniform float3 rgbColorPicker;
+
+
+//  Functions from Iñigo Quiles (https://www.shadertoy.com/view/MsS3Wc)  
 
 float3 rgb2hsb(in float3 rgb)
 {	
-	// constant vector used for permutation and comparison calculation
-	// They are be assigned to p and q depending on the hue sector
-    float4 K = float4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
+	// Constant vector storing hue sector offset used for permutation and comparison when calculating the hue
+	// They are be assigned to p and q depending on the hue sector:
+	//  - sector R to G = 0.0 (normalized hue range = [0,1/6])
+	//  - sector G to R = 2/3 (normalized hue range = [5/6,1])
+	//  - sector G to B = 1/3 (normalized hue range = [1/6,1/2])
+	//  - sector B to G = 1/3 (normalized hue range = [1/2,2/3])
+	//  - sector R to G = 2/3 (normalized hue range = [2/3,5/6])
+	//  - sector R to G = 0.0 (normalized hue range = [5/6,1])
+	// Note: -1.0/3.0 and -1.0 instead of 1/3 and 1.0 to combine permutations and hue calculation and optimize code 
+    const float4 K = float4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
     
     // Reorganize component based on blue component
     // 	-> if blue < green we use float4(rgb.gb, K.xy)
@@ -33,14 +42,14 @@ float3 rgb2hsb(in float3 rgb)
     // Hue
     // -> hue is usually represented as an angle on a chromatic circle, this circle has 6 sectors:
     //		- Red to Yellow (0° to 60°)
-    //		- Red to Yellow (60° to 120°)
-    //		- Red to Yellow (120° to 180°)
-    //		- Red to Yellow (180° to 240°)
-    //		- Red to Yellow (240° to 300°)
-    //		- Red to Yellow (300° to 360°)
+    //		- Yellow to Green  (60° to 120°)
+    //		- Green to Cyan (120° to 180°)
+    //		- Cyan to Blue (180° to 240°)
+    //		- Blue to Magenta (240° to 300°)
+    //		- Magenta to Red (300° to 360°)
     // -> q.z define a sector and (q.w - q.y) / (6.0 * d + e) define the relative position in the sector
     // -> Since there is 6 sectors d is multiplied by 6.0 get a hue normalized to [0,1] after the division. (Otherwise the range is [0,6])
-    float hue = q.z + (q.w - q.y) / (6.0 * d + e); // why * 6.0;
+    float hue = abs(q.z + (q.w - q.y) / (6.0 * d + e));
     
     // Saturation
     // -> difference between biggest and smallest value divided by biggest value
@@ -56,11 +65,72 @@ float3 rgb2hsb(in float3 rgb)
 
 float3 hsb2rgb(in float3 hsb)
 {
-    float3 rgb = clamp(abs(fmod(hsb.x * 6.0 + float3(0.0,4.0,2.0), 6.0) -3.0) -1.0,
-                     0.0,
-                     1.0 );
-    rgb = rgb * rgb * (3.0 - 2.0 * rgb);
-    return hsb.z * lerp(float3(1.0), rgb, hsb.y);
+	// hue converted to [0,6] range
+	float hue6 = hsb.x * 6.0; 
+	
+	// Offset to identify current sector and calculate relative distance
+	// 0.0, 4.0 and 2.0 are the offset for the Red, Green and Blue component of the hue
+	// -> After the modulo each value have a normalized distance from the edge of their sector:
+	// 		- Red: 0.0 (Red is dominant in sectors [0,1] and [5,6])
+	//		- Green: 4.0 (Green is dominant in sectors [1,2] and [4,5])
+	//		- Blue: 2.0 (Blue is dominant in sectors [2,3] and [3,4])
+	float3 componentOffset = float3(0.0,4.0,2.0);
+	
+	float3 hueMod = fmod(hue6 + componentOffset, 6.0); // Use modulo to loop hue value if its outside of the [0,6] range.
+	float3 hueCentered = abs(hueMod - 3.0); // Center hue value around 0 to facilitate relative position calculation and get absolute value to have positive distances
+	
+	// Offset value to range [-1, 1] and clamp them between 0.0 and 1.0 to get hue as RGB value
+    float3 hueRgb = clamp(hueCentered - 1.0, 0.0, 1.0);
+                     
+    // Apply approximated gamma correction to smooth sector transition
+    // -> hueRgb * hueRgb * (3.0 - 2.0 * hueRgb) is a simplified version of smoothstep()      
+    hueRgb = hueRgb * hueRgb * (3.0 - 2.0 * hueRgb);
+    
+    // Calculate color RGB value
+    // -> apply brightness by lerping between white and hue color with brighness component
+    // -> multiply the result by the saturation component to apply saturation
+    return hsb.z * lerp(float3(1.0), hueRgb, hsb.y);
+}
+
+float sdfCircle(float2 uv, float radius)
+{
+    return length(uv) - radius;
+}
+
+float3 drawHsbColorPicker(float2 uv, float3 rgbColorToPick)
+{
+	// We map x (0.0 - 1.0) to the hue (0.0 - 1.0)
+    // And the y (0.0 - 1.0) to the brightness
+	float3 hsbMap = hsb2rgb(float3(uv.x, 1.0, uv.y));
+	
+	// Color to pick converted to HSB
+	float3 hsbColor = rgb2hsb(rgbColorToPick);
+	
+	// Cursor circle paramaters
+    float2 circlePos = hsbColor.xy;
+    float circleRadius = 0.01;
+    float borderThick = 0.002;
+    float2 brCircleOffset = float2(0.025,0.025);
+    
+    // Move brighness circle to keep it inside the render
+    if(circlePos.x > 0.95) brCircleOffset.x *= -1;
+    if(circlePos.y > 0.95) brCircleOffset.y *= -1;
+    
+    // Color and brighness circle mask
+    float circleIn = step(sdfCircle(uv - circlePos, circleRadius - borderThick), circleRadius - borderThick);
+    float circleBorder = step(sdfCircle(uv - circlePos, circleRadius), circleRadius) - circleIn;
+    float brightCircle = step(sdfCircle(uv - circlePos - brCircleOffset, circleRadius/2 - borderThick/2), circleRadius/2 - borderThick/2);
+    float brightCircleBorder = step(sdfCircle(uv - circlePos - brCircleOffset, circleRadius/2), circleRadius/2) - brightCircle;
+    
+    // Mix colors together
+    float3 color = saturate(hsbMap - (circleIn + circleBorder + brightCircle + brightCircleBorder)); // Clean circle pixels out of HsbMap and use saturate to clamp values in [0,1] range
+    color += circleBorder;
+    color += rgbColorPicker * circleIn;
+    color += brightCircleBorder;
+    color += brightCircle * hsbColor.z;
+    
+    return color;
+	
 }
 
 float4 main(float4 fragCoord : SV_POSITION) : SV_TARGET
@@ -68,11 +138,9 @@ float4 main(float4 fragCoord : SV_POSITION) : SV_TARGET
 	float2 uv = fragCoord.xy/uResolution;
 	
 	float3 color = 0.0;
-
-    // We map x (0.0 - 1.0) to the hue (0.0 - 1.0)
-    // And the y (0.0 - 1.0) to the brightness
-    color = hsb2rgb(float3(uv.x, 1.0, uv.y));
+	
+	// HSB Color picker
+    color = drawHsbColorPicker(uv, rgbColorPicker);
     
-	color = step(0.5, 0.0);
     return float4(color, 1.0f);
 }
