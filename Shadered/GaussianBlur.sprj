@@ -38,17 +38,17 @@
 				</variable>
 				<variable type="bool" name="useBoxBlur">
 					<row>
-						<value>false</value>
+						<value>true</value>
 					</row>
 				</variable>
 				<variable type="float" name="resolutionDivisor">
 					<row>
-						<value>2.94000006</value>
+						<value>10</value>
 					</row>
 				</variable>
 				<variable type="float" name="uKernelSize">
 					<row>
-						<value>1</value>
+						<value>3</value>
 					</row>
 				</variable>
 			</variables>
@@ -56,7 +56,8 @@
 		</pass>
 	</pipeline>
 	<objects>
-		<object type="texture" path="Textures\BernardPlenske.jpg" vflip="false" min_filter="Linear" mag_filter="Nearest" wrap_s="Repeat" wrap_t="Repeat">
+		<object type="texture" path="Textures\BernardPlenske.png" vflip="false" min_filter="Linear" mag_filter="Nearest" wrap_s="Repeat" wrap_t="Repeat" />
+		<object type="texture" path="Textures\whiteBox.png" vflip="false" min_filter="Linear" mag_filter="Nearest" wrap_s="Repeat" wrap_t="Repeat">
 			<bind slot="0" name="GaussianBlur" />
 		</object>
 	</objects>

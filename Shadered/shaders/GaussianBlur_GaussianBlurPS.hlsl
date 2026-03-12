@@ -23,12 +23,12 @@ float4 main(float4 fragCoord : SV_POSITION) : SV_TARGET
     
     float3 color = texColor.rgb;
     
-    float2 imgResolution = float2(151,151);
+    float2 imgResolution = float2(512,512);
     imgResolution /= resolutionDivisor;//10.0;
     float texelSize = 1.0/imgResolution;
     
     // BOX BLUR
-    const float kernelSize = uKernelSize;//1.0;
+    const float kernelSize = uKernelSize; // Range of pixel that will be sampled around the pixel we want to blur
     
     float3 boxBlurColor = 0.0;
     float boxBlurDivisor = pow(2.0 * kernelSize + 1.0, 2.0);
