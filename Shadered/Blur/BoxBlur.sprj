@@ -158,13 +158,9 @@
 	</objects>
 	<cameras />
 	<settings>
-		<entry type="property" name="NoBlur" item="pipe" />
+		<entry type="property" name="BoxBlur" item="pipe" />
 		<entry type="file" name="BoxBlur" shader="vs" />
 		<entry type="file" name="BoxBlur" shader="ps" />
-		<entry type="file" name="Blur1" shader="vs" />
-		<entry type="file" name="Blur1" shader="ps" />
-		<entry type="file" name="NoBlur" shader="vs" />
-		<entry type="file" name="NoBlur" shader="ps" />
 		<entry type="camera" fp="false">
 			<distance>8</distance>
 			<pitch>-83</pitch>

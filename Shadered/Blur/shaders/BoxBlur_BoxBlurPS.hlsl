@@ -48,10 +48,12 @@ float4 main(float4 fragCoord : SV_POSITION) : SV_TARGET
 	float2 texel = 1.0 / uResolution;
     float2 texUv = splitUv * texel;  
     
-    float4 noBlur = rt_tex0.Sample(rt_tex0_ST, uv);
-    float4 blur1 = rt_tex1.Sample(rt_tex1_ST, uv);
-    float4 blur2 = rt_tex2.Sample(rt_tex2_ST, uv);
-    float4 blur3 = rt_tex3.Sample(rt_tex3_ST, uv);
+    float4 noBlur = rt_tex0.Sample(rt_tex0_ST, uv); // Original texture, no blur
+    float4 blur1 = rt_tex1.Sample(rt_tex1_ST, uv); // Simple box blur
+    // Approximation of gaussian blur:
+    // -> The more we iterate, the more we are getting close to an actual gaussian blur
+    float4 blur2 = rt_tex2.Sample(rt_tex2_ST, uv); // We iterate with a new box blur on the initial box blur
+    float4 blur3 = rt_tex3.Sample(rt_tex3_ST, uv); // We iterate two more time on the initial box blur
     
     if(uv.x < 1.0 && uv.y > 1.0) // Top-left quadrant
     {
