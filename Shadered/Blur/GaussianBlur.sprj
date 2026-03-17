@@ -88,6 +88,7 @@
 	</objects>
 	<cameras />
 	<settings>
+		<entry type="property" name="GaussianBlur" item="pipe" />
 		<entry type="file" name="GaussianBlur" shader="vs" />
 		<entry type="file" name="GaussianBlur" shader="ps" />
 		<entry type="camera" fp="false">
@@ -98,7 +99,7 @@
 		</entry>
 		<entry type="clearcolor" r="0" g="0" b="0" a="1" />
 		<entry type="usealpha" val="false" />
-		<entry type="bkpt" file="C:/Users/romai.DESKTOP-UA02MBJ/Dev Projects/ShaderExperiments/Shadered/Blur/shaders/GaussianBlur_GaussianBlurPS.hlsl" line="40" use_cond="false" cond="" enabled="true" />
+		<entry type="bkpt" file="C:/Users/romai.DESKTOP-UA02MBJ/Dev Projects/ShaderExperiments/Shadered/Blur/shaders/GaussianBlur_GaussianBlurPS.hlsl" line="42" use_cond="false" cond="" enabled="true" />
 	</settings>
 	<plugindata />
 </project>

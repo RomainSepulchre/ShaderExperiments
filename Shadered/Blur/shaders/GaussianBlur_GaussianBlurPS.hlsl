@@ -1,3 +1,5 @@
+// See https://mini.gmshaders.com/p/blur-philosophy
+
 cbuffer vars : register(b0)
 {
 	float2 uResolution;
