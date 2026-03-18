@@ -2,8 +2,8 @@
 <project version="2">
 	<pipeline>
 		<pass name="GaussianBlur" type="shader" active="true" patchverts="1">
-			<shader type="vs" path="shaders\GaussianBlur_GaussianBlurVS.hlsl" entry="main" />
-			<shader type="ps" path="shaders\GaussianBlur_GaussianBlurPS.hlsl" entry="main" />
+			<shader type="vs" path="shaders\BasicBlur_GaussianBlurVS.hlsl" entry="main" />
+			<shader type="ps" path="shaders\BasicBlur_GaussianBlurPS.hlsl" entry="main" />
 			<inputlayout>
 				<item value="Position" semantic="POSITION" />
 				<item value="Normal" semantic="NORMAL" />
@@ -56,8 +56,8 @@
 		</pass>
 	</pipeline>
 	<objects>
-		<object type="texture" path="Textures\BernardPlenske.png" vflip="false" min_filter="Linear" mag_filter="Nearest" wrap_s="Repeat" wrap_t="Repeat" />
-		<object type="texture" path="Textures\whiteBox.png" vflip="false" min_filter="Linear" mag_filter="Nearest" wrap_s="Repeat" wrap_t="Repeat">
+		<object type="texture" path="..\Textures\BernardPlenske.png" vflip="false" min_filter="Linear" mag_filter="Nearest" wrap_s="Repeat" wrap_t="Repeat" />
+		<object type="texture" path="..\Textures\whiteBox.png" vflip="false" min_filter="Linear" mag_filter="Nearest" wrap_s="Repeat" wrap_t="Repeat">
 			<bind slot="0" name="GaussianBlur" />
 		</object>
 	</objects>
