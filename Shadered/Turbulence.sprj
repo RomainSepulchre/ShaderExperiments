@@ -33,15 +33,7 @@
 				</variable>
 				<variable type="float" name="uvScale">
 					<row>
-						<value>1</value>
-					</row>
-				</variable>
-				<variable type="float4" name="rotMatrix">
-					<row>
-						<value>0.600000024</value>
-						<value>-0.800000012</value>
-						<value>0.800000012</value>
-						<value>0.600000024</value>
+						<value>2</value>
 					</row>
 				</variable>
 				<variable type="float" name="turbFreq">
@@ -56,23 +48,28 @@
 				</variable>
 				<variable type="float" name="turbSpeed">
 					<row>
-						<value>1</value>
+						<value>0.300000012</value>
+					</row>
+				</variable>
+				<variable type="float" name="turbCount">
+					<row>
+						<value>10</value>
+					</row>
+				</variable>
+				<variable type="float4" name="turbMatrix">
+					<row>
+						<value>0.600000024</value>
+						<value>-0.800000012</value>
+						<value>0.800000012</value>
+						<value>0.600000024</value>
+					</row>
+				</variable>
+				<variable type="float" name="turbExp">
+					<row>
+						<value>1.39999998</value>
 					</row>
 				</variable>
 			</variables>
-			<macros />
-		</pass>
-		<pass name="test" type="shader" active="true" patchverts="1">
-			<shader type="vs" path="shaders\testVS.hlsl" entry="main" />
-			<shader type="ps" path="shaders\testPS.hlsl" entry="main" />
-			<inputlayout>
-				<item value="Position" semantic="POSITION" />
-				<item value="Normal" semantic="NORMAL" />
-				<item value="Texcoord" semantic="TEXCOORD0" />
-			</inputlayout>
-			<rendertexture />
-			<items />
-			<itemvalues />
 			<macros />
 		</pass>
 	</pipeline>
@@ -82,14 +79,14 @@
 		<entry type="property" name="Turbulence" item="pipe" />
 		<entry type="file" name="Turbulence" shader="vs" />
 		<entry type="file" name="Turbulence" shader="ps" />
-		<entry type="file" name="test" shader="vs" />
-		<entry type="file" name="test" shader="ps" />
 		<entry type="pinned" name="d" owner="Turbulence" />
 		<entry type="pinned" name="uvScale" owner="Turbulence" />
-		<entry type="pinned" name="rotMatrix" owner="Turbulence" />
 		<entry type="pinned" name="turbFreq" owner="Turbulence" />
 		<entry type="pinned" name="turbAmp" owner="Turbulence" />
 		<entry type="pinned" name="turbSpeed" owner="Turbulence" />
+		<entry type="pinned" name="turbCount" owner="Turbulence" />
+		<entry type="pinned" name="turbMatrix" owner="Turbulence" />
+		<entry type="pinned" name="turbExp" owner="Turbulence" />
 		<entry type="camera" fp="false">
 			<distance>8</distance>
 			<pitch>-83</pitch>

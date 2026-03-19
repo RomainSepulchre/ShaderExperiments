@@ -16,6 +16,8 @@
 					<width>1</width>
 					<height>1</height>
 					<depth>1</depth>
+					<y>-0.135766506</y>
+					<z>-0.802176237</z>
 					<topology>TriangleList</topology>
 				</item>
 			</items>
@@ -28,16 +30,17 @@
 		</pass>
 	</pipeline>
 	<objects>
-		<object type="texture" path="..\..\..\..\..\Program Files\SHADERed\icon_256x256.png" vflip="false" min_filter="Linear" mag_filter="Nearest" wrap_s="Repeat" wrap_t="Repeat">
+		<object type="texture" path="Textures\BernardPlenske.png" vflip="false" min_filter="Linear" mag_filter="Nearest" wrap_s="Repeat" wrap_t="Repeat">
 			<bind slot="0" name="mainPass" />
 		</object>
 	</objects>
 	<cameras />
 	<settings>
+		<entry type="property" name="cube" item="pipe" />
 		<entry type="file" name="mainPass" shader="vs" />
 		<entry type="file" name="mainPass" shader="ps" />
 		<entry type="camera" fp="false">
-			<distance>4</distance>
+			<distance>2</distance>
 			<pitch>-8</pitch>
 			<yaw>136</yaw>
 			<roll>360</roll>
