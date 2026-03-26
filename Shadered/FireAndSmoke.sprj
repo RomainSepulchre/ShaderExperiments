@@ -38,6 +38,7 @@
 	<objects />
 	<cameras />
 	<settings>
+		<entry type="property" name="FireAndSmoke" item="pipe" />
 		<entry type="file" name="FireAndSmoke" shader="vs" />
 		<entry type="file" name="FireAndSmoke" shader="ps" />
 		<entry type="pinned" name="dbg" owner="FireAndSmoke" />
